@@ -24,11 +24,11 @@
 - [x] CI 워크플로 — 린트 · 타입체크 · 테스트를 PR마다 실행 — `.github/workflows/ci.yml`(lint→typecheck→test→build)을 실제 PR과 main 푸시로 GitHub Actions에서 실행해 통과·실패 둘 다 확인
 - [⚠︎] 배포 대상 결정과 연결, 프리뷰 배포 활성화 — 대상은 **Vercel로 확정**(README에 근거 기록). 단 GitHub 저장소를 Vercel에 Import하는 최초 1회 로그인은 사람이 브라우저로 직접 해야 하는 단계라 에이전트가 대신할 수 없음 — README에 연결 절차 문서화, 실제 연결은 저장소 관리자 대기
 - [ ] 도안 스키마 검증을 CI에서 실행 — 깨진 도안이 머지되지 않게 — **`IDE-003`(도안 스키마 규격)이 아직 `todo`라 검증 대상 스키마 자체가 없음.** IDE-003 완료 후 착수
-- [⚠︎] 브랜치 보호와 기여 절차를 README에 기록 — 기여 절차는 README에 작성 완료. 브랜치 보호(PR 필수 + CI 통과 필수) 자체는 GitHub API 호출(`gh api repos/.../branches/main/protection`)이 Claude Code 권한 분류기에서 차단되어 미적용 — 저장소 관리자가 GitHub 웹 UI(Settings → Branches)에서 직접 설정하거나 Bash 권한 규칙 추가 필요
+- [x] 브랜치 보호와 기여 절차를 README에 기록 — 기여 절차는 README에 작성 완료. 저장소를 public으로 전환한 뒤 `main`에 브랜치 보호(PR 필수 · CI 상태 체크 필수 · `enforce_admins`)를 적용하고, 직접 push 차단과 실패한 CI의 머지 차단을 실제로 재현해 확인
 
 ## 수용 기준
 
-- [⚠︎] PR을 올리면 린트·타입체크·테스트가 자동 실행되고 실패 시 머지가 막힌다 — 자동 실행과 실패 감지는 실제 PR로 검증 완료. "실패 시 머지가 막힌다"는 브랜치 보호 미설정으로 아직 강제되지 않음
+- [x] PR을 올리면 린트·타입체크·테스트가 자동 실행되고 실패 시 머지가 막힌다 — 실패하는 CI를 단 임시 PR로 `gh pr merge`가 "base branch policy prohibits the merge"로 거부되는 것을 실제로 확인
 - [ ] main 머지가 배포로 이어진다 — Vercel 연결(사용자의 최초 로그인) 대기 중이라 미충족
 - [ ] 스키마가 깨진 도안을 넣은 PR이 CI에서 실패한다 — `IDE-003` 완료(스키마 정의) 후에나 검증 가능
 
@@ -71,3 +71,14 @@
   (`github.com/miconblog/papercraft`, `gh repo rename`). 로컬 `origin` remote URL도
   갱신. 옛 URL은 GitHub가 자동으로 리다이렉트하지만 README의 Vercel Import 안내는
   새 이름으로 갱신했다.
+- 2026-09-04 · 저장소를 public으로 전환하기로 결정(사용자 선택) — private 무료 플랜의
+  브랜치 보호 제약을 해소. 전환 후 `main`에 브랜치 보호를 적용: PR 필수(`required_pull_request_reviews`,
+  승인 0건이어도 PR 자체는 강제) · CI 상태 체크(`Lint · Typecheck · Test`) 필수 ·
+  `enforce_admins: true`(관리자도 예외 없음). 적용 후 ① `main` 직접 push가
+  `GH006: Protected branch update failed`로 실제 거부되는 것 ② 실패하는 CI를 단 PR이
+  `gh pr merge`에서 "base branch policy prohibits the merge"로 거부되는 것을 각각
+  임시 브랜치/PR로 재현해 확인한 뒤 정리(삭제)했다. 이 항목과 관련 수용 기준을 완료로
+  닫는다.
+- 2026-09-04 · 남은 것은 ① Vercel 계정 연결(저장소 관리자의 1회 로그인) ② `IDE-003`
+  완료(도안 스키마 확정) 뿐이라 `blocked` 상태를 유지한다. 브랜치 보호는 이번에 완전히
+  끝났다.
