@@ -11,9 +11,9 @@
 
 | 상태      | 개수 |
 | --------- | ---- |
-| `todo`    | 10   |
-| `doing`   | 0    |
-| `blocked` | 0    |
+| `todo`    | 8    |
+| `doing`   | 1    |
+| `blocked` | 1    |
 | `review`  | 0    |
 | `done`    | 1    |
 
@@ -29,7 +29,7 @@
 | ID                                                   | 제목                                | 영역     | 우선 | 추정 | 상태   |
 | ---------------------------------------------------- | ----------------------------------- | -------- | ---- | ---- | ------ |
 | [IDE-001](IDE-001-bootstrap-nextjs-repo.md)          | Next.js 저장소 부트스트랩           | infra    | P0   | 2d   | `done` |
-| [IDE-002](IDE-002-print-pipeline-spike.md)           | 인쇄 파이프라인 기술 검증           | research | P0   | 3d   | `todo` |
+| [IDE-002](IDE-002-print-pipeline-spike.md)           | 인쇄 파이프라인 기술 검증           | research | P0   | 3d   | `doing` |
 | [IDE-003](IDE-003-board-schema-and-template-spec.md) | 도안 데이터 모델과 템플릿 규격 정의 | frontend | P0   | 5d   | `todo` |
 
 ## M1 — 첫 릴리스: 축구 게임판 (004–010)
@@ -40,7 +40,7 @@
 | [IDE-006](IDE-006-customization-editor.md)                   | 커스터마이즈 에디터                   | frontend | P0   | 5d   | `todo` |
 | [IDE-007](IDE-007-print-and-pdf-export.md)                   | 인쇄·PDF 내보내기                     | frontend | P0   | 6d   | `todo` |
 | [IDE-005](IDE-005-game-catalog-pages.md)                     | 게임 카탈로그 — 목록·상세 페이지      | frontend | P1   | 2d   | `todo` |
-| [IDE-008](IDE-008-ci-deploy-and-test-foundation.md)          | CI·배포 파이프라인과 테스트 기반      | infra    | P1   | 3d   | `todo` |
+| [IDE-008](IDE-008-ci-deploy-and-test-foundation.md)          | CI·배포 파이프라인과 테스트 기반      | infra    | P1   | 3d   | `blocked` |
 | [IDE-009](IDE-009-accessibility-responsive-print-quality.md) | 접근성·반응형·출력 품질 마감          | frontend | P1   | 3d   | `todo` |
 | [IDE-010](IDE-010-player-markers-and-formations.md)          | 선수 마커 아트워크와 전술 대형 프리셋 | content  | P0   | 5d   | `todo` |
 
