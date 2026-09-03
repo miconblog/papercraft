@@ -74,4 +74,3 @@ src/
 
 작업 단위와 진행 상황은 [issues/](issues/)에서 관리한다. 전체 현황은
 [issues/BOARD.md](issues/BOARD.md), 운영 규칙은 [issues/README.md](issues/README.md)를 본다.
-// branch protection test 2026년  9월  4일 금요일 01시 18분 40초 KST
