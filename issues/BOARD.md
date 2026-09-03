@@ -12,14 +12,16 @@
 | 상태      | 개수 |
 | --------- | ---- |
 | `todo`    | 7    |
-| `doing`   | 1    |
-| `blocked` | 1    |
+| `doing`   | 0    |
+| `blocked` | 2    |
 | `review`  | 0    |
 | `done`    | 2    |
 
 **지금 할 것** — [IDE-003](IDE-003-board-schema-and-template-spec.md)(도안 규격)은
 `done`. M0에 남은 것은 [IDE-002](IDE-002-print-pipeline-spike.md)(인쇄 정확도 검증)
-하나이고, 실물 출력으로 치수를 재야 끝난다.
+하나인데, 인쇄 방식과 규격은 정해졌고([docs/print-spec.md](../docs/print-spec.md))
+**사람이 종이에 뽑아 자로 재는 일만 남아 `blocked`**다. 절차는
+[spikes/print-pipeline/README.md](../spikes/print-pipeline/README.md)의 체크리스트.
 [IDE-005](IDE-005-game-catalog-pages.md)(카탈로그)는 선행이 모두 풀려 바로 착수할 수
 있다. [IDE-004](IDE-004-soccer-board-vector-artwork.md)(도안 벡터화)는 `IDE-002`의
 인쇄 규격을 기다린다.
@@ -28,11 +30,11 @@
 
 ## M0 — 기반 (001–003)
 
-| ID                                                   | 제목                                | 영역     | 우선 | 추정 | 상태    |
-| ---------------------------------------------------- | ----------------------------------- | -------- | ---- | ---- | ------- |
-| [IDE-001](IDE-001-bootstrap-nextjs-repo.md)          | Next.js 저장소 부트스트랩           | infra    | P0   | 2d   | `done`  |
-| [IDE-002](IDE-002-print-pipeline-spike.md)           | 인쇄 파이프라인 기술 검증           | research | P0   | 3d   | `doing` |
-| [IDE-003](IDE-003-board-schema-and-template-spec.md) | 도안 데이터 모델과 템플릿 규격 정의 | frontend | P0   | 5d   | `done`  |
+| ID                                                   | 제목                                | 영역     | 우선 | 추정 | 상태      |
+| ---------------------------------------------------- | ----------------------------------- | -------- | ---- | ---- | --------- |
+| [IDE-001](IDE-001-bootstrap-nextjs-repo.md)          | Next.js 저장소 부트스트랩           | infra    | P0   | 2d   | `done`    |
+| [IDE-002](IDE-002-print-pipeline-spike.md)           | 인쇄 파이프라인 기술 검증           | research | P0   | 3d   | `blocked` |
+| [IDE-003](IDE-003-board-schema-and-template-spec.md) | 도안 데이터 모델과 템플릿 규격 정의 | frontend | P0   | 5d   | `done`    |
 
 ## M1 — 첫 릴리스: 축구 게임판 (004–010)
 

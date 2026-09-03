@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     'out/**',
     'build/**',
     'next-env.d.ts',
+    // 인쇄 스파이크 산출물 — 벤더 번들과 생성물이라 검사 대상이 아니다
+    'spikes/*/out/**',
   ]),
 ]);
 

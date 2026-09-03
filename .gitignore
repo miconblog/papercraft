@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# 인쇄 파이프라인 스파이크 (IDE-002) — 언제든 재생성되는 산출물과 내려받는 폰트
+/spikes/print-pipeline/out/
+/spikes/print-pipeline/assets/*.otf
+/spikes/print-pipeline/assets/*.ttf
