@@ -61,3 +61,13 @@
   `review`로 전환하지 않고 `blocked` 유지. 기다리는 것: ① 저장소 관리자의 GitHub 브랜치
   보호 설정(또는 Bash 권한 규칙 추가) ② 저장소 관리자의 Vercel 계정 연결(1회 로그인)
   ③ `IDE-003` 완료(도안 스키마 확정).
+- 2026-09-03 · 사용자가 브랜치 보호를 설정했다고 알려와 재확인했으나
+  `gh api repos/miconblog/ideas/branches/main/protection`이 `protected: false`를
+  반환 — 실제로는 미적용 상태였다. 원인은 **GitHub 무료 플랜에서는 private 저장소에
+  브랜치 보호(클래식 protection·신규 rulesets 모두)를 걸 수 없음**("Upgrade to GitHub
+  Pro or make this repository public" 403). 저장소를 public으로 바꾸거나 Pro/Team
+  플랜으로 올려야 이 항목을 실제로 만족시킬 수 있다 — 아직 결정되지 않아 `blocked` 유지.
+- 2026-09-03 · GitHub 저장소 이름을 `ideas`에서 `papercraft`로 변경
+  (`github.com/miconblog/papercraft`, `gh repo rename`). 로컬 `origin` remote URL도
+  갱신. 옛 URL은 GitHub가 자동으로 리다이렉트하지만 README의 Vercel Import 안내는
+  새 이름으로 갱신했다.

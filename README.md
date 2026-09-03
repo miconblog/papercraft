@@ -47,7 +47,7 @@ src/
   프리뷰 배포가 자동으로 붙는다.
 - **연결 방법(최초 1회, 저장소 관리자가 직접)**:
   1. [vercel.com/new](https://vercel.com/new)에서 GitHub 계정으로 로그인
-  2. `miconblog/ideas` 저장소를 Import — 이 계정 로그인은 사람이 브라우저로 직접
+  2. `miconblog/papercraft` 저장소를 Import — 이 계정 로그인은 사람이 브라우저로 직접
      해야 하는 단계라 에이전트가 대신할 수 없다
   3. 빌드 설정은 기본값(Next.js 프리셋) 그대로 사용
   4. Import를 마치면 이후 `main` 푸시가 자동으로 프로덕션 배포로, PR이 자동으로
