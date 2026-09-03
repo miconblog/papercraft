@@ -11,38 +11,39 @@
 
 | 상태      | 개수 |
 | --------- | ---- |
-| `todo`    | 8    |
+| `todo`    | 7    |
 | `doing`   | 1    |
 | `blocked` | 1    |
-| `review`  | 0    |
+| `review`  | 1    |
 | `done`    | 1    |
 
-**지금 할 것** — [IDE-001](IDE-001-bootstrap-nextjs-repo.md) 저장소 부트스트랩은 `done`.
-[IDE-002](IDE-002-print-pipeline-spike.md)(인쇄 정확도 검증)와
-[IDE-003](IDE-003-board-schema-and-template-spec.md)(도안 규격)을 나란히 진행할 수 있다.
-이 둘이 제품 전체의 형태를 결정하므로 도안 작업보다 먼저다.
+**지금 할 것** — [IDE-003](IDE-003-board-schema-and-template-spec.md)(도안 규격)은
+`review`. [IDE-002](IDE-002-print-pipeline-spike.md)(인쇄 정확도 검증)가 M0에 남은
+유일한 진행 건이고, 실물 출력으로 치수를 재야 끝난다. IDE-003이 `done`으로 닫히면
+[IDE-004](IDE-004-soccer-board-vector-artwork.md)(도안 벡터화)와
+[IDE-005](IDE-005-game-catalog-pages.md)(카탈로그)의 선행이 풀린다.
 
 ---
 
 ## M0 — 기반 (001–003)
 
-| ID                                                   | 제목                                | 영역     | 우선 | 추정 | 상태   |
-| ---------------------------------------------------- | ----------------------------------- | -------- | ---- | ---- | ------ |
-| [IDE-001](IDE-001-bootstrap-nextjs-repo.md)          | Next.js 저장소 부트스트랩           | infra    | P0   | 2d   | `done` |
-| [IDE-002](IDE-002-print-pipeline-spike.md)           | 인쇄 파이프라인 기술 검증           | research | P0   | 3d   | `doing` |
-| [IDE-003](IDE-003-board-schema-and-template-spec.md) | 도안 데이터 모델과 템플릿 규격 정의 | frontend | P0   | 5d   | `todo` |
+| ID                                                   | 제목                                | 영역     | 우선 | 추정 | 상태     |
+| ---------------------------------------------------- | ----------------------------------- | -------- | ---- | ---- | -------- |
+| [IDE-001](IDE-001-bootstrap-nextjs-repo.md)          | Next.js 저장소 부트스트랩           | infra    | P0   | 2d   | `done`   |
+| [IDE-002](IDE-002-print-pipeline-spike.md)           | 인쇄 파이프라인 기술 검증           | research | P0   | 3d   | `doing`  |
+| [IDE-003](IDE-003-board-schema-and-template-spec.md) | 도안 데이터 모델과 템플릿 규격 정의 | frontend | P0   | 5d   | `review` |
 
 ## M1 — 첫 릴리스: 축구 게임판 (004–010)
 
-| ID                                                           | 제목                                  | 영역     | 우선 | 추정 | 상태   |
-| ------------------------------------------------------------ | ------------------------------------- | -------- | ---- | ---- | ------ |
-| [IDE-004](IDE-004-soccer-board-vector-artwork.md)            | 축구 게임판 도안 벡터화               | content  | P0   | 5d   | `todo` |
-| [IDE-006](IDE-006-customization-editor.md)                   | 커스터마이즈 에디터                   | frontend | P0   | 5d   | `todo` |
-| [IDE-007](IDE-007-print-and-pdf-export.md)                   | 인쇄·PDF 내보내기                     | frontend | P0   | 6d   | `todo` |
-| [IDE-005](IDE-005-game-catalog-pages.md)                     | 게임 카탈로그 — 목록·상세 페이지      | frontend | P1   | 2d   | `todo` |
+| ID                                                           | 제목                                  | 영역     | 우선 | 추정 | 상태      |
+| ------------------------------------------------------------ | ------------------------------------- | -------- | ---- | ---- | --------- |
+| [IDE-004](IDE-004-soccer-board-vector-artwork.md)            | 축구 게임판 도안 벡터화               | content  | P0   | 5d   | `todo`    |
+| [IDE-006](IDE-006-customization-editor.md)                   | 커스터마이즈 에디터                   | frontend | P0   | 5d   | `todo`    |
+| [IDE-007](IDE-007-print-and-pdf-export.md)                   | 인쇄·PDF 내보내기                     | frontend | P0   | 6d   | `todo`    |
+| [IDE-005](IDE-005-game-catalog-pages.md)                     | 게임 카탈로그 — 목록·상세 페이지      | frontend | P1   | 2d   | `todo`    |
 | [IDE-008](IDE-008-ci-deploy-and-test-foundation.md)          | CI·배포 파이프라인과 테스트 기반      | infra    | P1   | 3d   | `blocked` |
-| [IDE-009](IDE-009-accessibility-responsive-print-quality.md) | 접근성·반응형·출력 품질 마감          | frontend | P1   | 3d   | `todo` |
-| [IDE-010](IDE-010-player-markers-and-formations.md)          | 선수 마커 아트워크와 전술 대형 프리셋 | content  | P0   | 5d   | `todo` |
+| [IDE-009](IDE-009-accessibility-responsive-print-quality.md) | 접근성·반응형·출력 품질 마감          | frontend | P1   | 3d   | `todo`    |
+| [IDE-010](IDE-010-player-markers-and-formations.md)          | 선수 마커 아트워크와 전술 대형 프리셋 | content  | P0   | 5d   | `todo`    |
 
 ## M2 — 게임 확장 (011–020)
 

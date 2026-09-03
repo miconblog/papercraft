@@ -4,7 +4,5 @@ import Page from '../page';
 
 test('홈페이지가 h1 헤딩을 렌더링한다', () => {
   render(<Page />);
-  expect(
-    screen.getByRole('heading', { level: 1 })
-  ).toBeInTheDocument();
+  expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
 });
