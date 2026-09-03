@@ -20,6 +20,7 @@
     "zod": "^4.5.4"
   },
   "devDependencies": {
+    "@pdf-lib/fontkit": "^1.1.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^7.0.1",
@@ -31,7 +32,10 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
     "jsdom": "^30.0.1",
+    "jspdf": "^4.2.1",
+    "pdf-lib": "^1.17.1",
     "prettier": "^3.9.6",
+    "svg2pdf.js": "^2.8.1",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vite-tsconfig-paths": "^6.1.1",

@@ -1,3 +1,5 @@
 .next
 node_modules
 public
+spikes/print-pipeline/out
+spikes/print-pipeline/assets
