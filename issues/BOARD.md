@@ -12,13 +12,13 @@
 | 상태      | 개수 |
 | --------- | ---- |
 | `todo`    | 10   |
-| `doing`   | 1    |
+| `doing`   | 0    |
 | `blocked` | 0    |
-| `review`  | 0    |
+| `review`  | 1    |
 | `done`    | 0    |
 
-**지금 할 것** — [IDE-001](IDE-001-bootstrap-nextjs-repo.md) 저장소 부트스트랩.
-저장소가 서면 [IDE-002](IDE-002-print-pipeline-spike.md)(인쇄 정확도 검증)와
+**지금 할 것** — [IDE-001](IDE-001-bootstrap-nextjs-repo.md) 저장소 부트스트랩은 `review`.
+저장소가 섰으니 [IDE-002](IDE-002-print-pipeline-spike.md)(인쇄 정확도 검증)와
 [IDE-003](IDE-003-board-schema-and-template-spec.md)(도안 규격)을 나란히 진행할 수 있다.
 이 둘이 제품 전체의 형태를 결정하므로 도안 작업보다 먼저다.
 
@@ -26,11 +26,11 @@
 
 ## M0 — 기반 (001–003)
 
-| ID                                                   | 제목                                | 영역     | 우선 | 추정 | 상태    |
-| ---------------------------------------------------- | ----------------------------------- | -------- | ---- | ---- | ------- |
-| [IDE-001](IDE-001-bootstrap-nextjs-repo.md)          | Next.js 저장소 부트스트랩           | infra    | P0   | 2d   | `doing` |
-| [IDE-002](IDE-002-print-pipeline-spike.md)           | 인쇄 파이프라인 기술 검증           | research | P0   | 3d   | `todo`  |
-| [IDE-003](IDE-003-board-schema-and-template-spec.md) | 도안 데이터 모델과 템플릿 규격 정의 | frontend | P0   | 5d   | `todo`  |
+| ID                                                   | 제목                                | 영역     | 우선 | 추정 | 상태     |
+| ---------------------------------------------------- | ----------------------------------- | -------- | ---- | ---- | -------- |
+| [IDE-001](IDE-001-bootstrap-nextjs-repo.md)          | Next.js 저장소 부트스트랩           | infra    | P0   | 2d   | `review` |
+| [IDE-002](IDE-002-print-pipeline-spike.md)           | 인쇄 파이프라인 기술 검증           | research | P0   | 3d   | `todo`   |
+| [IDE-003](IDE-003-board-schema-and-template-spec.md) | 도안 데이터 모델과 템플릿 규격 정의 | frontend | P0   | 5d   | `todo`   |
 
 ## M1 — 첫 릴리스: 축구 게임판 (004–010)
 
