@@ -14,24 +14,25 @@
 | `todo`    | 7    |
 | `doing`   | 1    |
 | `blocked` | 1    |
-| `review`  | 1    |
-| `done`    | 1    |
+| `review`  | 0    |
+| `done`    | 2    |
 
 **지금 할 것** — [IDE-003](IDE-003-board-schema-and-template-spec.md)(도안 규격)은
-`review`. [IDE-002](IDE-002-print-pipeline-spike.md)(인쇄 정확도 검증)가 M0에 남은
-유일한 진행 건이고, 실물 출력으로 치수를 재야 끝난다. IDE-003이 `done`으로 닫히면
-[IDE-004](IDE-004-soccer-board-vector-artwork.md)(도안 벡터화)와
-[IDE-005](IDE-005-game-catalog-pages.md)(카탈로그)의 선행이 풀린다.
+`done`. M0에 남은 것은 [IDE-002](IDE-002-print-pipeline-spike.md)(인쇄 정확도 검증)
+하나이고, 실물 출력으로 치수를 재야 끝난다.
+[IDE-005](IDE-005-game-catalog-pages.md)(카탈로그)는 선행이 모두 풀려 바로 착수할 수
+있다. [IDE-004](IDE-004-soccer-board-vector-artwork.md)(도안 벡터화)는 `IDE-002`의
+인쇄 규격을 기다린다.
 
 ---
 
 ## M0 — 기반 (001–003)
 
-| ID                                                   | 제목                                | 영역     | 우선 | 추정 | 상태     |
-| ---------------------------------------------------- | ----------------------------------- | -------- | ---- | ---- | -------- |
-| [IDE-001](IDE-001-bootstrap-nextjs-repo.md)          | Next.js 저장소 부트스트랩           | infra    | P0   | 2d   | `done`   |
-| [IDE-002](IDE-002-print-pipeline-spike.md)           | 인쇄 파이프라인 기술 검증           | research | P0   | 3d   | `doing`  |
-| [IDE-003](IDE-003-board-schema-and-template-spec.md) | 도안 데이터 모델과 템플릿 규격 정의 | frontend | P0   | 5d   | `review` |
+| ID                                                   | 제목                                | 영역     | 우선 | 추정 | 상태    |
+| ---------------------------------------------------- | ----------------------------------- | -------- | ---- | ---- | ------- |
+| [IDE-001](IDE-001-bootstrap-nextjs-repo.md)          | Next.js 저장소 부트스트랩           | infra    | P0   | 2d   | `done`  |
+| [IDE-002](IDE-002-print-pipeline-spike.md)           | 인쇄 파이프라인 기술 검증           | research | P0   | 3d   | `doing` |
+| [IDE-003](IDE-003-board-schema-and-template-spec.md) | 도안 데이터 모델과 템플릿 규격 정의 | frontend | P0   | 5d   | `done`  |
 
 ## M1 — 첫 릴리스: 축구 게임판 (004–010)
 
