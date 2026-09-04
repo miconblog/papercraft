@@ -6,8 +6,9 @@
  * 어긋나지 않는다 — 치수를 고칠 때는 `dimensions.ts`만 고치고
  * `npm run artwork`를 돌린다.
  *
- * 선수 마커 아트워크와 전술 대형 프리셋의 확정은 `IDE-010`이 한다. 여기 있는
- * 4-4-2·3-5-2 좌표는 규격이 도는지 보이는 출발점이다.
+ * 선수 마커 아트워크(원형·일러스트, 필드 선수·골키퍼 각각)와 전술 대형 프리셋은
+ * `IDE-010`이 확정했다 — 마커는 `artwork/player-markers.ts`, 대형 근거는
+ * `docs/soccer-artwork.md` 11절을 본다.
  */
 import { defineGame, mirrorPositions, type SlotPosition } from '@/lib/schema';
 import {
@@ -17,6 +18,7 @@ import {
   BOARD,
   BOARD_TEAM_NAME,
   FIELD,
+  PLAYER_MARKER,
   SHEETS,
   SCORE_TABLE,
   SCORE_TEAM_NAME_Y_MM,
@@ -73,6 +75,32 @@ const FORMATIONS: Record<string, ReadonlyArray<readonly [number, number]>> = {
     [126, 87],
     [126, 123],
   ],
+  '4-3-3': [
+    [32, 105],
+    [52, 40],
+    [52, 87],
+    [52, 123],
+    [52, 170],
+    [90, 60],
+    [90, 105],
+    [90, 150],
+    [126, 55],
+    [126, 105],
+    [126, 155],
+  ],
+  '4-2-3-1': [
+    [32, 105],
+    [52, 40],
+    [52, 87],
+    [52, 123],
+    [52, 170],
+    [80, 80],
+    [80, 130],
+    [105, 55],
+    [105, 105],
+    [105, 155],
+    [130, 105],
+  ],
 };
 
 /** 슬롯의 기본 좌표는 4-4-2 배치다 — 첫 화면이 곧 쓸 수 있는 배치여야 한다. */
@@ -121,7 +149,9 @@ const playerSlots = TEAMS.flatMap((team) => {
         mode: 'marker' as const,
         xMm: pos.xMm,
         yMm: pos.yMm,
-        styleSetId: 'player-marker',
+        // 골키퍼는 별도 스타일 세트를 쓴다 — 필드 선수와 크기는 같고
+        // 실루엣만 다르다(안쪽 테). 흑백에서도 역할이 구분되는 이유다.
+        styleSetId: i === 0 ? 'goalkeeper-marker' : 'player-marker',
         regionId: 'playable-field',
       },
     ],
@@ -315,6 +345,8 @@ export default defineGame({
     colorSlotId: `${team.id}-color`,
   })),
 
+  // 필드 선수·골키퍼가 스타일 세트를 따로 쓴다(IDE-010) — 크기는 같고 실루엣만
+  // 다르다. 두 세트 다 같은 `marker-style` 슬롯으로 원형·일러스트를 고른다.
   styleSets: [
     {
       id: 'player-marker',
@@ -324,16 +356,41 @@ export default defineGame({
         {
           id: 'circle',
           label: '원 + 등번호',
-          widthMm: 12,
-          heightMm: 12,
-          valueFontSizeMm: 5,
+          widthMm: PLAYER_MARKER.circle.widthMm,
+          heightMm: PLAYER_MARKER.circle.heightMm,
+          valueFontSizeMm: PLAYER_MARKER.circle.valueFontSizeMm,
+          artwork: artworkPath('player-marker-circle'),
         },
         {
           id: 'illustration',
           label: '선수 일러스트',
-          widthMm: 13,
-          heightMm: 16,
-          valueFontSizeMm: 4,
+          widthMm: PLAYER_MARKER.illustration.widthMm,
+          heightMm: PLAYER_MARKER.illustration.heightMm,
+          valueFontSizeMm: PLAYER_MARKER.illustration.valueFontSizeMm,
+          artwork: artworkPath('player-marker-illustration'),
+        },
+      ],
+    },
+    {
+      id: 'goalkeeper-marker',
+      label: '골키퍼 마커',
+      selectorSlotId: 'marker-style',
+      variants: [
+        {
+          id: 'circle',
+          label: '원 + 등번호',
+          widthMm: PLAYER_MARKER.circle.widthMm,
+          heightMm: PLAYER_MARKER.circle.heightMm,
+          valueFontSizeMm: PLAYER_MARKER.circle.valueFontSizeMm,
+          artwork: artworkPath('goalkeeper-marker-circle'),
+        },
+        {
+          id: 'illustration',
+          label: '선수 일러스트',
+          widthMm: PLAYER_MARKER.illustration.widthMm,
+          heightMm: PLAYER_MARKER.illustration.heightMm,
+          valueFontSizeMm: PLAYER_MARKER.illustration.valueFontSizeMm,
+          artwork: artworkPath('goalkeeper-marker-illustration'),
         },
       ],
     },

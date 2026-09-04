@@ -134,7 +134,12 @@ describe('축구 게임판 — 마커 스타일', () => {
 describe('축구 게임판 — 전술 대형 프리셋', () => {
   it('대형마다 홈·원정 프리셋이 있고 각각 11명을 배치한다', () => {
     const byFormation = presetsByFormation(soccer);
-    expect([...byFormation.keys()].sort()).toEqual(['3-5-2', '4-4-2']);
+    expect([...byFormation.keys()].sort()).toEqual([
+      '3-5-2',
+      '4-2-3-1',
+      '4-3-3',
+      '4-4-2',
+    ]);
     for (const [formation, presets] of byFormation) {
       expect(presets.map((p) => p.groupId).sort(), formation).toEqual([
         'away',

@@ -86,6 +86,22 @@ export const GOAL_NET_SIZE = {
   heightMm: GOAL.depthMm + GOAL.mouthHeightMm + GOAL.footDepthMm, // 38
 } as const;
 
+/**
+ * 선수 마커 (IDE-010) — 원 + 등번호 / 일러스트 + 등번호 두 벌.
+ *
+ * 기준점은 두 벌 다 **마커 중심**이라 바꿔 끼워도 슬롯 좌표가 어긋나지 않는다.
+ * 골키퍼는 같은 크기의 별도 스타일 세트(`goalkeeper-marker`)를 쓴다 — 크기는
+ * 필드 선수와 같게 두어 겹침 판정과 프리셋 좌표가 그대로 통한다.
+ *
+ * 등번호 글자 크기는 두 벌을 같게 뒀다. 일러스트가 원보다 작으면 6절 가독성
+ * 하한(2.5mm)을 필드의 minScale(0.5)에서 못 채운다 — 5mm × 0.5 = 2.5mm가
+ * 정확히 하한이라 여유가 없다.
+ */
+export const PLAYER_MARKER = {
+  circle: { widthMm: 12, heightMm: 12, valueFontSizeMm: 5 },
+  illustration: { widthMm: 13, heightMm: 16, valueFontSizeMm: 5 },
+} as const;
+
 /** 공 마커 — 연필로 튕기는 납작한 원. */
 export const BALL = {
   /** 오림선 지름. 오리기 쉽고 튕기기 좋은 크기로 잡았다(⚠︎ 종이 실측 대기). */

@@ -8,6 +8,12 @@
 import { renderBallMarkers } from './ball-markers.ts';
 import { renderField } from './field.ts';
 import { renderGoals } from './goals.ts';
+import {
+  renderGoalkeeperMarkerCircle,
+  renderGoalkeeperMarkerIllustration,
+  renderPlayerMarkerCircle,
+  renderPlayerMarkerIllustration,
+} from './player-markers.ts';
 import { renderRulesCard } from './rules-card.ts';
 import { renderScoreSheet } from './score-sheet.ts';
 
@@ -19,4 +25,8 @@ export const ARTWORK: Readonly<Record<string, () => string>> = {
   'rules-card': renderRulesCard,
   goals: renderGoals,
   'ball-markers': renderBallMarkers,
+  'player-marker-circle': renderPlayerMarkerCircle,
+  'player-marker-illustration': renderPlayerMarkerIllustration,
+  'goalkeeper-marker-circle': renderGoalkeeperMarkerCircle,
+  'goalkeeper-marker-illustration': renderGoalkeeperMarkerIllustration,
 };
