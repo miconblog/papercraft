@@ -16,7 +16,8 @@ npm run artwork
 | `rules-card.svg`    | 게임 방법                         |
 | `goals.svg`         | 골대 전개도 2벌                   |
 | `ball-markers.svg`  | 공 마커 24개                      |
-| `thumbnail.png`     | 카탈로그 썸네일 — IDE-005에서 만든다 |
+
+카탈로그(`IDE-005`) 썸네일은 별도 파일을 만들지 않고 `field.svg`를 그대로 쓴다.
 
 선수 마커 아트워크는 `IDE-010`에서 만든다.
 

@@ -193,7 +193,9 @@ export default defineGame({
     '선수 배치를 원하는 대로 바꿔 인쇄할 수 있다.',
   players: { min: 2, max: 2 },
   supplies: ['연필', '가위', '풀'],
-  thumbnail: '/games/soccer/thumbnail.png',
+  // 카탈로그(IDE-005) 썸네일 — 별도로 그리지 않고 운동장 아트워크를 그대로 쓴다.
+  // 실제 인쇄될 도안을 보여주는 게 만든 아이콘보다 정직한 미리보기다.
+  thumbnail: artworkPath('field'),
 
   parts: [
     {
