@@ -11,11 +11,11 @@
 
 | 상태      | 개수 |
 | --------- | ---- |
-| `todo`    | 5    |
+| `todo`    | 4    |
 | `doing`   | 0    |
 | `blocked` | 3    |
 | `review`  | 0    |
-| `done`    | 3    |
+| `done`    | 4    |
 
 **지금 할 것** — `blocked` 세 건 중 둘([IDE-002](IDE-002-print-pipeline-spike.md) ·
 [IDE-004](IDE-004-soccer-board-vector-artwork.md))이 **같은 것 하나를 기다린다 —
@@ -24,10 +24,12 @@
 `IDE-004`는 거기에 골대를 오려 접어 보기·공 12mm 튕겨 보기가 더 붙는다. `IDE-004`는
 **사용자 답변도 하나 기다린다** — 아웃·핸들링·파울 처리와 옛 인쇄본의 출처.
 
-[IDE-005](IDE-005-game-catalog-pages.md)(카탈로그)는 `done`이다. 착수할 수
-있는 것은 [IDE-010](IDE-010-player-markers-and-formations.md)(선수 마커)이다.
-`IDE-004`가 필드 기하와 마커 규격을 확정해 선행이 풀렸다 —
-[docs/soccer-artwork.md](../docs/soccer-artwork.md)를 보고 시작하면 된다.
+[IDE-005](IDE-005-game-catalog-pages.md)(카탈로그) ·
+[IDE-010](IDE-010-player-markers-and-formations.md)(선수 마커·전술 대형)
+모두 `done`이다. `IDE-010`은 원형·일러스트 마커, 4-4-2·3-5-2·4-3-3·4-2-3-1
+네 대형을 갖췄다 — 흑백 인쇄 확인 하나는 렌더러가 있어야 끝나 결정 기록에
+범위 조정으로 남기고 닫았다. 착수할 수 있는 것은
+[IDE-006](IDE-006-customization-editor.md)(커스터마이즈 에디터)이다.
 
 ---
 
@@ -49,7 +51,7 @@
 | [IDE-005](IDE-005-game-catalog-pages.md)                     | 게임 카탈로그 — 목록·상세 페이지      | frontend | P1   | 2d   | `done`    |
 | [IDE-008](IDE-008-ci-deploy-and-test-foundation.md)          | CI·배포 파이프라인과 테스트 기반      | infra    | P1   | 3d   | `blocked` |
 | [IDE-009](IDE-009-accessibility-responsive-print-quality.md) | 접근성·반응형·출력 품질 마감          | frontend | P1   | 3d   | `todo`    |
-| [IDE-010](IDE-010-player-markers-and-formations.md)          | 선수 마커 아트워크와 전술 대형 프리셋 | content  | P0   | 5d   | `todo`    |
+| [IDE-010](IDE-010-player-markers-and-formations.md)          | 선수 마커 아트워크와 전술 대형 프리셋 | content  | P0   | 5d   | `done`    |
 
 ## M2 — 게임 확장 (011–020)
 
