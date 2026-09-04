@@ -2,7 +2,7 @@
 
 | 항목        | 값          |
 | ----------- | ----------- |
-| 상태        | `review`    |
+| 상태        | `done`      |
 | 영역        | frontend    |
 | 우선순위    | P1          |
 | 마일스톤    | M1          |
@@ -75,3 +75,8 @@
   `npm run test:run`(93개) · `npm run build`(클린 `.next` 삭제 후 재빌드)를
   모두 돌려 통과했고, `npm run dev` + 헤드리스 브라우저로 목록·상세·에디터
   진입 페이지를 1280px·390px 두 폭에서 스크린샷으로 직접 확인했다.
+- 2026-09-04 · `review` → `done`. PR [#9](https://github.com/miconblog/papercraft/pull/9)가
+  CI(Lint · Typecheck · Test) 통과 후 `main`(`eb48149`)에 머지됐다. 머지된
+  `main`에서 `npm run lint` · `npm run typecheck` · `npm run test:run`(93개) ·
+  `npm run build`(클린 `.next` 재빌드)를 다시 돌려 전부 통과했다. 수용 기준
+  3개는 위에서 이미 확인한 그대로다.
