@@ -17,6 +17,12 @@
 정적 자산(썸네일·SVG)은 `public/games/<게임 id>/` 아래에만 둔다. 다른 게임 폴더를
 가리키면 검증에서 걸린다.
 
+도안 SVG는 **코드로 만드는 것을 권한다.** 슬롯 좌표와 그림이 같은 치수 상수를
+읽어야 어긋나지 않는다. 축구 게임판이 그렇게 되어 있다 —
+`src/assets/games/soccer/dimensions.ts`에 치수를 모으고 `artwork/`가 SVG를 지으며
+`npm run artwork`가 `public/`에 쓴다. 자세한 것은
+[docs/soccer-artwork.md](soccer-artwork.md) 1절.
+
 ## 좌표계와 단위
 
 - 단위는 **mm**다. 배율 100%에서 mm 값이 그대로 종이 위 실측 치수가 된다.

@@ -1,20 +1,28 @@
 /**
- * 축구 게임판 — 도안 규격의 예시 인스턴스 (IDE-003)
+ * 축구 게임판 도안 (IDE-004)
  *
- * 규격이 실제 게임을 표현할 수 있는지 확인하려고 먼저 쓴 도안이다. 여기 있는
- * 치수와 좌표는 **규격 검증용 초안**이고, 실제 작도값은 IDE-004(필드·부속)와
- * IDE-010(마커·대형)이 실측으로 확정한다. 아트워크(SVG) 경로도 그때 채운다.
+ * 치수는 전부 [`./dimensions.ts`](./dimensions.ts)에서 온다. 아트워크
+ * (`public/games/soccer/*.svg`)도 같은 상수로 그리므로 슬롯 좌표와 그림이
+ * 어긋나지 않는다 — 치수를 고칠 때는 `dimensions.ts`만 고치고
+ * `npm run artwork`를 돌린다.
  *
- * 좌표는 파트 로컬 mm, 원점은 좌상단이다.
+ * 선수 마커 아트워크와 전술 대형 프리셋의 확정은 `IDE-010`이 한다. 여기 있는
+ * 4-4-2·3-5-2 좌표는 규격이 도는지 보이는 출발점이다.
  */
 import { defineGame, mirrorPositions, type SlotPosition } from '@/lib/schema';
-
-/** 운동장은 배율 100%에서 A4를 가로로 놓은 크기다(IDE-002). */
-const FIELD_WIDTH_MM = 297;
-const FIELD_HEIGHT_MM = 210;
-/** 터치라인과 종이 가장자리 사이. 선수 마커는 이 안쪽에만 놓인다. */
-const FIELD_INSET_MM = 8;
-const HALF_WIDTH_MM = FIELD_WIDTH_MM / 2 - FIELD_INSET_MM;
+import {
+  artworkPath,
+  BALL,
+  BALL_COUNT,
+  BOARD,
+  BOARD_TEAM_NAME,
+  FIELD,
+  SHEETS,
+  SCORE_TABLE,
+  SCORE_TEAM_NAME_Y_MM,
+  boardTeamNameXMm,
+  scoreTeamColumnCenterXMm,
+} from './dimensions';
 
 const TEAMS = [
   {
@@ -34,33 +42,36 @@ const TEAMS = [
 /**
  * 홈 진영 기준 대형 좌표. 배열 순서가 선수 슬롯 1–11번이고, 1번은 골키퍼다.
  * 원정 진영은 세로 중심선 기준으로 뒤집어 쓴다.
+ *
+ * 골키퍼의 x는 골대 자리(골라인에서 안쪽 `GOAL.depthMm`)를 피한다 — 마커가 그
+ * 위에 서면 종이 골대를 놓을 자리가 없다.
  */
 const FORMATIONS: Record<string, ReadonlyArray<readonly [number, number]>> = {
   '4-4-2': [
-    [18, 105],
-    [48, 45],
-    [48, 85],
-    [48, 125],
-    [48, 165],
-    [88, 45],
-    [88, 85],
-    [88, 125],
-    [88, 165],
-    [125, 85],
-    [125, 125],
+    [32, 105],
+    [52, 48],
+    [52, 87],
+    [52, 123],
+    [52, 162],
+    [90, 48],
+    [90, 87],
+    [90, 123],
+    [90, 162],
+    [126, 87],
+    [126, 123],
   ],
   '3-5-2': [
-    [18, 105],
-    [48, 60],
-    [48, 105],
-    [48, 150],
-    [88, 35],
-    [88, 70],
-    [88, 105],
-    [88, 140],
-    [88, 175],
-    [125, 85],
-    [125, 125],
+    [32, 105],
+    [52, 62],
+    [52, 105],
+    [52, 148],
+    [90, 38],
+    [90, 72],
+    [90, 105],
+    [90, 138],
+    [90, 172],
+    [126, 87],
+    [126, 123],
   ],
 };
 
@@ -89,7 +100,7 @@ const playerSlots = TEAMS.flatMap((team) => {
       ? homePositions(DEFAULT_FORMATION)
       : mirrorPositions(
           homePositions(DEFAULT_FORMATION),
-          FIELD_WIDTH_MM,
+          BOARD.widthMm,
           homeToAwaySlotId,
         );
 
@@ -130,20 +141,20 @@ const teamNameSlots = TEAMS.map((team, i) => ({
     {
       partId: 'field',
       mode: 'text' as const,
-      xMm: i === 0 ? 74 : 223,
-      yMm: 16,
+      xMm: boardTeamNameXMm(i as 0 | 1),
+      yMm: BOARD_TEAM_NAME.yMm,
       align: 'center' as const,
-      fontSizeMm: 7,
-      maxWidthMm: 60,
+      fontSizeMm: BOARD_TEAM_NAME.fontSizeMm,
+      maxWidthMm: BOARD_TEAM_NAME.maxWidthMm,
     },
     {
       partId: 'score-sheet',
       mode: 'text' as const,
-      xMm: i === 0 ? 52.5 : 157.5,
-      yMm: 20,
+      xMm: scoreTeamColumnCenterXMm(i as 0 | 1),
+      yMm: SCORE_TEAM_NAME_Y_MM,
       align: 'center' as const,
       fontSizeMm: 5,
-      maxWidthMm: 80,
+      maxWidthMm: SCORE_TABLE.teamColumnMm - 6,
     },
   ],
 }));
@@ -190,41 +201,44 @@ export default defineGame({
       kind: 'board',
       title: '운동장',
       description:
-        '배율 100%에서 A4를 가로로 놓은 크기다. 오리거나 접지 않는다.',
-      widthMm: FIELD_WIDTH_MM,
-      heightMm: FIELD_HEIGHT_MM,
+        '배율 100%에서 A4를 가로로 놓은 크기다. 오리거나 접지 않는다. ' +
+        '공을 반복해서 튕기고 미끄러뜨리는 면이라 조금 두꺼운 종이에 뽑으면 오래 쓴다.',
+      widthMm: BOARD.widthMm,
+      heightMm: BOARD.heightMm,
       orientation: 'landscape',
+      // 등번호(5mm)가 종이에서 2.5mm 아래로 내려가지 않는 선.
       minScale: 0.5,
       maxScale: 4,
+      artwork: artworkPath('field'),
       regions: [
         {
           id: 'playable-field',
           label: '필드',
           rect: {
-            xMm: FIELD_INSET_MM,
-            yMm: FIELD_INSET_MM,
-            widthMm: FIELD_WIDTH_MM - FIELD_INSET_MM * 2,
-            heightMm: FIELD_HEIGHT_MM - FIELD_INSET_MM * 2,
+            xMm: FIELD.xMm,
+            yMm: FIELD.yMm,
+            widthMm: FIELD.widthMm,
+            heightMm: FIELD.heightMm,
           },
         },
         {
           id: 'home-half',
           label: '홈 진영',
           rect: {
-            xMm: FIELD_INSET_MM,
-            yMm: FIELD_INSET_MM,
-            widthMm: HALF_WIDTH_MM,
-            heightMm: FIELD_HEIGHT_MM - FIELD_INSET_MM * 2,
+            xMm: FIELD.xMm,
+            yMm: FIELD.yMm,
+            widthMm: FIELD.widthMm / 2,
+            heightMm: FIELD.heightMm,
           },
         },
         {
           id: 'away-half',
           label: '원정 진영',
           rect: {
-            xMm: FIELD_WIDTH_MM / 2,
-            yMm: FIELD_INSET_MM,
-            widthMm: HALF_WIDTH_MM,
-            heightMm: FIELD_HEIGHT_MM - FIELD_INSET_MM * 2,
+            xMm: FIELD.xMm + FIELD.widthMm / 2,
+            yMm: FIELD.yMm,
+            widthMm: FIELD.widthMm / 2,
+            heightMm: FIELD.heightMm,
           },
         },
       ],
@@ -234,51 +248,61 @@ export default defineGame({
       kind: 'cutout',
       title: '점수 기록칸',
       description: '여러 판을 이어 적는 칸. 오려서 옆에 두고 쓴다.',
-      widthMm: 210,
-      heightMm: 148.5,
+      widthMm: SHEETS.scoreSheet.widthMm,
+      heightMm: SHEETS.scoreSheet.heightMm,
       orientation: 'landscape',
+      // 판 번호(3.6mm)가 하한을 정한다. 더 줄이면 점수를 적을 칸도 좁아진다.
       minScale: 0.7,
       maxScale: 2,
       marks: ['cut'],
+      artwork: artworkPath('score-sheet'),
     },
     {
       id: 'rules-card',
       kind: 'cutout',
       title: '게임 방법',
       description: '기본 규칙과 하우스 룰 안내. 오려서 상자에 넣어 둔다.',
-      widthMm: 148.5,
-      heightMm: 210,
+      widthMm: SHEETS.rulesCard.widthMm,
+      heightMm: SHEETS.rulesCard.heightMm,
       orientation: 'portrait',
-      // 규칙 텍스트가 들어가므로 보드보다 축소 하한이 높다. 실측은 IDE-004에서 한다.
-      minScale: 0.8,
+      // 규칙 본문이 3mm라 다른 부속보다 하한이 높다.
+      minScale: 0.85,
       maxScale: 2,
       marks: ['cut'],
+      artwork: artworkPath('rules-card'),
     },
     {
       id: 'goals',
       kind: 'buildable',
       title: '골대 전개도',
-      description: '오려 접어 세우는 입체 골대 2개.',
-      widthMm: 210,
-      heightMm: 297,
-      orientation: 'portrait',
+      description:
+        '오려 접어 세우는 입체 골대 2개. 바닥이 없어 공이 턱에 걸리지 않는다. ' +
+        '공 마커와 같은 배율로 뽑아야 입구와 공의 크기가 맞는다.',
+      widthMm: SHEETS.goals.widthMm,
+      heightMm: SHEETS.goals.heightMm,
+      orientation: 'landscape',
       minScale: 0.8,
       maxScale: 2,
-      marks: ['cut', 'fold-mountain', 'fold-valley', 'glue'],
+      // 접는선은 전부 산접기다 — 인쇄면이 골대 바깥을 향한다.
+      marks: ['cut', 'fold-mountain', 'glue'],
+      artwork: artworkPath('goals'),
     },
     {
       id: 'ball-markers',
       kind: 'cutout',
       title: '공 마커',
       description:
-        '연필로 튕기는 납작한 종이 공. 잃어버릴 때를 대비해 여러 개 뽑는다.',
-      widthMm: 105,
-      heightMm: 74,
+        `연필로 튕기는 납작한 종이 공. 지름 ${BALL.diameterMm}mm짜리 ${BALL_COUNT}개가 한 시트에 있다. ` +
+        '골대 전개도와 같은 배율로 뽑는다.',
+      widthMm: SHEETS.ballMarkers.widthMm,
+      heightMm: SHEETS.ballMarkers.heightMm,
       orientation: 'landscape',
-      minScale: 0.9,
+      // 공은 글자가 아니라 골대 입구와의 크기 관계가 하한을 정한다.
+      minScale: 0.8,
       maxScale: 2,
       defaultCopies: 2,
       marks: ['cut'],
+      artwork: artworkPath('ball-markers'),
     },
   ],
 
@@ -347,7 +371,7 @@ export default defineGame({
         formationId,
         groupId: 'away',
         partId: 'field',
-        positions: mirrorPositions(home, FIELD_WIDTH_MM, homeToAwaySlotId),
+        positions: mirrorPositions(home, BOARD.widthMm, homeToAwaySlotId),
       },
     ];
   }),
