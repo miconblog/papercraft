@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 자동 생성 파일. 고치려면 src/assets/games/soccer/artwork/ 를 고치고 `npm run artwork` 를 돌린다. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="148.5mm" viewBox="0 0 210 148.5" font-family="Noto Sans KR">
+<title>축구 게임판 · 골대 전개도</title>
+<g id="pc-cut" fill="none" stroke="#000000" stroke-width="0.25" stroke-linecap="butt">
+<path d="M 34 24 H 86 V 40 H 96 V 62 H 80 V 54 H 40 V 62 H 24 V 40 H 34 Z" />
+<path d="M 124 24 H 176 V 40 H 186 V 62 H 170 V 54 H 130 V 62 H 114 V 40 H 124 Z" />
+</g>
+<g id="pc-fold-mountain" fill="none" stroke="#000000" stroke-width="0.2" stroke-dasharray="4 1.2 0.6 1.2" stroke-linecap="butt">
+<line x1="40" y1="24" x2="40" y2="54" />
+<line x1="80" y1="24" x2="80" y2="54" />
+<line x1="40" y1="40" x2="80" y2="40" />
+<line x1="24" y1="54" x2="40" y2="54" />
+<line x1="80" y1="54" x2="96" y2="54" />
+<line x1="130" y1="24" x2="130" y2="54" />
+<line x1="170" y1="24" x2="170" y2="54" />
+<line x1="130" y1="40" x2="170" y2="40" />
+<line x1="114" y1="54" x2="130" y2="54" />
+<line x1="170" y1="54" x2="186" y2="54" />
+</g>
+<g id="pc-glue" fill="none" stroke="#000000" stroke-width="0.15" stroke-dasharray="1 1" stroke-linecap="butt">
+<line x1="34" y1="26.121" x2="36.121" y2="24" />
+<line x1="34" y1="28.243" x2="38.243" y2="24" />
+<line x1="34" y1="30.364" x2="40" y2="24.364" />
+<line x1="34" y1="32.485" x2="40" y2="26.485" />
+<line x1="34" y1="34.607" x2="40" y2="28.607" />
+<line x1="34" y1="36.728" x2="40" y2="30.728" />
+<line x1="34" y1="38.849" x2="40" y2="32.849" />
+<line x1="34.971" y1="40" x2="40" y2="34.971" />
+<line x1="37.092" y1="40" x2="40" y2="37.092" />
+<line x1="39.213" y1="40" x2="40" y2="39.213" />
+<line x1="80" y1="26.121" x2="82.121" y2="24" />
+<line x1="80" y1="28.243" x2="84.243" y2="24" />
+<line x1="80" y1="30.364" x2="86" y2="24.364" />
+<line x1="80" y1="32.485" x2="86" y2="26.485" />
+<line x1="80" y1="34.607" x2="86" y2="28.607" />
+<line x1="80" y1="36.728" x2="86" y2="30.728" />
+<line x1="80" y1="38.849" x2="86" y2="32.849" />
+<line x1="80.971" y1="40" x2="86" y2="34.971" />
+<line x1="83.092" y1="40" x2="86" y2="37.092" />
+<line x1="85.213" y1="40" x2="86" y2="39.213" />
+<line x1="124" y1="26.121" x2="126.121" y2="24" />
+<line x1="124" y1="28.243" x2="128.243" y2="24" />
+<line x1="124" y1="30.364" x2="130" y2="24.364" />
+<line x1="124" y1="32.485" x2="130" y2="26.485" />
+<line x1="124" y1="34.607" x2="130" y2="28.607" />
+<line x1="124" y1="36.728" x2="130" y2="30.728" />
+<line x1="124" y1="38.849" x2="130" y2="32.849" />
+<line x1="124.971" y1="40" x2="130" y2="34.971" />
+<line x1="127.092" y1="40" x2="130" y2="37.092" />
+<line x1="129.213" y1="40" x2="130" y2="39.213" />
+<line x1="170" y1="26.121" x2="172.121" y2="24" />
+<line x1="170" y1="28.243" x2="174.243" y2="24" />
+<line x1="170" y1="30.364" x2="176" y2="24.364" />
+<line x1="170" y1="32.485" x2="176" y2="26.485" />
+<line x1="170" y1="34.607" x2="176" y2="28.607" />
+<line x1="170" y1="36.728" x2="176" y2="30.728" />
+<line x1="170" y1="38.849" x2="176" y2="32.849" />
+<line x1="170.971" y1="40" x2="176" y2="34.971" />
+<line x1="173.092" y1="40" x2="176" y2="37.092" />
+<line x1="175.213" y1="40" x2="176" y2="39.213" />
+</g>
+<g id="pc-art" fill="#1a1a1a" stroke="none">
+<text x="105" y="14" font-size="5" dominant-baseline="central" text-anchor="middle">골대 전개도 · 2개</text>
+<text x="105" y="21" font-size="3" dominant-baseline="central" fill="#6b7280" text-anchor="middle">입구 40×14mm · 깊이 16mm</text>
+<text x="60" y="32" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">지붕</text>
+<text x="60" y="47" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">골대 1</text>
+<text x="32" y="47" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">옆벽</text>
+<text x="88" y="47" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">옆벽</text>
+<text x="32" y="58" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">발</text>
+<text x="88" y="58" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">발</text>
+<text x="150" y="32" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">지붕</text>
+<text x="150" y="47" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">골대 2</text>
+<text x="122" y="47" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">옆벽</text>
+<text x="178" y="47" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">옆벽</text>
+<text x="122" y="58" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">발</text>
+<text x="178" y="58" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">발</text>
+<text x="24" y="78" font-size="4" dominant-baseline="central" text-anchor="start">접는 법</text>
+<text x="24" y="86.1" font-size="3.2" dominant-baseline="central" text-anchor="start">1.</text>
+<text x="29.4" y="86.1" font-size="3.2" dominant-baseline="central" text-anchor="start">바깥 실선을 따라 오린다.</text>
+<text x="24" y="91.5" font-size="3.2" dominant-baseline="central" text-anchor="start">2.</text>
+<text x="29.4" y="91.5" font-size="3.2" dominant-baseline="central" text-anchor="start">일점쇄선은 모두 인쇄면이 바깥으로 오게 접는다.</text>
+<text x="24" y="96.9" font-size="3.2" dominant-baseline="central" text-anchor="start">3.</text>
+<text x="29.4" y="96.9" font-size="3.2" dominant-baseline="central" text-anchor="start">지붕을 앞으로 접어 양옆 벽 위에 얹고, 빗금 친 탭에 풀을 발라 벽 안쪽에 붙인다.</text>
+<text x="24" y="102.3" font-size="3.2" dominant-baseline="central" text-anchor="start">4.</text>
+<text x="29.4" y="102.3" font-size="3.2" dominant-baseline="central" text-anchor="start">아래쪽 발 두 개를 바깥으로 접어 눕히면 골대가 선다.</text>
+<text x="24" y="107.7" font-size="3.2" dominant-baseline="central" text-anchor="start">5.</text>
+<text x="29.4" y="107.7" font-size="3.2" dominant-baseline="central" text-anchor="start">운동장 골라인 안쪽 골대 자리에 입구가 필드를 향하도록 놓는다.</text>
+</g>
+</svg>

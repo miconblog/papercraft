@@ -11,6 +11,9 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    // 아트워크 생성기는 Node가 직접 돌린다(`npm run artwork`). Node ESM은
+    // 상대 경로에 확장자를 요구하므로 `./x.ts` 형태의 import를 허용한다.
+    "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
