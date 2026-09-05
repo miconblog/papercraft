@@ -34,7 +34,7 @@ export function FormationPicker({
             aria-pressed={preset.id === selectedPresetId}
             onClick={() => onApply(preset.id)}
             className={
-              'rounded-full px-3 py-1 text-xs font-medium transition-colors ' +
+              'rounded-full px-3 py-1 text-xs font-medium outline-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current ' +
               (preset.id === selectedPresetId
                 ? 'bg-foreground text-background'
                 : 'border border-black/15 hover:border-black/30 dark:border-white/20 dark:hover:border-white/40')

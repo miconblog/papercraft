@@ -4,7 +4,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { defaultCustomization } from '@/lib/schema';
 import { getGame } from '@/lib/games';
-import { BoardPreview } from '../BoardPreview';
+import {
+  BoardPreview,
+  __resetMarkerArtworkCacheForTests,
+} from '../BoardPreview';
 
 const game = getGame('soccer')!;
 const board = game.parts.find((p) => p.kind === 'board')!;
@@ -15,6 +18,10 @@ const readPublic = (assetPath: string) =>
 
 describe('BoardPreview — 마커 아트워크 (선수 마커 모양을 실제 그림으로 보여준다)', () => {
   beforeEach(() => {
+    // 마커 아트워크는 모듈 레벨 캐시를 쓴다(BoardPreview.tsx) — 파트를 오가도
+    // 다시 fetch하지 않기 위해서다. 테스트끼리는 매번 처음 불러오는 상태로
+    // 시작해야 하므로 비운다.
+    __resetMarkerArtworkCacheForTests();
     vi.stubGlobal(
       'fetch',
       vi.fn(async (url: string) => ({
