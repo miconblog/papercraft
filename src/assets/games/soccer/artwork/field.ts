@@ -1,15 +1,15 @@
 /**
  * 보드 파트 — 운동장 (IDE-004)
  *
- * 배율 100%에서 297×210mm(A4 가로). 터치라인 안쪽이 공을 튕기는 면이고, 위아래
- * 15mm 띠는 팀 이름과 제목이 쓴다.
+ * 배율 100%에서 297×210mm(A4 가로). 터치라인 안쪽이 공을 튕기는 면이고, 사방
+ * 6mm 여백만 남긴다 — 팀 이름·제목·배율 안내를 운동장에서 빼고 그만큼 놀 면을
+ * 넓혔다(2026-09-05).
  *
  * 필드를 초록으로 **칠하지 않는다.** 잉크를 크게 먹고, 공이 미끄러지는 면이라
  * 잉크가 두꺼우면 연필 자국도 더 남는다. 사용자가 만든 판처럼 라인만 초록이다.
  */
 import {
   BOARD,
-  BOARD_TEAM_NAME,
   FIELD,
   FIELD_BOTTOM_MM,
   FIELD_CENTER_X_MM,
@@ -17,12 +17,10 @@ import {
   FIELD_MARKS,
   FIELD_RIGHT_MM,
   GOAL,
-  boardTeamNameXMm,
 } from '../dimensions.ts';
 import {
   ART_LAYER_ID,
   FIELD_LINE_COLOR,
-  INK_COLOR,
   type Attrs,
   circle,
   group,
@@ -135,23 +133,12 @@ const goalFootprints = (): string[] => [
   ),
 ];
 
-/** 팀 색을 받는 레이어. 각 진영 위쪽 띠를 가로지르는 막대다. */
-const teamColorBar = (index: 0 | 1, layerId: string, fill: string): string => {
-  const widthMm = 100;
-  return group({ id: layerId, fill, stroke: 'none' }, [
-    rect(boardTeamNameXMm(index) - widthMm / 2, FIELD.yMm - 3, widthMm, 2),
-  ]);
-};
-
 export const renderField = (): string =>
   svgDocument({
     widthMm: BOARD.widthMm,
     heightMm: BOARD.heightMm,
     title: '축구 게임판 · 운동장',
     children: [
-      teamColorBar(0, 'pc-team-home', '#1d4ed8'),
-      teamColorBar(1, 'pc-team-away', '#dc2626'),
-
       group(
         {
           id: ART_LAYER_ID,
@@ -185,28 +172,11 @@ export const renderField = (): string =>
           ),
           ...cornerArcs(),
           ...goalFootprints(),
-
-          // 아래 띠 — 제목과 인쇄 안내
-          text('축구 게임판', FIELD.xMm, FIELD_BOTTOM_MM + 7.5, 5, {
-            fill: INK_COLOR,
-            stroke: 'none',
-            'text-anchor': 'start',
-          }),
-          text(
-            `배율 100% · 운동장 ${num(BOARD.widthMm)}×${num(BOARD.heightMm)}mm`,
-            FIELD_RIGHT_MM,
-            FIELD_BOTTOM_MM + 7.5,
-            3.2,
-            { fill: INK_COLOR, stroke: 'none', 'text-anchor': 'end' },
-          ),
         ],
       ),
 
-      // 팀 이름과 선수 마커가 놓이는 자리. 값은 렌더러가 그린다 —
-      // 아트워크가 직접 그려 넣으면 커스터마이즈가 먹지 않는다.
-      `<!-- 팀 이름: y=${num(BOARD_TEAM_NAME.yMm)}, x=${num(
-        boardTeamNameXMm(0),
-      )} / ${num(boardTeamNameXMm(1))} -->`,
+      // 선수 마커가 놓이는 자리. 값은 렌더러가 그린다 — 아트워크가 직접 그려
+      // 넣으면 커스터마이즈가 먹지 않는다.
       '<g id="pc-slot" />',
     ],
   });

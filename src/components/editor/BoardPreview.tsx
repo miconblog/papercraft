@@ -8,14 +8,17 @@ import {
   type GameCustomization,
   type GameDefinition,
   type Part,
+  type SlotPoint,
 } from '@/lib/schema';
 import {
-  extractSvgInner,
-  paintLayer,
+  groupColorOf,
+  markerMirrored,
+  MARKER_FILL_LAYER_ID,
   readableTextColor,
-  stripOuterSvgSize,
-} from './svgOverlay';
+} from '@/lib/customization/render';
+import { extractSvgInner, paintLayer, stripOuterSvgSize } from './svgOverlay';
 import { slotFieldId } from './SlotField';
+import { useMarkerDrag } from './useMarkerDrag';
 
 /**
  * 도안 미리보기 — 파트 SVG 위에 커스터마이즈 값을 얹어 실시간으로 보여준다
@@ -34,30 +37,30 @@ export interface BoardPreviewProps {
   game: GameDefinition;
   part: Part;
   customization: GameCustomization;
+  /**
+   * 미리보기를 눌러 폼 입력으로 이동할 수 있는지. 인쇄 화면처럼 옆에 폼이
+   * 없는 곳에서는 꺼서 누를 수 있는 것처럼 보이지 않게 한다.
+   */
+  interactive?: boolean;
+  /**
+   * 마커를 끌어 옮겼을 때. 주지 않으면 드래그가 꺼진다 — 인쇄 미리보기처럼
+   * 보기만 하는 곳에서는 마커가 움직이면 안 된다.
+   *
+   * 좌표를 어디까지 허용할지는 **받는 쪽이 정한다**(`movedPoint`). 화면이
+   * 제 나름대로 잘라 내면 저장 검증과 어긋날 수 있다.
+   */
+  onMoveSlot?: (slotId: string, point: SlotPoint) => void;
 }
 
 const textAnchorOf = { start: 'start', center: 'middle', end: 'end' } as const;
 
-/**
- * 마커 아트워크가 팀 색을 받는 레이어 id. 파트 레벨 `pc-team-<그룹 id>`와
- * 달리 스키마 검증이 닿지 않는 관례다 — `IDE-010`(`player-markers.ts`)이
- * 정하고 "렌더러가 이 id로 채워 넣는다"고 문서에 남겨 둔 계약이다.
- */
-const MARKER_FILL_LAYER_ID = 'pc-marker-fill';
-
-/** 슬롯이 속한 그룹의 색 슬롯 값. 그룹이 없거나 색 슬롯이 없으면 중간 회색. */
-function groupColorOf(
-  game: GameDefinition,
-  customization: GameCustomization,
-  groupId: string | undefined,
-): string {
-  const group = game.groups.find((g) => g.id === groupId);
-  const colorSlotId = group?.colorSlotId;
-  const value = colorSlotId ? customization.values[colorSlotId] : undefined;
-  return typeof value === 'string' ? value : '#9ca3af';
-}
-
-export function BoardPreview({ game, part, customization }: BoardPreviewProps) {
+export function BoardPreview({
+  game,
+  part,
+  customization,
+  interactive = true,
+  onMoveSlot,
+}: BoardPreviewProps) {
   const [background, setBackground] = useState<string | null>(null);
   // 마커 스타일 변형(원형·일러스트 등)의 아트워크 원문. 경로 → SVG 문자열.
   // 로드되기 전이거나 실패한 변형은 원 + 값 텍스트로 대체한다(아래 렌더링).
@@ -86,9 +89,7 @@ export function BoardPreview({ game, part, customization }: BoardPreviewProps) {
         }),
       );
       if (!cancelled) {
-        setMarkerArtwork(
-          Object.fromEntries(entries.filter((e) => e !== null)),
-        );
+        setMarkerArtwork(Object.fromEntries(entries.filter((e) => e !== null)));
       }
     })();
     return () => {
@@ -133,9 +134,40 @@ export function BoardPreview({ game, part, customization }: BoardPreviewProps) {
   })();
 
   const focusSlotField = (slotId: string) => {
+    if (!interactive) return;
     const field = document.getElementById(slotFieldId(slotId));
     field?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     field?.focus();
+  };
+
+  const draggable = onMoveSlot !== undefined;
+  const { surfaceRef, draggingSlotId, markerHandlers } = useMarkerDrag({
+    onMove: (slotId, point) => onMoveSlot?.(slotId, point),
+    onTap: focusSlotField,
+    partWidthMm: part.widthMm,
+    partHeightMm: part.heightMm,
+  });
+
+  /** 화살표 키로 옮긴다. 드래그만 두면 키보드로는 배치를 바꿀 수 없다. */
+  const nudge = (
+    slotId: string,
+    point: SlotPoint,
+    event: React.KeyboardEvent<SVGGElement>,
+  ) => {
+    const stepMm = event.shiftKey ? 5 : 1;
+    const delta: Record<string, [number, number]> = {
+      ArrowLeft: [-stepMm, 0],
+      ArrowRight: [stepMm, 0],
+      ArrowUp: [0, -stepMm],
+      ArrowDown: [0, stepMm],
+    };
+    const move = delta[event.key];
+    if (!move) return;
+    event.preventDefault();
+    onMoveSlot?.(slotId, {
+      xMm: point.xMm + move[0],
+      yMm: point.yMm + move[1],
+    });
   };
 
   return (
@@ -157,6 +189,7 @@ export function BoardPreview({ game, part, customization }: BoardPreviewProps) {
       )}
 
       <svg
+        ref={surfaceRef}
         viewBox={`0 0 ${part.widthMm} ${part.heightMm}`}
         className="absolute inset-0 h-full w-full"
       >
@@ -182,7 +215,7 @@ export function BoardPreview({ game, part, customization }: BoardPreviewProps) {
                         : undefined
                     }
                     fill="#1a1a1a"
-                    className="cursor-pointer"
+                    className={interactive ? 'cursor-pointer' : undefined}
                     onClick={() => focusSlotField(slot.id)}
                   >
                     {String(value)}
@@ -217,17 +250,67 @@ export function BoardPreview({ game, part, customization }: BoardPreviewProps) {
                     )
                   : null;
 
+                // 반대편으로 공격하는 팀은 마커를 뒤집는다 — 화살촉이 공격
+                // 방향을 가리킨다. 인쇄물도 같은 규칙을 쓴다(`compose.ts`).
+                const mirrored = markerMirrored(game, slot.groupId);
+
+                const dragging = draggingSlotId === slot.id;
+
                 return (
                   <g
                     key={key}
-                    className="cursor-pointer"
-                    onClick={() => focusSlotField(slot.id)}
+                    // 끌어 옮길 수 있으면 그렇게 보여야 한다. 드래그가 꺼진
+                    // 곳(인쇄 미리보기)에서는 아무 커서도 주지 않는다.
+                    className={
+                      draggable
+                        ? dragging
+                          ? 'cursor-grabbing'
+                          : 'cursor-grab'
+                        : interactive
+                          ? 'cursor-pointer'
+                          : undefined
+                    }
+                    // 브라우저 기본 제스처(스크롤·확대)가 드래그를 가로채지
+                    // 못하게 한다. 터치에서 특히 중요하다.
+                    style={draggable ? { touchAction: 'none' } : undefined}
+                    tabIndex={draggable ? 0 : undefined}
+                    role={draggable ? 'button' : undefined}
+                    aria-label={
+                      draggable
+                        ? `${slot.label} 마커 — 가로 ${point.xMm}mm, 세로 ${point.yMm}mm. 끌거나 화살표 키로 옮긴다`
+                        : undefined
+                    }
+                    onKeyDown={
+                      draggable
+                        ? (event) => nudge(slot.id, point, event)
+                        : undefined
+                    }
+                    {...(draggable
+                      ? markerHandlers(slot.id, point)
+                      : { onClick: () => focusSlotField(slot.id) })}
                   >
+                    {/* 끄는 동안 잡은 마커를 도드라지게 — 겹쳐 선 마커 사이에서
+                        무엇을 옮기고 있는지 보이게 한다. */}
+                    {dragging && (
+                      <circle
+                        cx={point.xMm}
+                        cy={point.yMm}
+                        r={Math.max(variant.widthMm, variant.heightMm) * 0.72}
+                        fill="none"
+                        stroke="#2563eb"
+                        strokeWidth={0.6}
+                        strokeDasharray="2 1.5"
+                      />
+                    )}
                     {artworkInner ? (
                       // 실제 마커 아트워크(원형·일러스트) — 기준점이 중심이므로
                       // 좌상단으로 옮겨 그린다(`docs/game-authoring.md`).
                       <g
-                        transform={`translate(${point.xMm - variant.widthMm / 2}, ${point.yMm - variant.heightMm / 2})`}
+                        transform={
+                          `translate(${point.xMm}, ${point.yMm})` +
+                          (mirrored ? ' scale(-1, 1)' : '') +
+                          ` translate(${-variant.widthMm / 2}, ${-variant.heightMm / 2})`
+                        }
                         dangerouslySetInnerHTML={{ __html: artworkInner }}
                       />
                     ) : (

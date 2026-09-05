@@ -87,13 +87,13 @@ describe('축구 게임판 — 슬롯', () => {
     );
   });
 
-  it('팀 이름 슬롯 하나가 보드와 점수 기록칸 양쪽에 나온다', () => {
+  it('팀 이름은 점수 기록칸에 놓인다 — 운동장은 놀 면으로 비워 뒀다', () => {
     const homeName = soccer.slots.find((s) => s.id === 'home-name')!;
-    expect(homeName.placements.map((p) => p.partId).sort()).toEqual([
-      'field',
-      'score-sheet',
-    ]);
+    expect(homeName.placements.map((p) => p.partId)).toEqual(['score-sheet']);
     expect(slotsOfPart(soccer, 'score-sheet').map((s) => s.id)).toContain(
+      'home-name',
+    );
+    expect(slotsOfPart(soccer, 'field').map((s) => s.id)).not.toContain(
       'home-name',
     );
   });

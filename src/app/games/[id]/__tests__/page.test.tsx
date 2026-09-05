@@ -26,6 +26,11 @@ describe('게임 상세 페이지', () => {
       'href',
       '/games/soccer/edit',
     );
+    // 바꿀 것이 없어도 바로 뽑을 수 있어야 한다(IDE-007).
+    expect(screen.getByRole('link', { name: '바로 인쇄하기' })).toHaveAttribute(
+      'href',
+      '/games/soccer/print',
+    );
   });
 
   it('없는 게임 id는 notFound를 던진다', async () => {

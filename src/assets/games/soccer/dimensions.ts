@@ -15,17 +15,20 @@ export const BOARD = { widthMm: 297, heightMm: 210 } as const;
 /**
  * 터치라인 사각형 = 실제로 공을 튕기는 면.
  *
- * 위아래 15mm는 팀 이름(위)과 제목·인쇄 안내(아래)가 쓰는 띠다. 좌우 8mm는
- * 골라인 바깥 여백 — 골대는 필드 **안쪽**에 세우므로(아래 `GOAL` 참고) 이
- * 여백에 조립물이 놓이지는 않는다.
+ * **보드를 거의 다 쓴다.** 사방 6mm만 남기는데, 재단 오차에도 라인이 잘리지
+ * 않을 만큼이다. 예전에는 위아래 15mm를 띠로 떼어 팀 이름과 제목을 넣었지만
+ * 그 글자들은 운동장에서 뺐다(2026-09-05) — 놀 면을 좁히면서까지 종이에 남길
+ * 이유가 없었다. 팀 이름은 점수 기록칸에 남는다.
  *
- * 281×180은 가로세로비 1.561로, 실제 축구장 105×68m(1.544)에 가깝다.
+ * 285×198은 가로세로비 1.439로 실제 축구장 100×69.5m에 해당한다. 국제 규정이
+ * 정한 범위(길이 90–120m · 폭 45–90m) 안이면서, 보드(297×210, 비율 1.414)를
+ * 가장 꽉 채우는 비율이다.
  */
 export const FIELD = {
-  xMm: 8,
-  yMm: 15,
-  widthMm: 281,
-  heightMm: 180,
+  xMm: 6,
+  yMm: 6,
+  widthMm: 285,
+  heightMm: 198,
 } as const;
 
 export const FIELD_RIGHT_MM = FIELD.xMm + FIELD.widthMm; // 289
@@ -34,22 +37,31 @@ export const FIELD_CENTER_X_MM = FIELD.xMm + FIELD.widthMm / 2; // 148.5
 export const FIELD_CENTER_Y_MM = FIELD.yMm + FIELD.heightMm / 2; // 105
 
 /**
- * 필드 안 표시. 실제 축구장 치수를 약 2.66mm/m로 줄인 값이되, 좌표가 소수로
- * 흩어지지 않게 정수로 맞췄다.
+ * 필드 안 표시. 실제 축구장 치수를 약 **2.85mm/m**로 줄인 값이되, 좌표가 소수로
+ * 흩어지지 않게 정수로 맞췄다(필드 285mm = 100m 기준).
  */
 export const FIELD_MARKS = {
   /** 센터서클 반지름 (실제 9.15m). */
-  centerCircleRadiusMm: 24,
+  centerCircleRadiusMm: 26,
   /** 센터 스팟·페널티 스팟 지름. */
   spotDiameterMm: 1.6,
   /** 페널티 에어리어 — 골라인에서의 깊이와 폭 (실제 16.5m × 40.32m). */
-  penaltyAreaDepthMm: 44,
-  penaltyAreaWidthMm: 108,
-  /** 골 에어리어 (실제 5.5m × 18.32m). 골대 자리를 여유 있게 감싸도록 조금 깊다. */
-  goalAreaDepthMm: 20,
-  goalAreaWidthMm: 48,
+  penaltyAreaDepthMm: 47,
+  penaltyAreaWidthMm: 115,
+  /**
+   * 골 에어리어 = **골키퍼가 서는 자리**. 실제(5.5×18.32m)보다 크게 잡았다.
+   *
+   * 골키퍼 마커가 이 안에 들어가야 하는데, 골대가 골라인 안쪽으로
+   * `GOAL.depthMm`(16mm)를 차지하므로 마커는 그 앞에 선다. 마커 폭이 13mm라
+   * 깊이가 최소 16 + 13 = 29mm는 되어야 마커가 골 에어리어를 벗어나지 않는다.
+   * 32mm는 거기에 여유를 조금 더한 값이다(`__tests__/formations.test.ts`가 지킨다).
+   *
+   * 폭은 깊이에 맞춰 늘려 페널티 에어리어와 비슷한 인상(1:2.5)을 유지한다.
+   */
+  goalAreaDepthMm: 32,
+  goalAreaWidthMm: 80,
   /** 페널티 스팟까지의 거리 (실제 11m). */
-  penaltySpotDistanceMm: 29,
+  penaltySpotDistanceMm: 31,
   /** 코너 아크 반지름 (실제 1m). */
   cornerArcRadiusMm: 3,
   /** 필드 라인 굵기. 표시선(오림·접기)과 달리 배율을 같이 먹는다. */
@@ -101,6 +113,50 @@ export const PLAYER_MARKER = {
   circle: { widthMm: 12, heightMm: 12, valueFontSizeMm: 5 },
   illustration: { widthMm: 13, heightMm: 16, valueFontSizeMm: 5 },
 } as const;
+
+/**
+ * 전술 대형이 쓰는 x 레인 (IDE-010).
+ *
+ * **두 팀은 필드 전체에 섞여 선다.** 각 팀이 자기 진영 절반만 차지하면 경기가
+ * 성립하지 않는다 — 규칙상 패스는 자기 팀 선수에게만 닿고 슛도 공이 자기 팀
+ * 선수 위에 있을 때만 되는데, 상대 골대 쪽에 자기 팀 선수가 하나도 없으면
+ * 공을 앞으로 보낼 방법이 없다. 선수 마커는 운동장에 인쇄되어 움직이지 않으므로
+ * 이 배치가 곧 경기 가능 여부다.
+ *
+ * 홈은 여기 적힌 x를, 원정은 `BOARD.widthMm - x`를 쓴다(`mirrorPositions`).
+ * 그래서 두 팀이 쓰는 레인이 아래처럼 번갈아 놓인다:
+ *
+ *     홈    30    60           135         200 220
+ *     원정          77    97          162        237 267
+ *
+ * **레인이 섞이되 서로 겹치지 않는다는 것이 이 값들의 존재 이유다.** 두 팀이
+ * 서로 다른 대형을 골라도(4-4-2 대 3-5-2 등) 마커가 부딪히지 않는 근거가
+ * "모든 대형이 이 다섯 레인만 쓴다"이기 때문이다. 값을 고칠 때는
+ * `__tests__/formations.test.ts`가 지키는 최소 간격을 함께 본다.
+ */
+export const FORMATION_LANES = {
+  /** 골키퍼. 종이 골대 바로 앞이면서 골 에어리어 안이다. */
+  goalkeeper: 30,
+  /** 수비 — 자기 진영(첫째 1/3). */
+  defence: 60,
+  /** 중원(둘째 1/3). 4-4-2·3-5-2·4-3-3의 미드필더가 여기 선다. */
+  midfield: 135,
+  /**
+   * 공격형 미드필더 — **상대 진영(셋째 1/3)**이다. 4-2-3-1만 쓴다.
+   *
+   * 이름과 달리 중원이 아닌 이유는, 이 레인이 중원에 있으면 4-2-3-1이
+   * 상대 진영에 공격수 한 명만 남겨 다른 대형(4-4-2는 2명, 4-3-3은 3명)보다
+   * 앞이 헐거워지기 때문이다. 종이 위 선수는 움직이지 않으므로 각 1/3에
+   * 사람이 있어야 그 구역에서 패스를 이어 갈 수 있다.
+   */
+  attackingMidfield: 200,
+  /** 공격 — 상대 진영. 여기 선수가 있어야 슛 사거리가 나온다. */
+  forward: 220,
+} as const;
+
+/** 원정 팀이 쓰는 레인. 홈 레인을 세로 중심선 기준으로 뒤집은 값이다. */
+export const awayLaneXMm = (homeLaneXMm: number): number =>
+  BOARD.widthMm - homeLaneXMm;
 
 /** 공 마커 — 연필로 튕기는 납작한 원. */
 export const BALL = {
@@ -157,16 +213,6 @@ export const SCORE_TEAM_NAME_Y_MM =
   SCORE_TABLE.headerYMm +
   SCORE_TABLE.colorBarHeightMm +
   (SCORE_TABLE.headerHeightMm - SCORE_TABLE.colorBarHeightMm) / 2;
-
-/** 보드 위쪽 띠에 놓이는 팀 이름. 각 팀 진영의 가운데 위다. */
-export const BOARD_TEAM_NAME = {
-  yMm: FIELD.yMm / 2, // 7.5
-  fontSizeMm: 7,
-  maxWidthMm: 110,
-} as const;
-
-export const boardTeamNameXMm = (index: 0 | 1): number =>
-  FIELD.xMm + (FIELD.widthMm / 4) * (index * 2 + 1); // 78.25 / 218.75
 
 /**
  * 파트 id에 대응하는 정적 자산 경로.

@@ -319,37 +319,59 @@ describe('가독성 하한', () => {
   /** 종이에서 한글이 읽히는 하한으로 잡은 값. ⚠︎ 종이 실측으로 확정한다. */
   const LEGIBLE_MIN_MM = 2.5;
 
-  /** 그 파트를 쓰는 데 꼭 읽혀야 하는 가장 작은 글자. */
-  const ESSENTIAL_FONT_MM: Record<string, number> = {
-    field: 5, // 등번호
-    'score-sheet': 3.6, // 판 번호
-    'rules-card': 3, // 규칙 본문
-    goals: 3.2, // 조립 안내
-    'ball-markers': Number.POSITIVE_INFINITY, // 글자에 기대지 않는다
+  /**
+   * 그 파트를 쓰는 데 꼭 읽혀야 하는 가장 작은 글자와, 그 글자가 어디서 오는가.
+   *
+   * 운동장의 필수 글자는 **등번호**인데 그것은 슬롯 값이라 아트워크 SVG에 없다.
+   * 렌더러가 마커 스타일이 정한 크기로 얹는다 — 그래서 SVG가 아니라 스타일
+   * 세트를 봐야 한다. 예전에는 이 검사가 SVG만 보다가 운동장 제목(5mm)에
+   * 우연히 걸려 통과했다. 제목을 빼자 드러났다.
+   */
+  const ESSENTIAL_FONT: Record<
+    string,
+    { sizeMm: number; from: 'artwork' | 'slot' }
+  > = {
+    field: { sizeMm: 5, from: 'slot' }, // 등번호
+    'score-sheet': { sizeMm: 3.6, from: 'artwork' }, // 판 번호
+    'rules-card': { sizeMm: 3, from: 'artwork' }, // 규칙 본문
+    goals: { sizeMm: 3.2, from: 'artwork' }, // 조립 안내
+    // 공 마커는 글자에 기대지 않는다.
   };
 
   it('minScale이 필수 글자를 2.5mm 위로 유지한다', () => {
     for (const part of game.parts) {
-      const essentialMm = ESSENTIAL_FONT_MM[part.id];
-      if (!Number.isFinite(essentialMm)) continue;
+      const essential = ESSENTIAL_FONT[part.id];
+      if (!essential) continue;
       expect(
-        essentialMm * part.minScale,
+        essential.sizeMm * part.minScale,
         `${part.id}의 minScale(${part.minScale})이 너무 낮다`,
       ).toBeGreaterThanOrEqual(LEGIBLE_MIN_MM);
     }
   });
 
-  it('SVG에 그 하한보다 작아지는 필수 글자가 없다', () => {
+  it('아트워크가 그리는 필수 글자가 하한 위에 있다', () => {
     for (const part of game.parts) {
-      const essentialMm = ESSENTIAL_FONT_MM[part.id];
-      if (!Number.isFinite(essentialMm)) continue;
+      const essential = ESSENTIAL_FONT[part.id];
+      if (!essential || essential.from !== 'artwork') continue;
       const sizes = [...svgOf(part.id).querySelectorAll('text')]
         .map((node) => Number(node.getAttribute('font-size')))
-        .filter((size) => size >= essentialMm);
+        .filter((size) => size >= essential.sizeMm);
       expect(
         sizes.length,
         `${part.id}에 필수 크기 글자가 없다`,
       ).toBeGreaterThan(0);
+    }
+  });
+
+  it('렌더러가 얹는 필수 글자도 하한 위에 있다 — 운동장의 등번호', () => {
+    const essential = ESSENTIAL_FONT.field;
+    const variants = game.styleSets.flatMap((set) => set.variants);
+    expect(variants.length).toBeGreaterThan(0);
+    for (const variant of variants) {
+      expect(
+        variant.valueFontSizeMm,
+        `마커 변형 '${variant.id}'의 등번호가 작다`,
+      ).toBeGreaterThanOrEqual(essential.sizeMm);
     }
   });
 });

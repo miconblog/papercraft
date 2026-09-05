@@ -11,28 +11,36 @@
 
 | 상태      | 개수 |
 | --------- | ---- |
-| `todo`    | 3    |
+| `todo`    | 2    |
 | `doing`   | 0    |
 | `blocked` | 3    |
-| `review` | 0 |
-| `done` | 5 |
+| `review`  | 1    |
+| `done`    | 6    |
 
-**지금 할 것** — `blocked` 세 건 중 둘([IDE-002](IDE-002-print-pipeline-spike.md) ·
-[IDE-004](IDE-004-soccer-board-vector-artwork.md))이 **같은 것 하나를 기다린다 —
-사람이 종이에 뽑아 자로 재는 일**이다. 절차는
-[spikes/print-pipeline/README.md](../spikes/print-pipeline/README.md)의 체크리스트이고,
-`IDE-004`는 거기에 골대를 오려 접어 보기·공 12mm 튕겨 보기가 더 붙는다. `IDE-004`는
-**사용자 답변도 하나 기다린다** — 아웃·핸들링·파울 처리와 옛 인쇄본의 출처.
+**지금 할 것** — [IDE-007](IDE-007-print-and-pdf-export.md)(인쇄·PDF 내보내기)이
+`review`다. 구현은 끝났고 **사람이 종이에 뽑아 자로 재는 일**만 남았다. 디지털
+실측은 `npm run print:verify`로 세 배율 모두 통과했다(배율 오차 ≤0.083mm · 타일 이음
+0.000mm). 종이 절차는 [spikes/print-pipeline/README.md](../spikes/print-pipeline/README.md)의
+체크리스트이고, 같은 일을 [IDE-002](IDE-002-print-pipeline-spike.md)와
+[IDE-004](IDE-004-soccer-board-vector-artwork.md)도 기다린다 — **셋을 한 번에 뽑아
+재면 된다.** `IDE-004`는 사용자 답변도 하나 기다린다(아웃·핸들링·파울 처리와 옛
+인쇄본의 출처).
 
 [IDE-005](IDE-005-game-catalog-pages.md)(카탈로그) ·
-[IDE-010](IDE-010-player-markers-and-formations.md)(선수 마커·전술 대형)
-모두 `done`이다. `IDE-010`은 원형·일러스트 마커, 4-4-2·3-5-2·4-3-3·4-2-3-1
-네 대형을 갖췄다 — 흑백 인쇄 확인 하나는 렌더러가 있어야 끝나 결정 기록에
-범위 조정으로 남기고 닫았다.
+[IDE-006](IDE-006-customization-editor.md)(에디터) ·
+[IDE-010](IDE-010-player-markers-and-formations.md)(선수 마커·전술 대형)은 `done`이다.
+카탈로그 → 에디터 → 인쇄까지 한 줄로 이어져, 축구 게임판을 원하는 배율로 뽑아
+볼 수 있다.
 
-[IDE-006](IDE-006-customization-editor.md)(커스터마이즈 에디터)도 `done`이다.
-선행 `IDE-004`가 아직 `blocked`였지만 에디터가 읽는 슬롯·파트 스키마는 이미
-확정돼 있어 착수했다 — 결정 기록 참고. 다음은 `IDE-007`(인쇄·PDF 내보내기)이다.
+> **2026-09-05** — 사용자가 잡아낸 결함으로 `IDE-010`의 대형을 다시 잡았다.
+> 두 팀이 각자 진영 절반에 갇혀 있어 **경기를 할 수 없는 배치**였다(상대 골대
+> 쪽에 패스를 받을 선수가 없다). 두 팀이 번갈아 서게 고치고, 그 김에 원정 마커
+> 좌우 반전(`IDE-007`이 빠뜨린 것)과 그룹 사이 겹침 검증을 함께 넣었다.
+> 에디터는 미리보기를 폭 전체로 올리고 팀 입력을 그 아래 2단으로 내렸다(`IDE-006`).
+> 이어서 운동장에서 팀 이름·제목 띠를 빼 터치라인을 285×198mm로 넓히고
+> (`IDE-004`), 골키퍼가 골 에어리어 안에 서도록·10명이 운동장 1/3마다 둘 이상
+> 있도록 대형을 다시 잡았다(`IDE-010`). 프리셋은 출발점일 뿐이라 마커를 끌어
+> 옮기는 조작도 넣었다(`IDE-012`).
 
 ---
 
@@ -49,12 +57,13 @@
 | ID                                                           | 제목                                  | 영역     | 우선 | 추정 | 상태      |
 | ------------------------------------------------------------ | ------------------------------------- | -------- | ---- | ---- | --------- |
 | [IDE-004](IDE-004-soccer-board-vector-artwork.md)            | 축구 게임판 도안 벡터화               | content  | P0   | 5d   | `blocked` |
-| [IDE-006](IDE-006-customization-editor.md) | 커스터마이즈 에디터 | frontend | P0 | 5d | `done` |
-| [IDE-007](IDE-007-print-and-pdf-export.md)                   | 인쇄·PDF 내보내기                     | frontend | P0   | 6d   | `todo`    |
+| [IDE-006](IDE-006-customization-editor.md)                   | 커스터마이즈 에디터                   | frontend | P0   | 5d   | `done`    |
+| [IDE-007](IDE-007-print-and-pdf-export.md)                   | 인쇄·PDF 내보내기                     | frontend | P0   | 6d   | `review`  |
 | [IDE-005](IDE-005-game-catalog-pages.md)                     | 게임 카탈로그 — 목록·상세 페이지      | frontend | P1   | 2d   | `done`    |
 | [IDE-008](IDE-008-ci-deploy-and-test-foundation.md)          | CI·배포 파이프라인과 테스트 기반      | infra    | P1   | 3d   | `blocked` |
 | [IDE-009](IDE-009-accessibility-responsive-print-quality.md) | 접근성·반응형·출력 품질 마감          | frontend | P1   | 3d   | `todo`    |
 | [IDE-010](IDE-010-player-markers-and-formations.md)          | 선수 마커 아트워크와 전술 대형 프리셋 | content  | P0   | 5d   | `done`    |
+| [IDE-012](IDE-012-marker-drag-placement.md)                  | 마커 드래그 배치                      | frontend | P1   | 1d   | `done`    |
 
 ## M2 — 게임 확장 (011–020)
 

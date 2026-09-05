@@ -46,12 +46,8 @@ export function extractSvgInner(svgMarkup: string): string {
   return match ? match[1] : svgMarkup;
 }
 
-/** 어두운 배경엔 흰 글자, 밝은 배경엔 검은 글자 — 마커 위 등번호가 늘 읽히게. */
-export function readableTextColor(hexColor: string): string {
-  const hex = hexColor.replace('#', '');
-  const r = Number.parseInt(hex.slice(0, 2), 16);
-  const g = Number.parseInt(hex.slice(2, 4), 16);
-  const b = Number.parseInt(hex.slice(4, 6), 16);
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance > 0.6 ? '#1a1a1a' : '#ffffff';
-}
+/**
+ * 마커 위 등번호 색은 미리보기와 인쇄물이 같아야 한다 — 규칙은
+ * `src/lib/customization/render.ts` 한 곳에 둔다.
+ */
+export { readableTextColor } from '@/lib/customization/render';
