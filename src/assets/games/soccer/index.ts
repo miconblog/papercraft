@@ -16,13 +16,12 @@ import {
   BALL,
   BALL_COUNT,
   BOARD,
-  BOARD_TEAM_NAME,
   FIELD,
+  FORMATION_LANES,
   PLAYER_MARKER,
   SHEETS,
   SCORE_TABLE,
   SCORE_TEAM_NAME_Y_MM,
-  boardTeamNameXMm,
   scoreTeamColumnCenterXMm,
 } from './dimensions';
 
@@ -42,64 +41,80 @@ const TEAMS = [
 ] as const;
 
 /**
- * 홈 진영 기준 대형 좌표. 배열 순서가 선수 슬롯 1–11번이고, 1번은 골키퍼다.
- * 원정 진영은 세로 중심선 기준으로 뒤집어 쓴다.
+ * 대형 좌표 — **홈 팀이 필드 전체에 서는 배치**다. 배열 순서가 선수 슬롯
+ * 1–11번이고, 1번은 골키퍼다. 원정은 `mirrorPositions`로 좌우 반전해 쓴다.
  *
- * 골키퍼의 x는 골대 자리(골라인에서 안쪽 `GOAL.depthMm`)를 피한다 — 마커가 그
- * 위에 서면 종이 골대를 놓을 자리가 없다.
+ * 처음에는 두 팀을 각자 진영 절반에 세웠는데 **그러면 경기가 성립하지 않았다.**
+ * 선수 마커는 운동장에 인쇄되어 움직이지 않고, 규칙은 패스가 자기 팀 선수에게
+ * 닿아야 이어지고 슛도 공이 자기 팀 선수 위에 있을 때만 되게 되어 있다. 상대
+ * 골대 쪽에 자기 팀 선수가 하나도 없으면 공을 앞으로 보낼 방법이 없다 —
+ * 홈 팀의 최전방이 x=130이고 상대 골대가 x=273부터라 한 번에 143mm를 튕겨야
+ * 슛이 됐다. 그래서 두 팀이 **번갈아 서도록** 다시 잡았다(2026-09-05).
+ *
+ * x는 `FORMATION_LANES`의 다섯 값만 쓴다. 원정이 그 사이사이에 들어와도
+ * 겹치지 않는다는 것이 레인을 상수로 둔 이유다 — `dimensions.ts` 참고.
+ * y는 대형마다 다르되 같은 레인 안에서 충분히 벌린다.
  */
+const {
+  goalkeeper: GK,
+  defence: DF,
+  midfield: MF,
+  attackingMidfield: AM,
+  forward: FW,
+} = FORMATION_LANES;
+
 const FORMATIONS: Record<string, ReadonlyArray<readonly [number, number]>> = {
   '4-4-2': [
-    [32, 105],
-    [52, 48],
-    [52, 87],
-    [52, 123],
-    [52, 162],
-    [90, 48],
-    [90, 87],
-    [90, 123],
-    [90, 162],
-    [126, 87],
-    [126, 123],
+    [GK, 105],
+    [DF, 35],
+    [DF, 82],
+    [DF, 128],
+    [DF, 175],
+    [MF, 35],
+    [MF, 82],
+    [MF, 128],
+    [MF, 175],
+    [FW, 82],
+    [FW, 128],
   ],
   '3-5-2': [
-    [32, 105],
-    [52, 62],
-    [52, 105],
-    [52, 148],
-    [90, 38],
-    [90, 72],
-    [90, 105],
-    [90, 138],
-    [90, 172],
-    [126, 87],
-    [126, 123],
+    [GK, 105],
+    [DF, 55],
+    [DF, 105],
+    [DF, 155],
+    [MF, 30],
+    [MF, 67],
+    [MF, 105],
+    [MF, 143],
+    [MF, 180],
+    [FW, 82],
+    [FW, 128],
   ],
   '4-3-3': [
-    [32, 105],
-    [52, 40],
-    [52, 87],
-    [52, 123],
-    [52, 170],
-    [90, 60],
-    [90, 105],
-    [90, 150],
-    [126, 55],
-    [126, 105],
-    [126, 155],
+    [GK, 105],
+    [DF, 35],
+    [DF, 82],
+    [DF, 128],
+    [DF, 175],
+    [MF, 58],
+    [MF, 105],
+    [MF, 152],
+    [FW, 52],
+    [FW, 105],
+    [FW, 158],
   ],
   '4-2-3-1': [
-    [32, 105],
-    [52, 40],
-    [52, 87],
-    [52, 123],
-    [52, 170],
-    [80, 80],
-    [80, 130],
-    [105, 55],
-    [105, 105],
-    [105, 155],
-    [130, 105],
+    [GK, 105],
+    [DF, 35],
+    [DF, 82],
+    [DF, 128],
+    [DF, 175],
+    [MF, 78],
+    [MF, 132],
+    [AM, 48],
+    [AM, 105],
+    [AM, 162],
+    [FW, 105],
   ],
 };
 
@@ -166,17 +181,9 @@ const teamNameSlots = TEAMS.map((team, i) => ({
   maxLength: 12,
   default: team.defaultName,
   placeholder: '팀 이름',
+  // 점수 기록칸에만 나온다. 운동장에서는 뺐다 — 팀 이름 띠가 놀 면을 좁혔고,
+  // 어느 팀이 어느 쪽인지는 마커 색과 화살표 방향이 이미 말해 준다(2026-09-05).
   placements: [
-    // 보드와 점수 기록칸 양쪽에 나온다 — 슬롯 하나가 여러 파트에 놓이는 경우다.
-    {
-      partId: 'field',
-      mode: 'text' as const,
-      xMm: boardTeamNameXMm(i as 0 | 1),
-      yMm: BOARD_TEAM_NAME.yMm,
-      align: 'center' as const,
-      fontSizeMm: BOARD_TEAM_NAME.fontSizeMm,
-      maxWidthMm: BOARD_TEAM_NAME.maxWidthMm,
-    },
     {
       partId: 'score-sheet',
       mode: 'text' as const,
@@ -196,13 +203,9 @@ const teamColorSlots = TEAMS.map((team) => ({
   help: '흑백으로 뽑아도 두 팀이 구분되도록 밝기 차이를 두면 좋다.',
   groupId: team.id,
   default: team.defaultColor,
+  // 운동장에는 팀 색 막대를 두지 않는다(2026-09-05) — 선수 마커가 이미 팀 색으로
+  // 칠해지므로 띠를 하나 더 그릴 이유가 없었다.
   placements: [
-    {
-      partId: 'field',
-      mode: 'paint' as const,
-      layerId: `pc-team-${team.id}`,
-      property: 'fill' as const,
-    },
     {
       partId: 'score-sheet',
       mode: 'paint' as const,
@@ -343,6 +346,10 @@ export default defineGame({
     label: team.label,
     nameSlotId: `${team.id}-name`,
     colorSlotId: `${team.id}-color`,
+    // 원정은 왼쪽 골대로 공격한다 — 마커의 화살촉이 그쪽을 가리키게 뒤집는다.
+    // 두 팀이 필드 전체에 섞여 서기 때문에 위치로는 팀을 알 수 없고, 흑백으로
+    // 뽑으면 팀 색도 구분되지 않을 수 있다(IDE-010).
+    mirrorMarkers: team.id === 'away',
   })),
 
   // 필드 선수·골키퍼가 스타일 세트를 따로 쓴다(IDE-010) — 크기는 같고 실루엣만

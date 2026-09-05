@@ -28,6 +28,18 @@ export const group = z.strictObject({
   nameSlotId: slug.optional(),
   /** 이 그룹의 색을 담는 `color` 슬롯. */
   colorSlotId: slug.optional(),
+  /**
+   * 이 그룹의 마커 아트워크를 세로 중심선 기준으로 뒤집어 그릴지.
+   *
+   * 마커에 방향이 있는 도안을 위한 것이다 — 축구 게임판의 마커에는 공격 방향을
+   * 가리키는 화살촉이 붙어 있어(`docs/soccer-artwork.md` 11절), 반대편으로
+   * 공격하는 팀은 반전해서 그려야 한다. 아트워크 파일을 두 벌 만드는 대신
+   * 렌더러가 뒤집는다.
+   *
+   * 색에 기대지 않는 팀 구분이기도 하다. 두 팀이 필드 전체에 섞여 서므로
+   * 위치로는 팀을 알 수 없고, 흑백으로 뽑으면 팀 색도 구분되지 않을 수 있다.
+   */
+  mirrorMarkers: z.boolean().default(false),
 });
 export type Group = z.infer<typeof group>;
 
@@ -233,6 +245,16 @@ export const gameDefinition = z
       }
     }
 
+    /**
+     * 프리셋마다 만든 마커 상자. 아래에서 **다른 그룹끼리도** 겹치는지 본다 —
+     * 프리셋 하나 안의 겹침만 보면 두 팀을 나란히 놓았을 때를 놓친다.
+     */
+    const presetBoxes: {
+      preset: (typeof g.presets)[number];
+      index: number;
+      boxes: { slotId: string; rect: ReturnType<typeof rectAround> }[];
+    }[] = [];
+
     for (const [i, preset] of g.presets.entries()) {
       if (!groupIds.has(preset.groupId)) {
         push(
@@ -260,6 +282,7 @@ export const gameDefinition = z
       const placed = new Set<string>();
       const boxes: { slotId: string; rect: ReturnType<typeof rectAround> }[] =
         [];
+      presetBoxes.push({ preset, index: i, boxes });
 
       for (const [j, pos] of preset.positions.entries()) {
         const s = slotById.get(pos.slotId);
@@ -332,6 +355,37 @@ export const gameDefinition = z
               ['presets', i, 'positions'],
               `마커가 겹친다: ${boxes[a].slotId} · ${boxes[b].slotId}`,
             );
+          }
+        }
+      }
+    }
+
+    /**
+     * 서로 다른 그룹의 프리셋을 **동시에** 적용했을 때도 마커가 겹치지 않아야
+     * 한다. 사용자는 팀마다 대형을 따로 고르므로 (홈 대형 × 원정 대형) 모든
+     * 조합이 종이 위에서 성립해야 한다.
+     *
+     * 프리셋 하나 안의 겹침만 보던 시절에는 두 팀이 각자 진영 절반에 갇혀 있어
+     * 이 검사가 필요 없었다. 팀을 필드 전체에 섞어 세우면서(IDE-010) 비로소
+     * 실제 위험이 됐다.
+     */
+    for (let a = 0; a < presetBoxes.length; a += 1) {
+      for (let b = a + 1; b < presetBoxes.length; b += 1) {
+        const left = presetBoxes[a];
+        const right = presetBoxes[b];
+        if (left.preset.groupId === right.preset.groupId) continue;
+        if (left.preset.partId !== right.preset.partId) continue;
+
+        for (const boxA of left.boxes) {
+          for (const boxB of right.boxes) {
+            if (rectsOverlap(boxA.rect, boxB.rect)) {
+              push(
+                ['presets', left.index, 'positions'],
+                `다른 그룹의 프리셋과 마커가 겹친다: ` +
+                  `'${left.preset.label}'의 ${boxA.slotId} · ` +
+                  `'${right.preset.label}'의 ${boxB.slotId}`,
+              );
+            }
           }
         }
       }

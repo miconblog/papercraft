@@ -116,12 +116,21 @@ export default async function GamePage({ params }: Props) {
         </ul>
       </section>
 
-      <Link
-        href={`/games/${game.id}/edit`}
-        className="mt-8 inline-flex items-center justify-center rounded-full bg-foreground px-6 py-3 font-medium text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc]"
-      >
-        만들기 시작
-      </Link>
+      <div className="mt-8 flex flex-wrap gap-3">
+        <Link
+          href={`/games/${game.id}/edit`}
+          className="inline-flex items-center justify-center rounded-full bg-foreground px-6 py-3 font-medium text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc]"
+        >
+          만들기 시작
+        </Link>
+        {/* 바꿀 것이 없어도 바로 뽑을 수 있어야 한다 — 기본값으로도 쓸 만한 도안이다. */}
+        <Link
+          href={`/games/${game.id}/print`}
+          className="inline-flex items-center justify-center rounded-full border border-black/15 px-6 py-3 font-medium transition-colors hover:border-black/30 dark:border-white/20 dark:hover:border-white/40"
+        >
+          바로 인쇄하기
+        </Link>
+      </div>
     </div>
   );
 }

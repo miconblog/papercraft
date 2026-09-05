@@ -16,40 +16,44 @@
 <text x="13" y="51.6" font-size="3" dominant-baseline="central" text-anchor="start">1.</text>
 <text x="17.6" y="51.6" font-size="3" dominant-baseline="central" text-anchor="start">골대 2개를 오려 접어 양쪽 골라인 안쪽 골대 자리에 세운다.</text>
 <text x="13" y="56.9" font-size="3" dominant-baseline="central" text-anchor="start">2.</text>
-<text x="17.6" y="56.9" font-size="3" dominant-baseline="central" text-anchor="start">선수 마커를 오려 각자 진영에 놓는다. 배치는 마음대로 바꿔도 된다.</text>
-<text x="13" y="62.2" font-size="3" dominant-baseline="central" text-anchor="start">3.</text>
-<text x="17.6" y="62.2" font-size="3" dominant-baseline="central" text-anchor="start">공 마커 하나를 센터 스팟에 놓는다. 나머지는 여분이다.</text>
-<text x="13" y="71.1" font-size="3.6" dominant-baseline="central" text-anchor="start" font-weight="700">패스 시도 — 한 턴에 3번</text>
-<text x="13" y="76" font-size="3" dominant-baseline="central" text-anchor="start">·</text>
-<text x="17.6" y="76" font-size="3" dominant-baseline="central" text-anchor="start">자기 차례에는 연필로 공을 튕겨 자기 팀 선수에게 패스한다. 한 턴에 튕길 수 있는 것은</text>
-<text x="17.6" y="80.3" font-size="3" dominant-baseline="central" text-anchor="start">최대 3번이다.</text>
-<text x="13" y="85.6" font-size="3" dominant-baseline="central" text-anchor="start">·</text>
-<text x="17.6" y="85.6" font-size="3" dominant-baseline="central" text-anchor="start">공이 자기 팀 선수에 멈추면 패스 성공이다. 남은 시도 횟수가 다시 3번이 된다 — 패스가</text>
-<text x="17.6" y="89.9" font-size="3" dominant-baseline="central" text-anchor="start">이어지는 한 턴은 끝나지 않는다.</text>
-<text x="13" y="95.2" font-size="3" dominant-baseline="central" text-anchor="start">·</text>
-<text x="17.6" y="95.2" font-size="3" dominant-baseline="central" text-anchor="start">3번 안에 자기 팀 선수에게 연결하지 못하면 턴이 상대에게 넘어간다.</text>
-<text x="13" y="100.5" font-size="3" dominant-baseline="central" text-anchor="start">·</text>
-<text x="17.6" y="100.5" font-size="3" dominant-baseline="central" text-anchor="start">튕긴 공이 상대 선수에 닿으면 그 자리에서 턴이 넘어간다. 시도 횟수가 남아 있어도</text>
-<text x="17.6" y="104.8" font-size="3" dominant-baseline="central" text-anchor="start">마찬가지다.</text>
-<text x="13" y="113.7" font-size="3.6" dominant-baseline="central" text-anchor="start" font-weight="700">슛</text>
-<text x="13" y="118.6" font-size="3" dominant-baseline="central" text-anchor="start">·</text>
-<text x="17.6" y="118.6" font-size="3" dominant-baseline="central" text-anchor="start">슛은 공이 자기 팀 선수 위에 있을 때만 할 수 있다.</text>
-<text x="13" y="123.9" font-size="3" dominant-baseline="central" text-anchor="start">·</text>
-<text x="17.6" y="123.9" font-size="3" dominant-baseline="central" text-anchor="start">패스 시도 도중에 슛으로 바꿀 수는 없다. 한 번의 튕김이 패스인지 슛인지는 튕기기</text>
-<text x="17.6" y="128.2" font-size="3" dominant-baseline="central" text-anchor="start">전에 정한다.</text>
-<text x="13" y="133.5" font-size="3" dominant-baseline="central" text-anchor="start">·</text>
-<text x="17.6" y="133.5" font-size="3" dominant-baseline="central" text-anchor="start">공이 상대 골대 안에 들어가면 1점이다.</text>
-<text x="13" y="142.4" font-size="3.6" dominant-baseline="central" text-anchor="start" font-weight="700">점수 계산 — 시작 전에 하나를 고른다</text>
-<text x="13" y="147.3" font-size="3" dominant-baseline="central" text-anchor="start">·</text>
-<text x="17.6" y="147.3" font-size="3" dominant-baseline="central" text-anchor="start">목표 점수제 — 먼저 정한 점수(예: 3점)에 도달한 쪽이 이긴다.</text>
-<text x="13" y="152.6" font-size="3" dominant-baseline="central" text-anchor="start">·</text>
-<text x="17.6" y="152.6" font-size="3" dominant-baseline="central" text-anchor="start">시간제 — 정한 시간(예: 10분) 동안 더 많이 넣은 쪽이 이긴다.</text>
-<text x="13" y="161.5" font-size="3.6" dominant-baseline="central" text-anchor="start" font-weight="700">이 규칙은 기본값입니다</text>
-<text x="13" y="166.4" font-size="3" dominant-baseline="central" text-anchor="start">·</text>
-<text x="17.6" y="166.4" font-size="3" dominant-baseline="central" text-anchor="start">여기 적힌 것은 기본 규칙입니다. 둘이 합의해 자유롭게 바꿔서 즐기세요.</text>
-<text x="13" y="171.7" font-size="3" dominant-baseline="central" text-anchor="start">·</text>
-<text x="17.6" y="171.7" font-size="3" dominant-baseline="central" text-anchor="start">시작 전에 정해 두면 좋은 것 — 공이 운동장 밖으로 나갔을 때 어디서 다시 시작할지,</text>
-<text x="17.6" y="176" font-size="3" dominant-baseline="central" text-anchor="start">패스 시도를 몇 번으로 할지, 손이 공에 닿았을 때(핸들링) 어떻게 할지.</text>
-<text x="13" y="183.3" font-size="2.5" dominant-baseline="central" text-anchor="start" fill="#6b7280">운동장은 조금 두꺼운 종이(120g/m² 이상)에 뽑으면 공을 오래 튕겨도 잘 해지지 않습니다.</text>
+<text x="17.6" y="56.9" font-size="3" dominant-baseline="central" text-anchor="start">둘이 팀을 하나씩 맡는다. 선수는 운동장에 인쇄되어 있고, 마커 옆 화살표가 그 팀이</text>
+<text x="17.6" y="61.2" font-size="3" dominant-baseline="central" text-anchor="start">공격하는 방향이다.</text>
+<text x="13" y="66.5" font-size="3" dominant-baseline="central" text-anchor="start">3.</text>
+<text x="17.6" y="66.5" font-size="3" dominant-baseline="central" text-anchor="start">공 마커 하나를 센터 스팟에 놓는다. 나머지는 여분이다.</text>
+<text x="13" y="71.8" font-size="3" dominant-baseline="central" text-anchor="start">·</text>
+<text x="17.6" y="71.8" font-size="3" dominant-baseline="central" text-anchor="start">두 팀은 운동장 전체에 섞여 서 있다. 상대 진영의 자기 팀 선수에게 패스해 밀고</text>
+<text x="17.6" y="76.1" font-size="3" dominant-baseline="central" text-anchor="start">올라간다.</text>
+<text x="13" y="85" font-size="3.6" dominant-baseline="central" text-anchor="start" font-weight="700">패스 시도 — 한 턴에 3번</text>
+<text x="13" y="89.9" font-size="3" dominant-baseline="central" text-anchor="start">·</text>
+<text x="17.6" y="89.9" font-size="3" dominant-baseline="central" text-anchor="start">자기 차례에는 연필로 공을 튕겨 자기 팀 선수에게 패스한다. 한 턴에 튕길 수 있는 것은</text>
+<text x="17.6" y="94.2" font-size="3" dominant-baseline="central" text-anchor="start">최대 3번이다.</text>
+<text x="13" y="99.5" font-size="3" dominant-baseline="central" text-anchor="start">·</text>
+<text x="17.6" y="99.5" font-size="3" dominant-baseline="central" text-anchor="start">공이 자기 팀 선수에 멈추면 패스 성공이다. 남은 시도 횟수가 다시 3번이 된다 — 패스가</text>
+<text x="17.6" y="103.8" font-size="3" dominant-baseline="central" text-anchor="start">이어지는 한 턴은 끝나지 않는다.</text>
+<text x="13" y="109.1" font-size="3" dominant-baseline="central" text-anchor="start">·</text>
+<text x="17.6" y="109.1" font-size="3" dominant-baseline="central" text-anchor="start">3번 안에 자기 팀 선수에게 연결하지 못하면 턴이 상대에게 넘어간다.</text>
+<text x="13" y="114.4" font-size="3" dominant-baseline="central" text-anchor="start">·</text>
+<text x="17.6" y="114.4" font-size="3" dominant-baseline="central" text-anchor="start">튕긴 공이 상대 선수에 닿으면 그 자리에서 턴이 넘어간다. 시도 횟수가 남아 있어도</text>
+<text x="17.6" y="118.7" font-size="3" dominant-baseline="central" text-anchor="start">마찬가지다.</text>
+<text x="13" y="127.6" font-size="3.6" dominant-baseline="central" text-anchor="start" font-weight="700">슛</text>
+<text x="13" y="132.5" font-size="3" dominant-baseline="central" text-anchor="start">·</text>
+<text x="17.6" y="132.5" font-size="3" dominant-baseline="central" text-anchor="start">슛은 공이 자기 팀 선수 위에 있을 때만 할 수 있다.</text>
+<text x="13" y="137.8" font-size="3" dominant-baseline="central" text-anchor="start">·</text>
+<text x="17.6" y="137.8" font-size="3" dominant-baseline="central" text-anchor="start">패스 시도 도중에 슛으로 바꿀 수는 없다. 한 번의 튕김이 패스인지 슛인지는 튕기기</text>
+<text x="17.6" y="142.1" font-size="3" dominant-baseline="central" text-anchor="start">전에 정한다.</text>
+<text x="13" y="147.4" font-size="3" dominant-baseline="central" text-anchor="start">·</text>
+<text x="17.6" y="147.4" font-size="3" dominant-baseline="central" text-anchor="start">공이 상대 골대 안에 들어가면 1점이다.</text>
+<text x="13" y="156.3" font-size="3.6" dominant-baseline="central" text-anchor="start" font-weight="700">점수 계산 — 시작 전에 하나를 고른다</text>
+<text x="13" y="161.2" font-size="3" dominant-baseline="central" text-anchor="start">·</text>
+<text x="17.6" y="161.2" font-size="3" dominant-baseline="central" text-anchor="start">목표 점수제 — 먼저 정한 점수(예: 3점)에 도달한 쪽이 이긴다.</text>
+<text x="13" y="166.5" font-size="3" dominant-baseline="central" text-anchor="start">·</text>
+<text x="17.6" y="166.5" font-size="3" dominant-baseline="central" text-anchor="start">시간제 — 정한 시간(예: 10분) 동안 더 많이 넣은 쪽이 이긴다.</text>
+<text x="13" y="175.4" font-size="3.6" dominant-baseline="central" text-anchor="start" font-weight="700">이 규칙은 기본값입니다</text>
+<text x="13" y="180.3" font-size="3" dominant-baseline="central" text-anchor="start">·</text>
+<text x="17.6" y="180.3" font-size="3" dominant-baseline="central" text-anchor="start">여기 적힌 것은 기본 규칙입니다. 둘이 합의해 자유롭게 바꿔서 즐기세요.</text>
+<text x="13" y="185.6" font-size="3" dominant-baseline="central" text-anchor="start">·</text>
+<text x="17.6" y="185.6" font-size="3" dominant-baseline="central" text-anchor="start">시작 전에 정해 두면 좋은 것 — 공이 운동장 밖으로 나갔을 때 어디서 다시 시작할지,</text>
+<text x="17.6" y="189.9" font-size="3" dominant-baseline="central" text-anchor="start">패스 시도를 몇 번으로 할지, 손이 공에 닿았을 때(핸들링) 어떻게 할지.</text>
+<text x="13" y="197.2" font-size="2.5" dominant-baseline="central" text-anchor="start" fill="#6b7280">운동장은 조금 두꺼운 종이(120g/m² 이상)에 뽑으면 공을 오래 튕겨도 잘 해지지 않습니다.</text>
 </g>
 </svg>

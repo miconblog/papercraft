@@ -12,7 +12,9 @@
     "format:check": "prettier --check .",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "print:samples": "PRINT_SAMPLES=1 vitest run src/lib/print/__tests__/samples.test.ts",
+    "print:verify": "npm run print:samples && ./scripts/print-verify.sh"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
