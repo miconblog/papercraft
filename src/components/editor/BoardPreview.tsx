@@ -54,6 +54,22 @@ export interface BoardPreviewProps {
 
 const textAnchorOf = { start: 'start', center: 'middle', end: 'end' } as const;
 
+/**
+ * 마커 아트워크 원문 캐시. url → SVG 문자열.
+ *
+ * `key={part.id}`로 파트를 바꿀 때마다 이 컴포넌트가 통째로 다시 마운트되는데
+ * (위 주석 참고), 마커 아트워크는 파트가 아니라 게임 전체에 속해 바뀌지 않는다.
+ * 컴포넌트 로컬 상태로만 두면 파트를 오갈 때마다 같은 파일을 다시 fetch하고
+ * 다시 파싱한다 — 브라우저 HTTP 캐시가 네트워크 왕복은 줄여도 파싱·리렌더
+ * 비용은 그대로다. 모듈 레벨 캐시로 한 번만 받는다.
+ */
+const markerArtworkCache = new Map<string, string>();
+
+/** 테스트 전용 — 모듈 레벨 캐시는 테스트 파일 안에서도 유지되므로 초기화한다. */
+export function __resetMarkerArtworkCacheForTests(): void {
+  markerArtworkCache.clear();
+}
+
 export function BoardPreview({
   game,
   part,
@@ -65,7 +81,7 @@ export function BoardPreview({
   // 마커 스타일 변형(원형·일러스트 등)의 아트워크 원문. 경로 → SVG 문자열.
   // 로드되기 전이거나 실패한 변형은 원 + 값 텍스트로 대체한다(아래 렌더링).
   const [markerArtwork, setMarkerArtwork] = useState<Record<string, string>>(
-    {},
+    () => Object.fromEntries(markerArtworkCache),
   );
 
   useEffect(() => {
@@ -75,11 +91,12 @@ export function BoardPreview({
         if (variant.artwork) urls.add(variant.artwork);
       }
     }
-    if (urls.size === 0) return;
+    const missing = [...urls].filter((url) => !markerArtworkCache.has(url));
+    if (missing.length === 0) return;
     let cancelled = false;
     (async () => {
       const entries = await Promise.all(
-        [...urls].map(async (url) => {
+        missing.map(async (url) => {
           try {
             const res = await fetch(url);
             return [url, await res.text()] as const;
@@ -88,9 +105,11 @@ export function BoardPreview({
           }
         }),
       );
-      if (!cancelled) {
-        setMarkerArtwork(Object.fromEntries(entries.filter((e) => e !== null)));
+      if (cancelled) return;
+      for (const entry of entries) {
+        if (entry) markerArtworkCache.set(entry[0], entry[1]);
       }
+      setMarkerArtwork(Object.fromEntries(markerArtworkCache));
     })();
     return () => {
       cancelled = true;

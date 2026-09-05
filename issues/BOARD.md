@@ -11,10 +11,10 @@
 
 | 상태      | 개수 |
 | --------- | ---- |
-| `todo`    | 2    |
+| `todo`    | 1    |
 | `doing`   | 0    |
 | `blocked` | 3    |
-| `review`  | 1    |
+| `review`  | 2    |
 | `done`    | 6    |
 
 **지금 할 것** — [IDE-007](IDE-007-print-and-pdf-export.md)(인쇄·PDF 내보내기)이
@@ -25,6 +25,12 @@
 [IDE-004](IDE-004-soccer-board-vector-artwork.md)도 기다린다 — **셋을 한 번에 뽑아
 재면 된다.** `IDE-004`는 사용자 답변도 하나 기다린다(아웃·핸들링·파울 처리와 옛
 인쇄본의 출처).
+
+[IDE-009](IDE-009-accessibility-responsive-print-quality.md)(접근성·반응형·출력
+품질)도 `review`다. 포커스 표시·팀 색 흑백 구분 경고·마커 아트워크 캐싱은
+코드로 고치고 자동 테스트로 확인했지만, 360px 실기기·키보드 전체 완주는
+사람이 눈으로 한 번 더 훑어야 `done`이 된다(이 저장소엔 headless 브라우저
+도구가 없다).
 
 [IDE-005](IDE-005-game-catalog-pages.md)(카탈로그) ·
 [IDE-006](IDE-006-customization-editor.md)(에디터) ·
@@ -61,7 +67,7 @@
 | [IDE-007](IDE-007-print-and-pdf-export.md)                   | 인쇄·PDF 내보내기                     | frontend | P0   | 6d   | `review`  |
 | [IDE-005](IDE-005-game-catalog-pages.md)                     | 게임 카탈로그 — 목록·상세 페이지      | frontend | P1   | 2d   | `done`    |
 | [IDE-008](IDE-008-ci-deploy-and-test-foundation.md)          | CI·배포 파이프라인과 테스트 기반      | infra    | P1   | 3d   | `blocked` |
-| [IDE-009](IDE-009-accessibility-responsive-print-quality.md) | 접근성·반응형·출력 품질 마감          | frontend | P1   | 3d   | `todo`    |
+| [IDE-009](IDE-009-accessibility-responsive-print-quality.md) | 접근성·반응형·출력 품질 마감          | frontend | P1   | 3d   | `review`  |
 | [IDE-010](IDE-010-player-markers-and-formations.md)          | 선수 마커 아트워크와 전술 대형 프리셋 | content  | P0   | 5d   | `done`    |
 | [IDE-012](IDE-012-marker-drag-placement.md)                  | 마커 드래그 배치                      | frontend | P1   | 1d   | `done`    |
 

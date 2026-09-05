@@ -143,7 +143,7 @@ function SlotInput({
                   aria-pressed={value === hex}
                   onClick={() => onChange(hex)}
                   className={
-                    'h-6 w-6 rounded-full border-2 ' +
+                    'h-6 w-6 rounded-full border-2 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current ' +
                     (value === hex
                       ? 'border-black dark:border-white'
                       : 'border-black/15 dark:border-white/20')

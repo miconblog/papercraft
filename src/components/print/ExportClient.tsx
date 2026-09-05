@@ -174,7 +174,7 @@ export function ExportClient({ game }: { game: GameDefinition }) {
                   key={kind}
                   type="button"
                   onClick={() => selectGroup(kind)}
-                  className="rounded-full border border-black/15 px-3 py-1 text-xs font-medium transition-colors hover:border-black/30 dark:border-white/20 dark:hover:border-white/40"
+                  className="rounded-full border border-black/15 px-3 py-1 text-xs font-medium outline-none transition-colors hover:border-black/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current dark:border-white/20 dark:hover:border-white/40"
                 >
                   {label}
                 </button>
@@ -275,7 +275,11 @@ export function ExportClient({ game }: { game: GameDefinition }) {
               빨간 점선이 A4 한 장의 경계다
             </p>
             {previewable.length > 1 && (
-              <div className="mt-2 flex flex-wrap gap-1.5">
+              <div
+                className="mt-2 flex flex-wrap gap-1.5"
+                role="group"
+                aria-label="미리 볼 파트 선택"
+              >
                 {previewable.map((part) => (
                   <button
                     key={part.id}
@@ -283,7 +287,7 @@ export function ExportClient({ game }: { game: GameDefinition }) {
                     onClick={() => setPreviewPartId(part.id)}
                     aria-pressed={part.id === previewPart.id}
                     className={
-                      'rounded-full px-3 py-1 text-xs font-medium transition-colors ' +
+                      'rounded-full px-3 py-1 text-xs font-medium outline-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current ' +
                       (part.id === previewPart.id
                         ? 'bg-foreground text-background'
                         : 'border border-black/15 hover:border-black/30 dark:border-white/20 dark:hover:border-white/40')
