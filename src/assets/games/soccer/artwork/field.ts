@@ -5,6 +5,13 @@
  * 6mm 여백만 남긴다 — 팀 이름·제목·배율 안내를 운동장에서 빼고 그만큼 놀 면을
  * 넓혔다(2026-09-05).
  *
+ * **골대 자리는 눈금 셋으로만 찍는다.** 예전에는 골라인 안쪽 골대 바닥 넓이를
+ * 파선 상자와 "골대" 글자로 그렸는데, 골 에어리어 안에 사각형이 하나 더 겹쳐
+ * 골라인 근처가 삼중선이 됐다(2026-09-05 사용자 요청으로 삭제). 골대가 골라인
+ * 바깥으로 나간 뒤에는 반대로 **놓을 자리가 종이에 하나도 안 보여** 가운데
+ * 맞추기가 어려웠다 — 그래서 골포스트 두 곳과 골문 한가운데만 골라인에 걸친
+ * 짧은 눈금으로 되살렸다. 맞출 것은 골대 앞면 좌우 끝뿐이다.
+ *
  * 필드를 초록으로 **칠하지 않는다.** 잉크를 크게 먹고, 공이 미끄러지는 면이라
  * 잉크가 두꺼우면 연필 자국도 더 남는다. 사용자가 만든 판처럼 라인만 초록이다.
  */
@@ -17,11 +24,11 @@ import {
   FIELD_MARKS,
   FIELD_RIGHT_MM,
   GOAL,
+  GOAL_GUIDE,
 } from '../dimensions.ts';
 import {
   ART_LAYER_ID,
   FIELD_LINE_COLOR,
-  type Attrs,
   circle,
   group,
   line,
@@ -29,7 +36,6 @@ import {
   path,
   rect,
   svgDocument,
-  text,
 } from './svg.ts';
 
 const {
@@ -50,21 +56,15 @@ const {
  * 사각형이 아니라 **세 변**이다. 네 번째 변은 골라인과 같은 자리라, 사각형으로
  * 그리면 같은 선 위에 잉크가 두 번 얹힌다.
  */
-const goalLineBox = (
-  depthMm: number,
-  widthMm: number,
-  attrs: Attrs = {},
-): string[] => {
+const goalLineBox = (depthMm: number, widthMm: number): string[] => {
   const topYMm = FIELD_CENTER_Y_MM - widthMm / 2;
   const bottomYMm = FIELD_CENTER_Y_MM + widthMm / 2;
   return [
     path(
       `M ${num(FIELD.xMm)} ${num(topYMm)} H ${num(FIELD.xMm + depthMm)} V ${num(bottomYMm)} H ${num(FIELD.xMm)}`,
-      attrs,
     ),
     path(
       `M ${num(FIELD_RIGHT_MM)} ${num(topYMm)} H ${num(FIELD_RIGHT_MM - depthMm)} V ${num(bottomYMm)} H ${num(FIELD_RIGHT_MM)}`,
-      attrs,
     ),
   ];
 };
@@ -116,22 +116,42 @@ const cornerArcs = (): string[] => {
 };
 
 /**
- * 골대를 세울 자리. 골대는 골라인 **안쪽**으로 `GOAL.depthMm`만큼 들어와 서므로,
- * 그 바닥 넓이를 파선으로 표시해 둔다. 골 에어리어 안에 들어가는 크기다.
+ * 골대 자리 눈금 — 양 진영에 셋씩.
+ *
+ * 골포스트가 설 두 지점은 골라인을 가로질러(안쪽 2mm · 바깥 4mm) 찍고, 골문
+ * 한가운데는 안쪽으로만 짧게 찍는다. 셋을 다른 길이로 둔 것은 **가운데 눈금을
+ * 골포스트로 착각하지 않게** 하려는 것이다.
  */
-const goalFootprints = (): string[] => [
-  ...goalLineBox(GOAL.depthMm, GOAL.mouthWidthMm, {
-    'stroke-dasharray': '2 1.5',
-  }),
-  ...[FIELD.xMm + GOAL.depthMm / 2, FIELD_RIGHT_MM - GOAL.depthMm / 2].map(
-    (xMm) =>
-      text('골대', xMm, FIELD_CENTER_Y_MM, 3, {
-        fill: FIELD_LINE_COLOR,
-        stroke: 'none',
-        'text-anchor': 'middle',
-      }),
-  ),
-];
+const goalGuideTicks = (): string[] => {
+  const halfMm = GOAL.mouthWidthMm / 2;
+  const ticks: string[] = [];
+  for (const [goalLineXMm, outwardSign] of [
+    [FIELD.xMm, -1],
+    [FIELD_RIGHT_MM, 1],
+  ] as const) {
+    const outerXMm = goalLineXMm + GOAL_GUIDE.outsideMm * outwardSign;
+    const innerXMm = goalLineXMm - GOAL_GUIDE.insideMm * outwardSign;
+    for (const offsetMm of [-halfMm, halfMm]) {
+      ticks.push(
+        line(
+          outerXMm,
+          FIELD_CENTER_Y_MM + offsetMm,
+          innerXMm,
+          FIELD_CENTER_Y_MM + offsetMm,
+        ),
+      );
+    }
+    ticks.push(
+      line(
+        goalLineXMm,
+        FIELD_CENTER_Y_MM,
+        goalLineXMm - GOAL_GUIDE.centerInsideMm * outwardSign,
+        FIELD_CENTER_Y_MM,
+      ),
+    );
+  }
+  return ticks;
+};
 
 export const renderField = (): string =>
   svgDocument({
@@ -171,7 +191,7 @@ export const renderField = (): string =>
             FIELD_RIGHT_MM - penaltyAreaDepthMm,
           ),
           ...cornerArcs(),
-          ...goalFootprints(),
+          ...goalGuideTicks(),
         ],
       ),
 

@@ -18,6 +18,15 @@ export const markerStyleVariant = z.strictObject({
   heightMm: mmLength,
   /** 마커 위에 얹는 값(등번호)의 글자 크기. */
   valueFontSizeMm: mmLength,
+  /**
+   * 마커 **안이 그룹 색으로 채워지는지**.
+   *
+   * 채워지면 값(등번호)을 배경 밝기에 맞춰 반전해야 읽힌다. 채워지지 않는
+   * 변형 — 축구 게임판의 빈 원처럼 테두리만 색을 받는 것 — 은 배경이 흰
+   * 종이라 값도 그룹 색으로 찍어야 한다. 흰 배경에 흰 글자가 나오는 것을
+   * 막는 것이 이 값의 존재 이유다.
+   */
+  filled: z.boolean().default(true),
   /** 변형의 아트워크. IDE-010에서 채운다. */
   artwork: assetRef.optional(),
 });

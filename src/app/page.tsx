@@ -14,7 +14,7 @@ export default function Home() {
         종이 보드게임 고르기
       </h1>
       <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-400">
-        마음에 드는 게임을 골라 등번호·팀 이름·색을 원하는 대로 바꾸고, 집
+        마음에 드는 게임을 골라 팀 색과 선수 배치를 원하는 대로 바꾸고, 집
         프린터로 원하는 크기에 맞춰 뽑는다.
       </p>
 

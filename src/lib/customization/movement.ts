@@ -74,6 +74,7 @@ export const clampToBounds = (
   bounds: MoveBounds,
   point: SlotPoint,
 ): SlotPoint => ({
+  ...point,
   xMm:
     bounds.minXMm > bounds.maxXMm
       ? (bounds.minXMm + bounds.maxXMm) / 2
@@ -86,6 +87,7 @@ export const clampToBounds = (
 
 /** 소수점이 길어지면 저장값만 지저분해진다. 0.1mm면 인쇄에서 충분히 곱다. */
 export const roundPoint = (point: SlotPoint): SlotPoint => ({
+  ...point,
   xMm: Math.round(point.xMm * 10) / 10,
   yMm: Math.round(point.yMm * 10) / 10,
 });
@@ -97,5 +99,21 @@ export function movedPoint(
   point: SlotPoint,
 ): SlotPoint {
   const bounds = markerBounds(game, slot);
-  return roundPoint(bounds ? clampToBounds(bounds, point) : point);
+  const moved = bounds ? clampToBounds(bounds, point) : point;
+  // 회전은 옮기는 것과 무관하다 — 잃지 않도록 실어 보낸다.
+  return roundPoint({ ...point, ...moved });
 }
+
+/**
+ * 마커를 한 칸 돌린다. 한 바퀴를 넘기면 되돌아온다.
+ *
+ * 각도를 **0 이상 360 미만**으로 접어 두는 것은 저장값이 `-720` 같은 수로
+ * 자라지 않게 하려는 것이다. 그림은 같지만 접근성 라벨에 그대로 읽히고,
+ * 되돌리기를 눌렀는지 아닌지도 눈으로 알 수 없게 된다.
+ */
+export const ROTATION_STEP_DEG = 45;
+
+export const rotatedPoint = (point: SlotPoint, deltaDeg: number): SlotPoint => {
+  const next = ((point.rotationDeg ?? 0) + deltaDeg) % 360;
+  return { ...point, rotationDeg: next < 0 ? next + 360 : next };
+};

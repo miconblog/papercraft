@@ -15,15 +15,22 @@ import {
   validateCustomization,
   type GameDefinition,
 } from '@/lib/schema';
-import { clampToBounds, markerBounds, movedPoint } from '../movement';
+import {
+  ROTATION_STEP_DEG,
+  clampToBounds,
+  markerBounds,
+  movedPoint,
+  rotatedPoint,
+} from '../movement';
 
 const game = getGame('soccer') as GameDefinition;
 const playerSlot = findSlot(game, 'home-player-9')!;
-const nameSlot = findSlot(game, 'home-name')!;
+// 마커가 아닌 슬롯 — 마커 모양 선택. 옮길 자리가 없다.
+const styleSlot = findSlot(game, 'marker-style')!;
 
 describe('markerBounds', () => {
   it('옮길 수 없는 슬롯은 범위가 없다', () => {
-    expect(markerBounds(game, nameSlot)).toBeNull();
+    expect(markerBounds(game, styleSlot)).toBeNull();
   });
 
   it('슬롯이 가리키는 영역 안으로 제한한다', () => {
@@ -111,5 +118,29 @@ describe('movedPoint', () => {
         `(${point.xMm}, ${point.yMm})에서 끌었을 때`,
       ).toEqual([]);
     }
+  });
+});
+
+describe('rotatedPoint (2026-09-05)', () => {
+  it('한 칸씩 돌리고 좌표는 건드리지 않는다', () => {
+    const at = { xMm: 100, yMm: 50 };
+    expect(rotatedPoint(at, ROTATION_STEP_DEG)).toEqual({
+      ...at,
+      rotationDeg: 45,
+    });
+  });
+
+  it('한 바퀴를 넘기면 0으로 돌아온다 — 저장값이 자라지 않게', () => {
+    const point = rotatedPoint(
+      { xMm: 0, yMm: 0, rotationDeg: 315 },
+      ROTATION_STEP_DEG,
+    );
+    expect(point.rotationDeg).toBe(0);
+  });
+
+  it('반대로 돌리면 음수가 아니라 315°가 된다', () => {
+    expect(
+      rotatedPoint({ xMm: 0, yMm: 0 }, -ROTATION_STEP_DEG).rotationDeg,
+    ).toBe(315);
   });
 });

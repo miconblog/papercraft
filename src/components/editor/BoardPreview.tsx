@@ -13,12 +13,13 @@ import {
 import {
   groupColorOf,
   markerMirrored,
-  MARKER_FILL_LAYER_ID,
-  readableTextColor,
+  MARKER_TEAM_LAYER_ID,
+  markerValueColor,
 } from '@/lib/customization/render';
 import { extractSvgInner, paintLayer, stripOuterSvgSize } from './svgOverlay';
 import { slotFieldId } from './SlotField';
 import { useMarkerDrag } from './useMarkerDrag';
+import { ROTATION_STEP_DEG, rotatedPoint } from '@/lib/customization/movement';
 
 /**
  * 도안 미리보기 — 파트 SVG 위에 커스터마이즈 값을 얹어 실시간으로 보여준다
@@ -160,19 +161,57 @@ export function BoardPreview({
   };
 
   const draggable = onMoveSlot !== undefined;
+
+  /**
+   * 마커를 누르면 **제 중심을 축으로 돌린다**(2026-09-05 사용자 요청).
+   *
+   * 예전에는 눌렀을 때 그 슬롯의 입력창으로 커서가 갔는데(IDE-006), 배치를
+   * 손보는 동안 화면이 자꾸 입력 쪽으로 튀어 방해가 됐다. 마커를 만지는 조작은
+   * 미리보기 안에서 끝나야 한다 — 지금 마커에 남은 조작은 옮기기와 돌리기뿐이다.
+   *
+   * 한 번에 45°씩 도는 것은 여덟 방향이면 달리는 자세를 고르기에 충분하고,
+   * 그보다 잘게 나누면 원하는 각도까지 여러 번 눌러야 하기 때문이다.
+   */
+  const rotateSlot = (slotId: string, point: SlotPoint, deltaDeg: number) => {
+    onMoveSlot?.(slotId, rotatedPoint(point, deltaDeg));
+  };
+
   const { surfaceRef, draggingSlotId, markerHandlers } = useMarkerDrag({
     onMove: (slotId, point) => onMoveSlot?.(slotId, point),
-    onTap: focusSlotField,
+    onTap: (slotId, point, shiftKey) =>
+      rotateSlot(
+        slotId,
+        point,
+        shiftKey ? -ROTATION_STEP_DEG : ROTATION_STEP_DEG,
+      ),
     partWidthMm: part.widthMm,
     partHeightMm: part.heightMm,
   });
 
-  /** 화살표 키로 옮긴다. 드래그만 두면 키보드로는 배치를 바꿀 수 없다. */
+  /**
+   * 화살표 키로 옮기고 `r`로 돌린다. 드래그·클릭만 두면 키보드로는 배치를
+   * 바꿀 수 없다 — 마커가 `role="button"`이지만 SVG `<g>`는 네이티브 버튼이
+   * 아니라 Enter·Space가 저절로 클릭이 되지 않으므로 여기서 함께 받는다.
+   */
   const nudge = (
     slotId: string,
     point: SlotPoint,
     event: React.KeyboardEvent<SVGGElement>,
   ) => {
+    if (
+      event.key === 'r' ||
+      event.key === 'R' ||
+      event.key === 'Enter' ||
+      event.key === ' '
+    ) {
+      event.preventDefault();
+      rotateSlot(
+        slotId,
+        point,
+        event.shiftKey ? -ROTATION_STEP_DEG : ROTATION_STEP_DEG,
+      );
+      return;
+    }
     const stepMm = event.shiftKey ? 5 : 1;
     const delta: Record<string, [number, number]> = {
       ArrowLeft: [-stepMm, 0],
@@ -184,6 +223,7 @@ export function BoardPreview({
     if (!move) return;
     event.preventDefault();
     onMoveSlot?.(slotId, {
+      ...point,
       xMm: point.xMm + move[0],
       yMm: point.yMm + move[1],
     });
@@ -265,7 +305,14 @@ export function BoardPreview({
                   : undefined;
                 const artworkInner = rawArtwork
                   ? extractSvgInner(
-                      paintLayer(rawArtwork, MARKER_FILL_LAYER_ID, fill),
+                      // 채움과 테두리를 둘 다 칠한다 — 빈 원은 테두리로,
+                      // 일러스트는 채움으로 팀 색을 받는다.
+                      paintLayer(
+                        paintLayer(rawArtwork, MARKER_TEAM_LAYER_ID, fill),
+                        MARKER_TEAM_LAYER_ID,
+                        fill,
+                        'stroke',
+                      ),
                     )
                   : null;
 
@@ -296,7 +343,8 @@ export function BoardPreview({
                     role={draggable ? 'button' : undefined}
                     aria-label={
                       draggable
-                        ? `${slot.label} 마커 — 가로 ${point.xMm}mm, 세로 ${point.yMm}mm. 끌거나 화살표 키로 옮긴다`
+                        ? `${slot.label} 마커 — 가로 ${point.xMm}mm, 세로 ${point.yMm}mm, ${point.rotationDeg ?? 0}° 회전. ` +
+                          '끌거나 화살표 키로 옮기고, 눌러서 또는 r 키로 돌린다'
                         : undefined
                     }
                     onKeyDown={
@@ -304,9 +352,7 @@ export function BoardPreview({
                         ? (event) => nudge(slot.id, point, event)
                         : undefined
                     }
-                    {...(draggable
-                      ? markerHandlers(slot.id, point)
-                      : { onClick: () => focusSlotField(slot.id) })}
+                    {...(draggable ? markerHandlers(slot.id, point) : {})}
                   >
                     {/* 끄는 동안 잡은 마커를 도드라지게 — 겹쳐 선 마커 사이에서
                         무엇을 옮기고 있는지 보이게 한다. */}
@@ -327,6 +373,12 @@ export function BoardPreview({
                       <g
                         transform={
                           `translate(${point.xMm}, ${point.yMm})` +
+                          // 회전은 **뒤집기 앞**에 온다. 뒤에 두면 원정 마커가
+                          // 반대 방향으로 돌아, 같은 각도를 줘도 두 팀이 서로
+                          // 다르게 선다. 인쇄 렌더러도 같은 차례다(`compose.ts`).
+                          (point.rotationDeg
+                            ? ` rotate(${point.rotationDeg})`
+                            : '') +
                           (mirrored ? ' scale(-1, 1)' : '') +
                           ` translate(${-variant.widthMm / 2}, ${-variant.heightMm / 2})`
                         }
@@ -355,16 +407,21 @@ export function BoardPreview({
                         )}
                       </>
                     )}
-                    <text
-                      x={point.xMm}
-                      y={point.yMm}
-                      fontSize={variant.valueFontSizeMm}
-                      textAnchor="middle"
-                      dominantBaseline="central"
-                      fill={readableTextColor(fill)}
-                    >
-                      {String(value)}
-                    </text>
+                    {/* 빈 값이면 글자를 얹지 않는다 — 인쇄 렌더러와 같은
+                        규칙이다(`lib/print/compose.ts`). 축구 게임판의 등번호는
+                        기본이 비어 있고, 아이가 종이에 직접 쓴다. */}
+                    {String(value ?? '') !== '' && (
+                      <text
+                        x={point.xMm}
+                        y={point.yMm}
+                        fontSize={variant.valueFontSizeMm}
+                        textAnchor="middle"
+                        dominantBaseline="central"
+                        fill={markerValueColor(variant, fill)}
+                      >
+                        {String(value)}
+                      </text>
+                    )}
                   </g>
                 );
               }

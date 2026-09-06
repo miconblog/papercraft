@@ -19,6 +19,17 @@ import type { MarkerStyleVariant } from './styles';
 export interface SlotPoint {
   xMm: number;
   yMm: number;
+  /**
+   * 마커를 **제 중심을 축으로** 돌린 각도. 없으면 0이다.
+   *
+   * 배치 프리셋이 주는 자세는 한 가지뿐인데, 방향이 있는 마커(축구 게임판의
+   * 달리는 선수 일러스트)는 같은 그림이 스물두 번 되풀이되면 판이 단조롭다.
+   * 사용자가 마커를 눌러 돌릴 수 있게 한 값이다(2026-09-05 사용자 요청).
+   *
+   * 파트의 `placements[].rotationDeg`(도안이 정한 고정 각도)와는 다르다 —
+   * 이쪽은 **사용자가 만든 값**이라 커스터마이즈에 실려 저장된다.
+   */
+  rotationDeg?: number;
 }
 
 export interface GameCustomization {
@@ -83,6 +94,14 @@ export function validateCustomization(
         slotId: slot.id,
         message: `좌표(${point.xMm}, ${point.yMm})가 '${region.label}' 밖이다`,
       });
+    }
+    // 각도는 범위를 두지 않는다(한 바퀴를 넘겨도 그림은 같다). 다만 수가
+    // 아니면 SVG transform이 통째로 깨지므로 그것만 막는다.
+    if (
+      point.rotationDeg !== undefined &&
+      !Number.isFinite(point.rotationDeg)
+    ) {
+      issues.push({ slotId: slot.id, message: '회전 각도가 숫자가 아니다' });
     }
   }
 

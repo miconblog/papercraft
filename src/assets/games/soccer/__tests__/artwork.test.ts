@@ -11,20 +11,23 @@ import { describe, expect, it } from 'vitest';
 import { getGame } from '@/lib/games/registry';
 import { MARK_STYLES, findPart, slotMarker } from '@/lib/schema';
 import { ARTWORK } from '../artwork';
-import { ballCenters } from '../artwork/ball-markers';
-import { GOAL_NET_ORIGINS, goalNetFaces } from '../artwork/goals';
 import {
-  RULES_CARD_TEXT_LIMIT_MM,
-  layoutRulesCard,
-} from '../artwork/rules-card';
+  GOAL_NET_ORIGINS,
+  goalNetFaces,
+  goalRoofWindowRect,
+} from '../artwork/goals';
 import {
   BALL,
-  BALL_COUNT,
   BOARD,
+  PLAYER_MARKER,
   FIELD,
   FIELD_CENTER_Y_MM,
+  FIELD_MARKS,
+  FIELD_RIGHT_MM,
   GOAL,
+  GOAL_GUIDE,
   GOAL_NET_SIZE,
+  GOAL_ROOF_WINDOW,
   SHEETS,
 } from '../dimensions';
 import { PAPER_NOTE, RULES } from '../rules';
@@ -115,6 +118,7 @@ describe('도안 구조', () => {
 describe('골대 전개도', () => {
   const faces = goalNetFaces(0, 0);
   const face = (id: string) => faces.find((f) => f.id === id)!;
+  const window = goalRoofWindowRect(0, 0);
 
   it('접으면 실제로 세워진다 — 지붕이 옆벽 위에 얹히고 발이 바닥에 닿는다', () => {
     // 지붕의 깊이가 옆벽 깊이와 같아야 앞뒤로 어긋나지 않고 얹힌다.
@@ -136,15 +140,45 @@ describe('골대 전개도', () => {
     }
   });
 
+  it('골문이 실제 골대의 가로세로비(3:1)를 지킨다', () => {
+    // 실제 7.32 × 2.44m. 축척은 공 크기 때문에 과장되어 있지만 비율은 같다.
+    expect(GOAL.mouthWidthMm / GOAL.mouthHeightMm).toBeCloseTo(3, 5);
+  });
+
+  /**
+   * 지붕 창이 이 골대의 존재 이유다 — 평면 프레임은 공이 순식간에 지나가 버려
+   * 골인지 아닌지 보이지 않았다. 상자가 공을 세워 주고, 창이 그 공을 보여 준다.
+   */
+  it('지붕 창이 지붕 안에 있고 공이 보일 만큼 크다', () => {
+    const roof = face('roof');
+    expect(window.xMm).toBeGreaterThan(roof.xMm);
+    expect(window.yMm).toBeGreaterThan(roof.yMm);
+    expect(window.xMm + window.widthMm).toBeLessThan(roof.xMm + roof.widthMm);
+    expect(window.yMm + window.heightMm).toBeLessThan(roof.yMm + roof.heightMm);
+    // 창 짧은 변이 공 반지름보다 커야 위에서 공이 눈에 들어온다.
+    expect(Math.min(window.widthMm, window.heightMm)).toBeGreaterThan(
+      BALL.diameterMm / 2,
+    );
+    // 앞 테두리가 크로스바다 — 다른 변보다 굵어야 골대로 읽힌다.
+    expect(GOAL_ROOF_WINDOW.frontBarMm).toBeGreaterThan(
+      GOAL_ROOF_WINDOW.backBarMm,
+    );
+  });
+
   it('면끼리 겹치지 않는다', () => {
-    for (let a = 0; a < faces.length; a += 1) {
-      for (let b = a + 1; b < faces.length; b += 1) {
-        const [p, q] = [faces[a], faces[b]];
+    const all = [...faces, window];
+    for (let a = 0; a < all.length; a += 1) {
+      for (let b = a + 1; b < all.length; b += 1) {
+        const [p, q] = [all[a], all[b]];
         const overlaps =
           p.xMm < q.xMm + q.widthMm &&
           q.xMm < p.xMm + p.widthMm &&
           p.yMm < q.yMm + q.heightMm &&
           q.yMm < p.yMm + p.heightMm;
+        // 창은 지붕 안에 뚫는 구멍이라 겹치는 게 정상이다.
+        if (p.id === 'roof' || q.id === 'roof') {
+          if (p.id === 'roof-window' || q.id === 'roof-window') continue;
+        }
         expect(overlaps, `${p.id}와 ${q.id}가 겹친다`).toBe(false);
       }
     }
@@ -172,62 +206,85 @@ describe('골대 전개도', () => {
       const layer = doc.getElementById(MARK_STYLES[mark].layerId)!;
       expect(layer.children.length).toBeGreaterThanOrEqual(2);
     }
+    // 오림선은 전개도 2벌의 바깥 윤곽과 지붕 창 2개.
+    expect(doc.getElementById(MARK_STYLES.cut.layerId)!.children.length).toBe(
+      4,
+    );
   });
 
-  it('골라인 안쪽 골대 자리에 들어간다', () => {
-    // 골대는 골 에어리어 안에 서야 필드 표시와 어긋나지 않는다.
-    const field = partOf('field');
-    const goalArea = { depthMm: 20, widthMm: 48 };
-    expect(GOAL.depthMm).toBeLessThanOrEqual(goalArea.depthMm);
-    expect(GOAL.mouthWidthMm).toBeLessThanOrEqual(goalArea.widthMm);
-    expect(FIELD.xMm + GOAL.depthMm).toBeLessThan(field.widthMm / 2);
+  it('골라인 바깥에 서고 필드를 한 뼘도 쓰지 않는다', () => {
+    // 깊이가 종이 여백을 넘는 만큼은 책상 위에 놓인다. 종이 → 책상은 **내려가는**
+    // 단차라 공이 걸리지 않는다 — 반대(책상 → 종이)였다면 이 값이 여백 안으로
+    // 들어와야 한다.
+    expect(GOAL.depthMm).toBeGreaterThan(BALL.diameterMm);
+    // 골문이 골 에어리어 폭 안에 있어야 골대와 선이 맞물려 보인다.
+    expect(GOAL.mouthWidthMm).toBeLessThanOrEqual(FIELD_MARKS.goalAreaWidthMm);
   });
 });
 
-describe('공 마커', () => {
-  it('골대 입구보다 작아 실제로 골대 안에 들어간다', () => {
+describe('골대 자리 눈금', () => {
+  /**
+   * 골대가 골라인 바깥에 서면서 종이 위에 놓을 자리가 안 보이게 됐다. 눈금이
+   * 없으면 가운데 맞추기가 눈대중이 된다(2026-09-05 사용자 요청).
+   */
+  const guideYs = [
+    FIELD_CENTER_Y_MM - GOAL.mouthWidthMm / 2,
+    FIELD_CENTER_Y_MM + GOAL.mouthWidthMm / 2,
+  ];
+
+  it('골포스트 자리와 골문 한가운데를 양 진영에 찍는다', () => {
+    const lines = [...svgOf('field').querySelectorAll('line')].map((node) => ({
+      x1: Number(node.getAttribute('x1')),
+      y1: Number(node.getAttribute('y1')),
+      x2: Number(node.getAttribute('x2')),
+      y2: Number(node.getAttribute('y2')),
+    }));
+    for (const goalLineXMm of [FIELD.xMm, FIELD_RIGHT_MM]) {
+      for (const yMm of guideYs) {
+        const tick = lines.find(
+          (l) => l.y1 === yMm && l.y2 === yMm && l.x1 !== l.x2,
+        );
+        expect(tick, `x=${goalLineXMm} y=${yMm} 눈금이 없다`).toBeDefined();
+      }
+    }
+    // 가운데 눈금은 골포스트 눈금보다 짧아야 헷갈리지 않는다.
+    expect(GOAL_GUIDE.centerInsideMm).toBeLessThan(
+      GOAL_GUIDE.insideMm + GOAL_GUIDE.outsideMm,
+    );
+  });
+
+  it('눈금이 종이 안에 들어가고 골 에어리어 선을 건드리지 않는다', () => {
+    // 골라인 바깥으로 나가는 길이가 종이 여백을 넘으면 재단에서 잘린다.
+    expect(GOAL_GUIDE.outsideMm).toBeLessThan(FIELD.xMm);
+    // 눈금이 필드 안으로 들어오는 길이는 골 에어리어 깊이보다 훨씬 짧다 —
+    // 놀 면에 선을 하나 더 그은 것처럼 보이면 안 된다.
+    expect(GOAL_GUIDE.insideMm).toBeLessThan(FIELD_MARKS.goalAreaDepthMm / 4);
+    // 눈금 y가 골 에어리어 폭 안이라야 골대가 그 구역에 놓인 것으로 보인다.
+    for (const yMm of guideYs) {
+      expect(Math.abs(yMm - FIELD_CENTER_Y_MM)).toBeLessThan(
+        FIELD_MARKS.goalAreaWidthMm / 2,
+      );
+    }
+  });
+});
+
+describe('공', () => {
+  /**
+   * 공 마커 시트는 출력물에서 뺐지만(2026-09-05) 지름은 남는다 — 골문 크기를
+   * 정한 근거이자 준비물 안내에 나가는 값이다. 이 관계가 깨지면 준비한 공이
+   * 골대에 안 들어간다.
+   */
+  it('골문보다 작아 실제로 골대 안으로 들어간다', () => {
     expect(BALL.diameterMm).toBeLessThan(GOAL.mouthWidthMm);
     expect(BALL.diameterMm).toBeLessThan(GOAL.mouthHeightMm);
-    // '뚜렷이 작게' — 입구 폭의 절반 아래.
+    // '뚜렷이 작게' — 골문 폭의 절반 아래.
     expect(BALL.diameterMm * 2).toBeLessThan(GOAL.mouthWidthMm);
   });
 
-  it('골대와 같은 배율 범위를 갖는다 — 따로 뽑으면 크기 관계가 깨진다', () => {
-    const goals = partOf('goals');
-    const balls = partOf('ball-markers');
-    expect(balls.minScale).toBe(goals.minScale);
-    expect(balls.maxScale).toBe(goals.maxScale);
-  });
-
-  it('한 시트에 여러 개가 겹치지 않고 들어간다', () => {
-    const centers = ballCenters();
-    expect(centers).toHaveLength(BALL_COUNT);
-    expect(BALL_COUNT).toBeGreaterThanOrEqual(12);
-
-    const radiusMm = BALL.diameterMm / 2;
-    for (const [x, y] of centers) {
-      expect(x - radiusMm).toBeGreaterThanOrEqual(0);
-      expect(y - radiusMm).toBeGreaterThanOrEqual(0);
-      expect(x + radiusMm).toBeLessThanOrEqual(SHEETS.ballMarkers.widthMm);
-      expect(y + radiusMm).toBeLessThanOrEqual(SHEETS.ballMarkers.heightMm);
-    }
-    for (let a = 0; a < centers.length; a += 1) {
-      for (let b = a + 1; b < centers.length; b += 1) {
-        const distanceMm = Math.hypot(
-          centers[a][0] - centers[b][0],
-          centers[a][1] - centers[b][1],
-        );
-        // 가위가 지나갈 여유까지 본다 — 오림선이 닿기만 해도 오리기 어렵다.
-        expect(distanceMm).toBeGreaterThan(BALL.diameterMm + 2);
-      }
-    }
-  });
-
-  it('오림선이 개수만큼 있다', () => {
-    const layer = svgOf('ball-markers').getElementById(
-      MARK_STYLES.cut.layerId,
-    )!;
-    expect(layer.querySelectorAll('circle')).toHaveLength(BALL_COUNT);
+  it('준비물 안내가 그 지름을 그대로 알려 준다', () => {
+    // 시트를 안 뽑으므로 크기를 아는 길이 이 문장뿐이다.
+    expect(game.supplies.join(' · ')).toContain(`${BALL.diameterMm}mm`);
+    expect(ruleText).toContain(`${BALL.diameterMm}mm`);
   });
 });
 
@@ -243,12 +300,16 @@ describe('선수 슬롯', () => {
     }
   });
 
-  it('마커가 필드 영역 안에 있고 골대 자리를 비워 둔다', () => {
+  it('마커가 필드 영역 안에 있고 골라인을 넘지 않는다', () => {
     const field = partOf('field');
     const region = field.regions.find((r) => r.id === 'playable-field')!;
-    const goalTopMm = FIELD_CENTER_Y_MM - GOAL.mouthWidthMm / 2;
-    const goalBottomMm = FIELD_CENTER_Y_MM + GOAL.mouthWidthMm / 2;
-    const markerHalfMm = 13 / 2; // 세트에서 가장 넓은 변형
+    // 세트에서 가장 넓은 변형. 숫자를 박아 두면 마커를 키워도 검사가 느슨한
+    // 채로 통과한다 — 실제로 12 → 15 → 24mm로 커지는 동안 13이 남아 있었다.
+    const markerHalfMm =
+      Math.max(
+        PLAYER_MARKER.circle.widthMm,
+        PLAYER_MARKER.illustration.widthMm,
+      ) / 2;
 
     for (const slot of playerSlots) {
       const marker = slotMarker(slot)!;
@@ -257,26 +318,26 @@ describe('선수 슬롯', () => {
         region.rect.xMm + region.rect.widthMm,
       );
 
-      const overlapsGoalMouth =
-        marker.yMm > goalTopMm && marker.yMm < goalBottomMm;
-      if (!overlapsGoalMouth) continue;
-      // 골대가 놓이는 깊이 안으로 마커가 들어오면 안 된다.
+      // 골대가 골라인 위에 서므로 마커가 골라인을 넘으면 골대와 부딪힌다.
       expect(
         marker.xMm - markerHalfMm,
-        `${slot.id}가 홈 골대 자리를 침범한다`,
-      ).toBeGreaterThanOrEqual(FIELD.xMm + GOAL.depthMm);
+        `${slot.id}가 홈 골라인을 넘는다`,
+      ).toBeGreaterThanOrEqual(FIELD.xMm);
       expect(
         marker.xMm + markerHalfMm,
-        `${slot.id}가 원정 골대 자리를 침범한다`,
-      ).toBeLessThanOrEqual(FIELD.xMm + FIELD.widthMm - GOAL.depthMm);
+        `${slot.id}가 원정 골라인을 넘는다`,
+      ).toBeLessThanOrEqual(FIELD.xMm + FIELD.widthMm);
     }
   });
 });
 
 describe('게임 방법', () => {
-  it('카드를 넘치지 않는다', () => {
-    const { bottomYMm } = layoutRulesCard();
-    expect(bottomYMm).toBeLessThanOrEqual(RULES_CARD_TEXT_LIMIT_MM);
+  it('도안 정의가 규칙을 들고 있다 — 소개 페이지가 이 값을 그린다', () => {
+    // 인쇄물(`rules-card`)이 사라졌으므로 여기가 규칙의 유일한 자리다.
+    expect(game.rules.length).toBe(RULES.length);
+    expect(
+      game.rules.filter((b) => b.kind === 'heading').length,
+    ).toBeGreaterThan(0);
   });
 
   it('점수 계산 두 방식이 모두 선택지로 안내된다', () => {
@@ -309,9 +370,10 @@ describe('게임 방법', () => {
     expect(others).not.toContain('핸들링');
   });
 
-  it('용지 안내가 들어 있다', () => {
+  it('용지 안내가 규칙 본문에 들어 있다', () => {
+    // 규칙 카드가 사라졌으므로 이 글이 읽히는 곳도 규칙 본문뿐이다.
     expect(PAPER_NOTE).toMatch(/g\/m²/);
-    expect(ARTWORK['rules-card']()).toContain('120g/m²');
+    expect(ruleText).toContain(PAPER_NOTE);
   });
 });
 
@@ -333,9 +395,7 @@ describe('가독성 하한', () => {
   > = {
     field: { sizeMm: 5, from: 'slot' }, // 등번호
     'score-sheet': { sizeMm: 3.6, from: 'artwork' }, // 판 번호
-    'rules-card': { sizeMm: 3, from: 'artwork' }, // 규칙 본문
     goals: { sizeMm: 3.2, from: 'artwork' }, // 조립 안내
-    // 공 마커는 글자에 기대지 않는다.
   };
 
   it('minScale이 필수 글자를 2.5mm 위로 유지한다', () => {

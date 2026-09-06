@@ -20,9 +20,9 @@ import {
 import {
   groupColorOf,
   markerMirrored,
-  MARKER_FILL_LAYER_ID,
+  MARKER_TEAM_LAYER_ID,
   paintOverrides,
-  readableTextColor,
+  markerValueColor,
 } from '@/lib/customization/render';
 import { parseArtwork } from './artwork';
 import { assemblyGuidePages } from './assembly';
@@ -35,7 +35,7 @@ import {
   type Draw,
 } from './draw';
 import { scaleLabel } from './geometry';
-import { circlePath } from './path';
+import { circlePath, translation } from './path';
 import { tileMarks } from './sheetMarks';
 import { planTiles, type TilePlan } from './tile';
 import type { ExportOptions, PartSelection } from './options';
@@ -162,19 +162,26 @@ function markerDraws(
 
   if (variant.artwork) {
     const artwork = parseArtwork(loadArtwork(variant.artwork), {
-      paint: { [MARKER_FILL_LAYER_ID]: { fill } },
+      paint: { [MARKER_TEAM_LAYER_ID]: { fill, stroke: fill } },
     });
     // 반대편으로 공격하는 팀은 마커를 뒤집는다 — 화살촉이 공격 방향을 가리킨다.
     const shaped = markerMirrored(game, slot.groupId)
       ? mirrorDrawsX(artwork.items, variant.widthMm)
       : artwork.items;
-    // 마커의 기준점은 **중심**이다(IDE-010). 좌상단으로 옮겨 놓는다.
+    // 마커의 기준점은 **중심**이다(IDE-010). 사용자가 돌린 각도도 그 중심을
+    // 축으로 삼아야 하므로, 먼저 중심을 원점으로 끌어온 뒤 돌려서 제자리로
+    // 보낸다 — `applyTransform`은 원점을 축으로 돌리기 때문이다. 미리보기도
+    // 같은 차례를 쓴다(`BoardPreview.tsx`).
+    const centered = transformDraws(
+      shaped,
+      translation(-variant.widthMm / 2, -variant.heightMm / 2),
+    );
     items.push(
-      ...transformDraws(shaped, {
+      ...transformDraws(centered, {
         scale: 1,
-        rotationDeg: 0,
-        txMm: point.xMm - variant.widthMm / 2,
-        tyMm: point.yMm - variant.heightMm / 2,
+        rotationDeg: point.rotationDeg ?? 0,
+        txMm: point.xMm,
+        tyMm: point.yMm,
       }),
     );
   } else {
@@ -199,21 +206,21 @@ function markerDraws(
     }
   }
 
-  items.push(
-    text(
-      String(customization.values[slot.id]),
-      point.xMm,
-      point.yMm,
-      variant.valueFontSizeMm,
-      {
+  // 빈 값이면 글자를 얹지 않는다. 축구 게임판의 등번호가 기본으로 비어 있고
+  // (아이가 종이에 직접 쓴다), 빈 글자 상자를 넣으면 PDF에 쓸모없는 요소가
+  // 남는다.
+  const value = String(customization.values[slot.id] ?? '');
+  if (value !== '') {
+    items.push(
+      text(value, point.xMm, point.yMm, variant.valueFontSizeMm, {
         anchor: 'middle',
         baseline: 'central',
-        fill: readableTextColor(fill),
+        fill: markerValueColor(variant, fill),
         // 마커 밖으로 삐져나가지 않게. 두 자리 등번호가 원을 넘지 않는다.
         maxWidthMm: variant.widthMm * 0.8,
-      },
-    ),
-  );
+      }),
+    );
+  }
   return items;
 }
 

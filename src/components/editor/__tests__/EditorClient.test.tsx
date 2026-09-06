@@ -7,7 +7,7 @@ import {
   within,
 } from '@testing-library/react';
 import { getGame } from '@/lib/games';
-import { defaultCustomization } from '@/lib/schema';
+import { defaultCustomization, slotMarker } from '@/lib/schema';
 import { loadCustomization } from '@/lib/customization/storage';
 import { EditorClient } from '../EditorClient';
 
@@ -24,71 +24,54 @@ afterEach(() => {
 });
 
 describe('EditorClient (IDE-006 수용 기준)', () => {
-  it('축구 게임판의 등번호 22개·팀명 2개·팀 색 2개를 모두 편집할 수 있다', () => {
+  it('팀 색 2개를 편집하고, 팀 이름·등번호 입력은 두지 않는다', () => {
     render(<EditorClient game={game} />);
 
-    const numberInputs = screen
-      .getAllByRole('spinbutton')
-      .filter((el) => el.getAttribute('type') === 'number');
-    expect(numberInputs).toHaveLength(22);
-
-    expect(screen.getByLabelText('홈 팀 이름')).toBeInTheDocument();
-    expect(screen.getByLabelText('원정 팀 이름')).toBeInTheDocument();
+    // 색은 마커 **테두리**와 점수 기록칸 막대에 쓰인다 — 원 안은 비어 있다.
     expect(screen.getByLabelText('홈 팀 색')).toBeInTheDocument();
     expect(screen.getByLabelText('원정 팀 색')).toBeInTheDocument();
+
+    // 팀 이름과 등번호는 아이가 종이에 직접 쓰는 자리라 입력을 내지 않는다
+    // (2026-09-06 사용자 요청 — "최대한 간결하고 직관적으로"). 마커 자체는
+    // 미리보기에 스물두 개가 그대로 있어 끌어 옮길 수 있다.
+    expect(screen.queryByLabelText('홈 팀 이름')).toBeNull();
+    expect(screen.queryByLabelText('원정 팀 이름')).toBeNull();
+    for (const team of ['홈 팀', '원정 팀']) {
+      for (let n = 1; n <= 11; n += 1) {
+        expect(screen.queryByLabelText(`${team} ${n}번`)).toBeNull();
+      }
+    }
+    const markers = screen
+      .getAllByRole('button')
+      .filter((el) => el.getAttribute('aria-label')?.includes('번 마커'));
+    expect(markers).toHaveLength(22);
   });
 
-  it('등번호를 바꾸면 미리보기에 반영된다', async () => {
+  it('팀 색을 바꾸면 운동장 미리보기의 마커에 반영된다', async () => {
     render(<EditorClient game={game} />);
 
-    const input = screen.getByLabelText('홈 팀 1번');
-    fireEvent.change(input, { target: { value: '77' } });
-
-    await waitFor(() => {
-      expect(screen.getByText('77')).toBeInTheDocument();
-    });
-  });
-
-  it('팀 이름을 바꾸면 그 이름이 놓인 파트의 미리보기에 반영된다', async () => {
-    render(<EditorClient game={game} />);
-
-    const input = screen.getByLabelText('홈 팀 이름');
-    fireEvent.change(input, { target: { value: '독수리 팀' } });
-
-    // 팀 이름은 점수 기록칸에 놓인다 — 운동장에서는 뺐다(IDE-010, 2026-09-05).
-    fireEvent.click(screen.getByRole('button', { name: '점수 기록칸' }));
-
-    await waitFor(() => {
-      expect(screen.getByText('독수리 팀')).toBeInTheDocument();
-    });
-  });
-
-  it('등번호를 바꾸면 운동장 미리보기에 바로 반영된다', async () => {
-    render(<EditorClient game={game} />);
-
-    fireEvent.change(screen.getByLabelText('홈 팀 9번'), {
-      target: { value: '77' },
+    fireEvent.change(screen.getByLabelText('홈 팀 색'), {
+      target: { value: '#00aa00' },
     });
 
+    // 아트워크를 불러오기 전에는 대체 원이, 불러온 뒤에는 `pc-marker-team`
+    // 레이어가 그 색을 받는다 — 어느 쪽이든 그 색으로 칠한 요소가 생긴다.
     await waitFor(() => {
-      const drawn = screen
-        .getAllByText('77')
-        .filter((el) => el.tagName === 'text');
-      expect(drawn.length).toBeGreaterThan(0);
+      expect(document.querySelector('[fill="#00aa00"]')).not.toBeNull();
     });
   });
 
   it('기본값으로 되돌리기를 누르면 바꾼 값이 되돌아간다', async () => {
     render(<EditorClient game={game} />);
 
-    const input = screen.getByLabelText('홈 팀 1번');
-    fireEvent.change(input, { target: { value: '77' } });
-    await waitFor(() => expect(input).toHaveValue(77));
+    const input = screen.getByLabelText('홈 팀 색');
+    fireEvent.change(input, { target: { value: '#00aa00' } });
+    await waitFor(() => expect(input).toHaveValue('#00aa00'));
 
     fireEvent.click(
       screen.getByRole('button', { name: '기본값으로 되돌리기' }),
     );
-    await waitFor(() => expect(input).toHaveValue(1));
+    await waitFor(() => expect(input).toHaveValue('#1d4ed8'));
   });
 
   it('그룹은 좌우로 갈리고 공통 값은 가운데 한 번만 나온다', () => {
@@ -103,7 +86,8 @@ describe('EditorClient (IDE-006 수용 기준)', () => {
     for (const slot of game.slots.filter((s) => !s.groupId)) {
       expect(screen.getAllByLabelText(slot.label)).toHaveLength(1);
     }
-    for (const slot of game.slots.filter((s) => s.groupId)) {
+    // 마커 슬롯은 폼에 입력이 없다 — 미리보기의 마커가 그 편집이다.
+    for (const slot of game.slots.filter((s) => s.groupId && !slotMarker(s))) {
       expect(screen.getAllByLabelText(slot.label)).toHaveLength(1);
     }
   });
@@ -122,17 +106,19 @@ describe('EditorClient (IDE-006 수용 기준)', () => {
           .find((p) => p.formationId === formationId && p.groupId === 'home')!
           .positions.find((pos) => pos.slotId === 'home-player-2')!.yMm,
       );
+    // 등번호가 기본으로 비어 있어(2026-09-05) 글자로는 마커를 찾을 수 없다.
+    // 마커의 접근성 이름이 좌표를 그대로 읽어 준다.
     const findPlayer2At = (y: string) =>
-      screen
-        .getAllByText('2')
-        .find((el) => el.tagName === 'text' && el.getAttribute('y') === y);
+      screen.queryByRole('button', {
+        name: new RegExp(`홈 팀 2번 마커 — 가로 .+mm, 세로 ${y}mm`),
+      });
 
-    expect(findPlayer2At(homeY('4-4-2'))).toBeDefined();
+    expect(findPlayer2At(homeY('4-4-2'))).not.toBeNull();
 
     fireEvent.click(within(homeSection).getByRole('button', { name: '3-5-2' }));
 
     await waitFor(() => {
-      expect(findPlayer2At(homeY('3-5-2'))).toBeDefined();
+      expect(findPlayer2At(homeY('3-5-2'))).not.toBeNull();
     });
     // 버튼도 눌린 상태로 표시된다.
     expect(
@@ -217,19 +203,19 @@ describe('EditorClient (IDE-006 수용 기준)', () => {
 
   it('새로고침해도 입력값이 유지된다 — 저장 후 다시 마운트하면 복원된다', async () => {
     const { unmount } = render(<EditorClient game={game} />);
-    const input = screen.getByLabelText('홈 팀 이름');
-    fireEvent.change(input, { target: { value: '독수리 팀' } });
+    const input = screen.getByLabelText('홈 팀 색');
+    fireEvent.change(input, { target: { value: '#00aa00' } });
 
     await waitFor(() => {
       expect(
         window.localStorage.getItem('papercraft:customization:soccer'),
-      ).toContain('독수리 팀');
+      ).toContain('#00aa00');
     });
     unmount();
 
     render(<EditorClient game={game} />);
     await waitFor(() => {
-      expect(screen.getByLabelText('홈 팀 이름')).toHaveValue('독수리 팀');
+      expect(screen.getByLabelText('홈 팀 색')).toHaveValue('#00aa00');
     });
   });
 });

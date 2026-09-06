@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { gameIds, getGame } from '@/lib/games';
+import { groupRuleSections, type RuleBody } from '@/lib/schema';
 import {
   formatPlayers,
   ORIENTATION_LABEL,
@@ -12,6 +13,25 @@ import {
 
 type Params = { id: string };
 type Props = { params: Promise<Params> };
+
+/**
+ * 같은 종류가 잇달아 오는 만큼씩 끊는다.
+ *
+ * 한 절에 번호 있는 항목(`step`)과 없는 항목(`bullet`)이 섞이는데 — 축구
+ * 게임판의 "차리기"가 그렇다 — 하나의 `ol`에 몰아넣으면 점 항목까지 번호를
+ * 먹거나 번호가 건너뛴다.
+ */
+function groupRuns(
+  blocks: readonly RuleBody[],
+): { kind: RuleBody['kind']; texts: string[] }[] {
+  const runs: { kind: RuleBody['kind']; texts: string[] }[] = [];
+  for (const block of blocks) {
+    const last = runs.at(-1);
+    if (last?.kind === block.kind) last.texts.push(block.text);
+    else runs.push({ kind: block.kind, texts: [block.text] });
+  }
+  return runs;
+}
 
 /** 게임마다 하나씩 빌드 시점에 정적 생성한다 — 등록소에 게임을 더하면 이
  * 목록도 같이 늘어난다(IDE-005 수용 기준: 페이지가 자동으로 생긴다). */
@@ -41,6 +61,7 @@ export default async function GamePage({ params }: Props) {
 
   const board = game.parts.find((p) => p.kind === 'board')!;
   const accessories = game.parts.filter((p) => p.kind !== 'board');
+  const sections = groupRuleSections(game.rules);
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
@@ -90,6 +111,47 @@ export default async function GamePage({ params }: Props) {
       <p className="mt-6 leading-7 text-zinc-700 dark:text-zinc-300">
         {game.description}
       </p>
+
+      {/* 규칙은 인쇄물이 아니라 여기서 읽는다 — 게임 방법 카드를 출력물에서
+          뺐다(2026-09-05). 무엇을 뽑을지(구성)보다 어떻게 노는지가 먼저 궁금한
+          정보라 위에 둔다. */}
+      {sections.length > 0 && (
+        <section className="mt-8">
+          <h2 className="text-lg font-semibold">게임 방법</h2>
+          <div className="mt-3 space-y-5 rounded-lg border border-black/10 p-4 dark:border-white/15">
+            {sections.map((section, i) => (
+              <div key={section.heading ?? `intro-${i}`}>
+                {section.heading && (
+                  <h3 className="text-sm font-semibold">{section.heading}</h3>
+                )}
+                {/* 번호 있는 항목과 없는 항목이 한 절에 섞일 수 있어 목록을
+                    나눠 그린다 — `ol`에 점 항목을 넣으면 번호가 건너뛴다. */}
+                {groupRuns(section.blocks).map((run, j) =>
+                  run.kind === 'step' ? (
+                    <ol
+                      key={j}
+                      className="mt-2 list-decimal space-y-1 pl-5 text-sm leading-6 text-zinc-700 dark:text-zinc-300"
+                    >
+                      {run.texts.map((text) => (
+                        <li key={text}>{text}</li>
+                      ))}
+                    </ol>
+                  ) : (
+                    <ul
+                      key={j}
+                      className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-zinc-700 dark:text-zinc-300"
+                    >
+                      {run.texts.map((text) => (
+                        <li key={text}>{text}</li>
+                      ))}
+                    </ul>
+                  ),
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="mt-8">
         <h2 className="text-lg font-semibold">구성</h2>

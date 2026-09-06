@@ -78,21 +78,14 @@ describe('PDF 산출', () => {
 
   it('보드와 부속을 따로 뽑을 수 있고 부속만도 된다', async () => {
     const board = await build([sel('field')]);
-    const accessories = await build([
-      sel('score-sheet'),
-      sel('rules-card'),
-      sel('goals'),
-      sel('ball-markers', 1, 2),
-    ]);
+    const accessories = await build([sel('score-sheet'), sel('goals', 1, 2)]);
     expect(board.doc.parts.map((p) => p.part.id)).toEqual(['field']);
     expect(accessories.doc.parts.map((p) => p.part.id)).toEqual([
       'score-sheet',
-      'rules-card',
       'goals',
-      'ball-markers',
     ]);
-    // 부속만 뽑아도 보드가 딸려 오지 않는다.
-    expect(accessories.pdf.getPageCount()).toBe(5);
+    // 부속만 뽑아도 보드가 딸려 오지 않는다. 점수 기록칸 1장 + 골대 1장 × 2벌.
+    expect(accessories.pdf.getPageCount()).toBe(3);
   });
 
   it('조립 안내 시트가 맨 앞에 붙는다', async () => {

@@ -166,21 +166,40 @@ export const markLayer = (
   );
 };
 
-/** 풀칠면 빗금. 45° 평행선을 사각형 안에만 그린다. */
-export const glueHatch = (
+/**
+ * 45° 평행선을 사각형 안에만 그린다.
+ *
+ * `down`이 참이면 ↘ 방향(x − y = k), 거짓이면 ↗ 방향(x + y = k)이다. 두 방향을
+ * 겹치면 마름모 격자가 된다 — 풀칠면 빗금은 한 방향, 골 그물은 두 방향을 쓴다.
+ */
+const hatch = (
   xMm: number,
   yMm: number,
   widthMm: number,
   heightMm: number,
-  spacingMm = 1.5,
+  spacingMm: number,
+  down: boolean,
 ): string[] => {
   const strokes: string[] = [];
-  // 45°선 x + y = k. 사각형을 가로지르는 k 범위를 훑는다.
+  const step = spacingMm * Math.SQRT2;
+  if (down) {
+    // x − y = k. k 범위는 사각형의 좌하 모서리에서 우상 모서리까지다.
+    const kStart = xMm - (yMm + heightMm);
+    const kEnd = xMm + widthMm - yMm;
+    for (let k = kStart + step; k < kEnd; k += step) {
+      // 선분과 사각형의 교차 구간을 x로 표현하면 [max(x, k+y), min(x+w, k+y+h)]
+      const x1 = Math.max(xMm, k + yMm);
+      const x2 = Math.min(xMm + widthMm, k + yMm + heightMm);
+      if (x2 - x1 <= 0.01) continue;
+      strokes.push(line(x1, x1 - k, x2, x2 - k));
+    }
+    return strokes;
+  }
+  // x + y = k.
   const kStart = xMm + yMm;
   const kEnd = xMm + widthMm + yMm + heightMm;
-  const step = spacingMm * Math.SQRT2;
   for (let k = kStart + step; k < kEnd; k += step) {
-    // 선분과 사각형의 교차 구간을 x로 표현하면 [max(x, k-(y+h)), min(x+w, k-y)]
+    // 교차 구간을 x로 표현하면 [max(x, k-(y+h)), min(x+w, k-y)]
     const x1 = Math.max(xMm, k - (yMm + heightMm));
     const x2 = Math.min(xMm + widthMm, k - yMm);
     if (x2 - x1 <= 0.01) continue;
@@ -188,6 +207,27 @@ export const glueHatch = (
   }
   return strokes;
 };
+
+/** 풀칠면 빗금. 45° 평행선을 사각형 안에만 그린다. */
+export const glueHatch = (
+  xMm: number,
+  yMm: number,
+  widthMm: number,
+  heightMm: number,
+  spacingMm = 1.5,
+): string[] => hatch(xMm, yMm, widthMm, heightMm, spacingMm, false);
+
+/** 골 그물 격자. 45° 두 방향을 겹쳐 마름모 눈을 만든다. */
+export const netHatch = (
+  xMm: number,
+  yMm: number,
+  widthMm: number,
+  heightMm: number,
+  spacingMm = 1.4,
+): string[] => [
+  ...hatch(xMm, yMm, widthMm, heightMm, spacingMm, false),
+  ...hatch(xMm, yMm, widthMm, heightMm, spacingMm, true),
+];
 
 export interface SvgDocumentOptions {
   readonly widthMm: number;

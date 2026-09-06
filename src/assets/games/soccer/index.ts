@@ -11,31 +11,31 @@
  * `docs/soccer-artwork.md` 11절을 본다.
  */
 import { defineGame, mirrorPositions, type SlotPosition } from '@/lib/schema';
+import { RULES } from './rules';
 import {
   artworkPath,
   BALL,
-  BALL_COUNT,
   BOARD,
   FIELD,
   FORMATION_LANES,
+  GOALKEEPER_POSE,
+  MARKER_POSES,
+  markerArtworkId,
+  poseStyleSetId,
+  GOAL,
   PLAYER_MARKER,
   SHEETS,
-  SCORE_TABLE,
-  SCORE_TEAM_NAME_Y_MM,
-  scoreTeamColumnCenterXMm,
 } from './dimensions';
 
 const TEAMS = [
   {
     id: 'home',
     label: '홈 팀',
-    defaultName: '파랑 팀',
     defaultColor: '#1d4ed8',
   },
   {
     id: 'away',
     label: '원정 팀',
-    defaultName: '빨강 팀',
     defaultColor: '#dc2626',
   },
 ] as const;
@@ -121,6 +121,37 @@ const FORMATIONS: Record<string, ReadonlyArray<readonly [number, number]>> = {
 /** 슬롯의 기본 좌표는 4-4-2 배치다 — 첫 화면이 곧 쓸 수 있는 배치여야 한다. */
 const DEFAULT_FORMATION = '4-4-2';
 
+/**
+ * 선수 슬롯 1–11번이 쓰는 자세 (2026-09-06).
+ *
+ * 옛 인쇄본처럼 판 위 선수가 저마다 다른 동작을 하고 있게 한다(사용자 요청).
+ * 배정 기준은 **기본 대형(4-4-2)의 역할**이다 — 1번 골키퍼는 세이브, 2–5번
+ * 수비는 낮게 벌려 선 자세와 달리기, 6–9번 중원은 달리기·패스, 10–11번 공격은
+ * 슛과 헤딩이다. 같은 줄에 선 이웃끼리는 자세를 엇갈리게 두어 줄이 반복돼
+ * 보이지 않게 했다.
+ *
+ * 자세는 슬롯에 붙는다(대형이 아니라). 대형을 바꾸면 같은 선수가 다른 레인으로
+ * 옮겨 가므로 역할과 자세가 어긋날 수 있는데, 자세는 판을 살리는 장식이지
+ * 규칙에 쓰이는 값이 아니라 그대로 둔다 — 대형마다 자세를 다시 배정하면
+ * 프리셋을 고를 때마다 그림이 튄다.
+ *
+ * 두 팀이 같은 표를 쓴다. 원정은 마커를 통째로 좌우 반전하므로 자세가 같아도
+ * 서로 반대쪽을 본다(`mirrorMarkers`).
+ */
+const POSE_BY_PLAYER: readonly string[] = [
+  GOALKEEPER_POSE.id, // 1 · 골키퍼
+  'block', // 2 · 오른쪽 수비
+  'run', // 3 · 중앙 수비
+  'block', // 4 · 중앙 수비
+  'pass', // 5 · 왼쪽 수비
+  'run', // 6 · 오른쪽 중원
+  'pass', // 7 · 중앙 중원
+  'sprint', // 8 · 중앙 중원
+  'run', // 9 · 왼쪽 중원
+  'strike', // 10 · 공격
+  'header', // 11 · 공격
+];
+
 const playerSlotId = (team: string, n: number) => `${team}-player-${n}`;
 
 const homeToAwaySlotId: Record<string, string> = Object.fromEntries(
@@ -149,53 +180,111 @@ const playerSlots = TEAMS.flatMap((team) => {
 
   return positions.map((pos, i) => ({
     id: pos.slotId,
-    kind: 'number' as const,
+    // 숫자가 아니라 **글자**다. `number` 슬롯은 빈 값을 허용하지 않는데, 이
+    // 도안의 기본값은 비어 있어야 한다 — 아이가 종이에 직접 쓰는 자리다
+    // (2026-09-05 사용자 요청). 넣고 싶은 사람은 에디터에서 넣을 수 있다.
+    kind: 'text' as const,
     label: `${team.label} ${i + 1}번`,
-    help: i === 0 ? '골키퍼 자리다.' : undefined,
+    help:
+      i === 0
+        ? '골키퍼 자리다. 비워 두면 등번호 없이 빈 원으로 인쇄된다.'
+        : undefined,
     groupId: team.id,
     tags: i === 0 ? ['goalkeeper'] : [],
-    min: 1,
-    max: 99,
-    integer: true,
-    default: i + 1,
+    maxLength: 2,
+    default: '',
+    placeholder: '비움',
     placements: [
       {
         partId: 'field',
         mode: 'marker' as const,
         xMm: pos.xMm,
         yMm: pos.yMm,
-        // 골키퍼는 별도 스타일 세트를 쓴다 — 필드 선수와 크기는 같고
-        // 실루엣만 다르다(안쪽 테). 흑백에서도 역할이 구분되는 이유다.
-        styleSetId: i === 0 ? 'goalkeeper-marker' : 'player-marker',
+        // 세트가 곧 **자세**다(`POSE_BY_PLAYER`). 골키퍼 세트는 그 위에
+        // 장갑과 안쪽 테까지 달라 흑백에서도 역할이 구분된다.
+        styleSetId: poseStyleSetId(POSE_BY_PLAYER[i]),
         regionId: 'playable-field',
       },
     ],
   }));
 });
 
-const teamNameSlots = TEAMS.map((team, i) => ({
-  id: `${team.id}-name`,
-  kind: 'text' as const,
-  label: `${team.label} 이름`,
-  groupId: team.id,
-  maxLength: 12,
-  default: team.defaultName,
-  placeholder: '팀 이름',
-  // 점수 기록칸에만 나온다. 운동장에서는 뺐다 — 팀 이름 띠가 놀 면을 좁혔고,
-  // 어느 팀이 어느 쪽인지는 마커 색과 화살표 방향이 이미 말해 준다(2026-09-05).
-  placements: [
+/**
+ * 마커 스타일 세트 — **자세 하나 = 세트 하나**다.
+ *
+ * 세 변형(`circle` · `illustration` · `outline`)을 모든 세트가 똑같이 갖는다.
+ * 사용자가 고르는 것은 세트가 아니라 변형이고(`marker-style` 슬롯 하나가 모든
+ * 세트를 동시에 바꾼다), 세트는 슬롯에 배정된 자세다. 스키마가 "선택 슬롯의
+ * 선택지 = 변형 id 목록"을 강제하므로 세트마다 변형 구성이 같아야 한다.
+ *
+ * 빈 원은 자세와 무관해 **파일 하나를 모든 세트가 나눠 쓴다** — 자세마다 같은
+ * 원을 열두 번 찍을 이유가 없다.
+ */
+const markerStyleSet = (
+  pose: { readonly id: string; readonly label: string },
+  isGoalkeeper: boolean,
+) => ({
+  id: poseStyleSetId(pose.id),
+  label: `${isGoalkeeper ? '골키퍼' : '선수'} 마커 · ${pose.label}`,
+  selectorSlotId: 'marker-style',
+  variants: [
     {
-      partId: 'score-sheet',
-      mode: 'text' as const,
-      xMm: scoreTeamColumnCenterXMm(i as 0 | 1),
-      yMm: SCORE_TEAM_NAME_Y_MM,
-      align: 'center' as const,
-      fontSizeMm: 5,
-      maxWidthMm: SCORE_TABLE.teamColumnMm - 6,
+      id: 'circle',
+      label: '빈 원',
+      widthMm: PLAYER_MARKER.circle.widthMm,
+      heightMm: PLAYER_MARKER.circle.heightMm,
+      valueFontSizeMm: PLAYER_MARKER.circle.valueFontSizeMm,
+      // 속을 채우지 않는다 — 아이가 칠할 면이다. 팀 색은 테두리로 받고,
+      // 등번호도 흰 배경 위라 팀 색으로 찍힌다.
+      filled: false,
+      artwork: artworkPath(
+        isGoalkeeper ? 'goalkeeper-marker-circle' : 'player-marker-circle',
+      ),
+    },
+    {
+      id: 'illustration',
+      label: '선수 그림',
+      widthMm: PLAYER_MARKER.illustration.widthMm,
+      heightMm: PLAYER_MARKER.illustration.heightMm,
+      valueFontSizeMm: PLAYER_MARKER.illustration.valueFontSizeMm,
+      artwork: artworkPath(markerArtworkId(pose.id, 'illustration')),
+    },
+    {
+      id: 'outline',
+      label: '선수 그림 · 색칠용',
+      widthMm: PLAYER_MARKER.illustration.widthMm,
+      heightMm: PLAYER_MARKER.illustration.heightMm,
+      valueFontSizeMm: PLAYER_MARKER.illustration.valueFontSizeMm,
+      // 속이 비어 있다 — 실루엣과 같은 그림을 아이가 칠할 수 있게 낸 변형이라
+      // 등번호도 빈 원과 같은 규칙(팀 색)을 따라야 흰 종이 위에서 읽힌다.
+      filled: false,
+      artwork: artworkPath(markerArtworkId(pose.id, 'outline')),
     },
   ],
-}));
+});
 
+const markerStyleSets = [
+  ...MARKER_POSES.map((pose) => markerStyleSet(pose, false)),
+  markerStyleSet(GOALKEEPER_POSE, true),
+];
+
+/*
+ * 팀 이름 슬롯은 없다(2026-09-06 사용자 요청 — "팀 이름 입력칸도 필요없어").
+ * 점수 기록칸 헤더의 팀 칸은 색 막대 아래를 **비워 둔다** — 등번호처럼 아이가
+ * 종이에 직접 쓰는 자리다. 어느 팀 칸인지는 색 막대가 말해 준다.
+ */
+
+/**
+ * 팀 색 — **마커 테두리와 점수 기록칸 색 막대**에 쓴다(2026-09-05 복원).
+ *
+ * 마커를 빈 원으로 바꾸면서 한 번 뺐다가, 사용자가 "원의 색상은 빨강과 파랑으로
+ * 구분해 달라"고 해 되살렸다. 원 **안**은 여전히 비어 있다 — 색이 붙는 곳은
+ * 테두리와 화살촉뿐이라 아이가 칠할 면은 그대로 남는다.
+ *
+ * 운동장 파트에는 `paint` 배치를 두지 않는다. 마커 색은 배치가 아니라 그룹의
+ * `colorSlotId`를 통해 렌더러가 읽어 간다(`lib/customization/render.ts`) —
+ * 마커는 파트 레이어가 아니라 슬롯마다 따로 그려지기 때문이다.
+ */
 const teamColorSlots = TEAMS.map((team) => ({
   id: `${team.id}-color`,
   kind: 'color' as const,
@@ -203,8 +292,6 @@ const teamColorSlots = TEAMS.map((team) => ({
   help: '흑백으로 뽑아도 두 팀이 구분되도록 밝기 차이를 두면 좋다.',
   groupId: team.id,
   default: team.defaultColor,
-  // 운동장에는 팀 색 막대를 두지 않는다(2026-09-05) — 선수 마커가 이미 팀 색으로
-  // 칠해지므로 띠를 하나 더 그릴 이유가 없었다.
   placements: [
     {
       partId: 'score-sheet',
@@ -219,16 +306,21 @@ export default defineGame({
   schemaVersion: 1,
   id: 'soccer',
   title: '축구 게임판',
-  tagline: '종이 공을 연필로 튕겨 상대 골대에 넣는 2인용 축구',
+  tagline: '공을 연필로 튕겨 상대 골대에 넣는 2인용 축구',
   description:
-    '운동장을 인쇄해 펼치고, 선수 마커 위의 종이 공을 연필로 튕겨 패스와 슛을 한다. ' +
-    '골대는 오려 접어 세우고, 점수는 함께 뽑은 기록칸에 적는다. 등번호와 팀 이름·색, ' +
-    '선수 배치를 원하는 대로 바꿔 인쇄할 수 있다.',
+    '운동장을 인쇄해 펼치고, 선수 마커 위의 공을 연필로 튕겨 패스와 슛을 한다. ' +
+    '골대는 오려 접어 골라인 바깥 눈금에 맞춰 세우고, 점수는 함께 뽑은 기록칸에 ' +
+    '적는다. 등번호와 팀 이름·색, 선수 배치를 원하는 대로 바꿔 인쇄할 수 있다.',
   players: { min: 2, max: 2 },
-  supplies: ['연필', '가위', '풀'],
+  supplies: ['연필', '가위', '풀', `공(지름 ${BALL.diameterMm}mm쯤)`],
   // 카탈로그(IDE-005) 썸네일 — 별도로 그리지 않고 운동장 아트워크를 그대로 쓴다.
   // 실제 인쇄될 도안을 보여주는 게 만든 아이콘보다 정직한 미리보기다.
   thumbnail: artworkPath('field'),
+
+  // 규칙은 소개 페이지가 그린다. 예전에는 `rules-card` 파트로 뽑았지만 그 카드를
+  // 출력물에서 뺐다(2026-09-05 사용자 요청) — 화면에서 읽으면 되는 글이라
+  // 인쇄 매수를 쓸 이유가 없었다.
+  rules: [...RULES],
 
   parts: [
     {
@@ -293,58 +385,30 @@ export default defineGame({
       artwork: artworkPath('score-sheet'),
     },
     {
-      id: 'rules-card',
-      kind: 'cutout',
-      title: '게임 방법',
-      description: '기본 규칙과 하우스 룰 안내. 오려서 상자에 넣어 둔다.',
-      widthMm: SHEETS.rulesCard.widthMm,
-      heightMm: SHEETS.rulesCard.heightMm,
-      orientation: 'portrait',
-      // 규칙 본문이 3mm라 다른 부속보다 하한이 높다.
-      minScale: 0.85,
-      maxScale: 2,
-      marks: ['cut'],
-      artwork: artworkPath('rules-card'),
-    },
-    {
       id: 'goals',
       kind: 'buildable',
       title: '골대 전개도',
       description:
-        '오려 접어 세우는 입체 골대 2개. 바닥이 없어 공이 턱에 걸리지 않는다. ' +
-        '공 마커와 같은 배율로 뽑아야 입구와 공의 크기가 맞는다.',
+        '오려 접어 골라인 바깥에 세우는 입체 골대 2개. 바닥이 없어 공이 턱에 걸리지 ' +
+        '않고, 들어간 공은 뒷벽에 막혀 상자 안에 멈춘다 — 지붕에 낸 창으로 내려다보면 ' +
+        '골이 바로 보인다. 운동장 골라인의 눈금에 앞면 좌우를 맞춰 놓는다. ' +
+        `골문이 ${GOAL.mouthWidthMm}×${GOAL.mouthHeightMm}mm라 배율을 바꾸면 공 크기도 함께 맞춰야 한다.`,
       widthMm: SHEETS.goals.widthMm,
       heightMm: SHEETS.goals.heightMm,
       orientation: 'landscape',
       minScale: 0.8,
       maxScale: 2,
-      // 접는선은 전부 산접기다 — 인쇄면이 골대 바깥을 향한다.
+      // 접는선은 전부 산접기다 — 인쇄면이 골대 바깥을 향한다. 지붕 탭을 옆벽에
+      // 붙여야 상자 모양이 유지되므로 `glue`가 다시 필요하다(2026-09-05).
       marks: ['cut', 'fold-mountain', 'glue'],
       artwork: artworkPath('goals'),
-    },
-    {
-      id: 'ball-markers',
-      kind: 'cutout',
-      title: '공 마커',
-      description:
-        `연필로 튕기는 납작한 종이 공. 지름 ${BALL.diameterMm}mm짜리 ${BALL_COUNT}개가 한 시트에 있다. ` +
-        '골대 전개도와 같은 배율로 뽑는다.',
-      widthMm: SHEETS.ballMarkers.widthMm,
-      heightMm: SHEETS.ballMarkers.heightMm,
-      orientation: 'landscape',
-      // 공은 글자가 아니라 골대 입구와의 크기 관계가 하한을 정한다.
-      minScale: 0.8,
-      maxScale: 2,
-      defaultCopies: 2,
-      marks: ['cut'],
-      artwork: artworkPath('ball-markers'),
     },
   ],
 
   groups: TEAMS.map((team) => ({
     id: team.id,
     label: team.label,
-    nameSlotId: `${team.id}-name`,
+    // 이름 슬롯은 없다 — 점수 기록칸의 팀 칸은 아이가 직접 쓴다(2026-09-06).
     colorSlotId: `${team.id}-color`,
     // 원정은 왼쪽 골대로 공격한다 — 마커의 화살촉이 그쪽을 가리키게 뒤집는다.
     // 두 팀이 필드 전체에 섞여 서기 때문에 위치로는 팀을 알 수 없고, 흑백으로
@@ -352,56 +416,11 @@ export default defineGame({
     mirrorMarkers: team.id === 'away',
   })),
 
-  // 필드 선수·골키퍼가 스타일 세트를 따로 쓴다(IDE-010) — 크기는 같고 실루엣만
-  // 다르다. 두 세트 다 같은 `marker-style` 슬롯으로 원형·일러스트를 고른다.
-  styleSets: [
-    {
-      id: 'player-marker',
-      label: '선수 마커',
-      selectorSlotId: 'marker-style',
-      variants: [
-        {
-          id: 'circle',
-          label: '원 + 등번호',
-          widthMm: PLAYER_MARKER.circle.widthMm,
-          heightMm: PLAYER_MARKER.circle.heightMm,
-          valueFontSizeMm: PLAYER_MARKER.circle.valueFontSizeMm,
-          artwork: artworkPath('player-marker-circle'),
-        },
-        {
-          id: 'illustration',
-          label: '선수 일러스트',
-          widthMm: PLAYER_MARKER.illustration.widthMm,
-          heightMm: PLAYER_MARKER.illustration.heightMm,
-          valueFontSizeMm: PLAYER_MARKER.illustration.valueFontSizeMm,
-          artwork: artworkPath('player-marker-illustration'),
-        },
-      ],
-    },
-    {
-      id: 'goalkeeper-marker',
-      label: '골키퍼 마커',
-      selectorSlotId: 'marker-style',
-      variants: [
-        {
-          id: 'circle',
-          label: '원 + 등번호',
-          widthMm: PLAYER_MARKER.circle.widthMm,
-          heightMm: PLAYER_MARKER.circle.heightMm,
-          valueFontSizeMm: PLAYER_MARKER.circle.valueFontSizeMm,
-          artwork: artworkPath('goalkeeper-marker-circle'),
-        },
-        {
-          id: 'illustration',
-          label: '선수 일러스트',
-          widthMm: PLAYER_MARKER.illustration.widthMm,
-          heightMm: PLAYER_MARKER.illustration.heightMm,
-          valueFontSizeMm: PLAYER_MARKER.illustration.valueFontSizeMm,
-          artwork: artworkPath('goalkeeper-marker-illustration'),
-        },
-      ],
-    },
-  ],
+  // 자세마다 스타일 세트가 하나씩이다(IDE-010, 2026-09-06) — 마커 아트워크는
+  // 변형에 붙고 변형은 세트에 붙으므로, 선수마다 다른 그림을 쓰려면 세트를
+  // 나누는 수밖에 없다. 세트가 달라도 변형 id와 크기는 같아 슬롯끼리 바꿔
+  // 끼워도 배치가 어긋나지 않는다.
+  styleSets: markerStyleSets,
 
   slots: [
     {
@@ -409,13 +428,13 @@ export default defineGame({
       kind: 'choice',
       label: '선수 마커 모양',
       options: [
-        { value: 'circle', label: '원 + 등번호' },
-        { value: 'illustration', label: '선수 일러스트' },
+        { value: 'circle', label: '빈 원' },
+        { value: 'illustration', label: '선수 그림' },
+        { value: 'outline', label: '선수 그림 · 색칠용' },
       ],
       default: 'circle',
       placements: [{ partId: 'field', mode: 'control' }],
     },
-    ...teamNameSlots,
     ...teamColorSlots,
     ...playerSlots,
   ],

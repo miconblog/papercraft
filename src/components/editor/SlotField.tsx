@@ -21,26 +21,53 @@ export interface SlotFieldProps {
   value: SlotValue;
   error: string | null;
   onChange: (value: SlotValue) => void;
+  /**
+   * 라벨과 입력을 한 줄에 놓는다. 에디터의 도구 막대·팀 줄처럼 세로 공간이
+   * 아까운 자리에 쓴다(2026-09-06 레이아웃 정리). 기본은 라벨 아래 입력이다.
+   */
+  inline?: boolean;
+  /**
+   * 라벨을 화면에서 숨긴다(스크린리더에는 남는다). 팀 줄의 색처럼 바로 옆
+   * 제목이 이미 무엇인지 말해 주는 입력에 쓴다 — "홈 팀" 옆에 "홈 팀 색"을
+   * 또 쓰면 같은 말이 두 번이다.
+   */
+  labelHidden?: boolean;
 }
 
 /** 폼 입력에 붙는 id. 미리보기에서 슬롯을 누르면 이 id로 포커스를 옮긴다. */
 export const slotFieldId = (slotId: string): string => `slot-field-${slotId}`;
 
-export function SlotField({ slot, value, error, onChange }: SlotFieldProps) {
+export function SlotField({
+  slot,
+  value,
+  error,
+  onChange,
+  inline = false,
+  labelHidden = false,
+}: SlotFieldProps) {
   const fieldId = slotFieldId(slot.id);
   const errorId = `${fieldId}-error`;
 
   return (
-    <div>
-      <label htmlFor={fieldId} className="block text-sm font-medium">
+    <div className={inline ? 'flex flex-wrap items-center gap-x-2' : undefined}>
+      <label
+        htmlFor={fieldId}
+        className={
+          labelHidden
+            ? 'sr-only'
+            : inline
+              ? 'text-sm font-medium'
+              : 'block text-sm font-medium'
+        }
+      >
         {slot.label}
       </label>
-      {slot.help && (
+      {slot.help && !inline && (
         <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
           {slot.help}
         </p>
       )}
-      <div className="mt-1">
+      <div className={inline ? undefined : 'mt-1'}>
         <SlotInput
           slot={slot}
           fieldId={fieldId}
@@ -48,6 +75,7 @@ export function SlotField({ slot, value, error, onChange }: SlotFieldProps) {
           invalid={error !== null}
           errorId={errorId}
           onChange={onChange}
+          inline={inline}
         />
       </div>
       {error && (
@@ -70,6 +98,7 @@ function SlotInput({
   invalid,
   errorId,
   onChange,
+  inline,
 }: {
   slot: Slot;
   fieldId: string;
@@ -77,9 +106,12 @@ function SlotInput({
   invalid: boolean;
   errorId: string;
   onChange: (value: SlotValue) => void;
+  inline: boolean;
 }) {
+  // 한 줄 배치에서는 입력이 줄 폭을 다 먹지 않는다 — 옆에 다른 조작이 온다.
   const commonClassName =
-    'w-full rounded-md border bg-transparent px-2.5 py-1.5 text-sm outline-none focus:ring-2 focus:ring-offset-0 ' +
+    (inline ? 'w-40 ' : 'w-full ') +
+    'rounded-md border bg-transparent px-2.5 py-1.5 text-sm outline-none focus:ring-2 focus:ring-offset-0 ' +
     (invalid
       ? 'border-red-500 focus:ring-red-500/40'
       : 'border-black/15 focus:ring-black/20 dark:border-white/20 dark:focus:ring-white/30');
@@ -130,7 +162,7 @@ function SlotInput({
             value={String(value)}
             aria-invalid={invalid}
             aria-describedby={invalid ? errorId : undefined}
-            className="h-8 w-12 cursor-pointer rounded border border-black/15 bg-transparent p-0.5 dark:border-white/20"
+            className="h-7 w-10 cursor-pointer rounded border border-black/15 bg-transparent p-0.5 dark:border-white/20"
             onChange={(e) => onChange(e.target.value)}
           />
           {slot.palette && (
@@ -170,7 +202,7 @@ function SlotInput({
             id={fieldId}
             aria-invalid={invalid}
             aria-describedby={invalid ? errorId : undefined}
-            className="w-full"
+            className={inline ? 'w-auto min-w-36' : 'w-full'}
           >
             <SelectValue />
           </SelectTrigger>

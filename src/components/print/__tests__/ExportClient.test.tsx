@@ -65,11 +65,11 @@ describe('내보내기 화면 (IDE-007)', () => {
   it('도안이 정한 하한보다 작은 배율은 막고 이유를 적는다', async () => {
     const user = userEvent.setup();
     render(<ExportClient game={game} />);
-    const rules = rowOf('게임 방법');
-    const input = within(rules).getByLabelText('게임 방법 배율(%)');
+    const goals = rowOf('골대 전개도');
+    const input = within(goals).getByLabelText('골대 전개도 배율(%)');
     await user.clear(input);
     await user.type(input, '40');
-    expect(within(rules).getByText(/글자가 읽히지 않는다/)).toBeInTheDocument();
+    expect(within(goals).getByText(/글자가 읽히지 않는다/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'PDF 내려받기' })).toBeDisabled();
   });
 
@@ -89,8 +89,9 @@ describe('내보내기 화면 (IDE-007)', () => {
     expect(screen.getByText('모두 A4 2장')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: '부속만' }));
-    // 점수 기록칸·게임 방법·골대 각 1장 + 공 마커 1장 × 2벌 = 5장
-    expect(screen.getByText('모두 A4 5장')).toBeInTheDocument();
+    // 점수 기록칸·골대 전개도 각 1장 = 2장. 게임 방법과 공 마커는 출력물에서
+    // 뺐다(2026-09-05).
+    expect(screen.getAllByText('모두 A4 2장').length).toBeGreaterThan(0);
   });
 
   it('벌 수를 올리면 합계 장수가 그만큼 늘어난다', async () => {

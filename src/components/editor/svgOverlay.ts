@@ -20,17 +20,21 @@ const escapeRegExp = (value: string): string =>
   value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /**
- * 색을 받는 레이어(`<g id="pc-team-home" fill="…">`)의 fill 값을 바꾼다.
+ * 색을 받는 레이어(`<g id="pc-team-home" fill="…">`)의 색 값을 바꾼다.
  * 레이어가 없으면 아무 일도 하지 않는다 — 도안이 아직 그 파트에 레이어를
  * 두지 않았을 수 있다.
+ *
+ * `property`로 `fill`과 `stroke`를 가른다. 채우지 않는 마커(빈 원)는 테두리로
+ * 그룹 색을 받기 때문이다(2026-09-05).
  */
 export function paintLayer(
   svgMarkup: string,
   layerId: string,
   color: string,
+  property: 'fill' | 'stroke' = 'fill',
 ): string {
   const pattern = new RegExp(
-    `(<g id="${escapeRegExp(layerId)}"[^>]*\\bfill=")[^"]*(")`,
+    `(<g id="${escapeRegExp(layerId)}"[^>]*\\b${property}=")[^"]*(")`,
   );
   return svgMarkup.replace(pattern, `$1${color}$2`);
 }
