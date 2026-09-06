@@ -62,9 +62,10 @@ describe('축구 게임판 — 파트', () => {
     const goals = soccer.parts.find((p) => p.id === 'goals')!;
     expect(goals.marks).toContain('cut');
     expect(goals.marks.some((m) => m.startsWith('fold-'))).toBe(true);
-    // 지붕 탭을 옆벽에 붙여야 상자 모양이 유지된다. 선언은 실제로 그리는 표시와
-    // 같아야 한다 — 어긋나면 조립 안내에 있지도 않은 표시 설명이 따라 나온다.
-    expect(goals.marks).toContain('glue');
+    // 풀칠면은 없다(2026-09-06) — 지붕 탭을 옆벽 틈에 끼워 잠근다. 선언은 실제로
+    // 그리는 표시와 같아야 한다 — 스키마 검증(`parts.ts`)이 이 선언을 보고
+    // 조립물·오림용 부속의 조건을 따진다.
+    expect(goals.marks).not.toContain('glue');
     for (const part of soccer.parts.filter((p) => p.kind === 'cutout')) {
       expect(part.marks, part.id).toContain('cut');
     }

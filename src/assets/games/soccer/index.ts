@@ -411,18 +411,19 @@ export default defineGame({
       kind: 'buildable',
       title: '골대 전개도',
       description:
-        '오려 접어 골라인 바깥에 세우는 입체 골대 2개. 바닥이 없어 공이 턱에 걸리지 ' +
-        '않고, 들어간 공은 뒷벽에 막혀 상자 안에 멈춘다 — 지붕에 낸 창으로 내려다보면 ' +
-        '골이 바로 보인다. 운동장 골라인의 눈금에 앞면 좌우를 맞춰 놓는다. ' +
-        `골문이 ${GOAL.mouthWidthMm}×${GOAL.mouthHeightMm}mm라 배율을 바꾸면 공 크기도 함께 맞춰야 한다.`,
+        '오려 접어 골라인 밖에 놓는 입체 골대 2개. 뚜껑 없는 쟁반(쓰레받기) 모양이라 ' +
+        '풀도 칼도 쓰지 않는다 — 뒷벽 탭을 옆벽 겹으로 물리면 끝이다. 앞으로 뻗은 ' +
+        '입술이 운동장 위에 얹혀 공이 넘을 턱이 없고, 들어간 공은 위가 뚫려 있어 ' +
+        '그대로 보인다. 운동장 골라인의 눈금에 입술 좌우 끝을 맞춰 놓는다. ' +
+        `골문이 ${GOAL.mouthWidthMm}×${GOAL.wallHeightMm}mm라 배율을 바꾸면 공 크기도 함께 맞춰야 한다.`,
       widthMm: SHEETS.goals.widthMm,
       heightMm: SHEETS.goals.heightMm,
       orientation: 'landscape',
       minScale: 0.8,
       maxScale: 2,
-      // 접는선은 전부 산접기다 — 인쇄면이 골대 바깥을 향한다. 지붕 탭을 옆벽에
-      // 붙여야 상자 모양이 유지되므로 `glue`가 다시 필요하다(2026-09-05).
-      marks: ['cut', 'fold-mountain', 'glue'],
+      // 접는선은 전부 골접기다 — 인쇄면이 쟁반 안쪽을 향해야 위에서 그물이
+      // 보인다. 풀칠면은 없다(2026-09-06) — 겹으로 탭을 물어 잠근다.
+      marks: ['cut', 'fold-valley'],
       artwork: artworkPath('goals'),
     },
   ],

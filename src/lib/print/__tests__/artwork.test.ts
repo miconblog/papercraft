@@ -60,21 +60,23 @@ describe('parseArtwork', () => {
 
   it('표시 레이어는 도안이 적은 굵기 대신 규약 값을 쓰고 배율을 먹지 않는다', () => {
     const art = parseArtwork(read('goals.svg'));
-    const folds = paths(art.items).filter((p) => p.mark === 'fold-mountain');
+    // 골대는 접는선이 전부 골접기다(2026-09-06) — 인쇄면이 쟁반 안쪽을 향한다.
+    const folds = paths(art.items).filter((p) => p.mark === 'fold-valley');
     expect(folds.length).toBeGreaterThan(0);
     for (const fold of folds) {
-      expect(fold.strokeMm).toBe(MARK_STYLES['fold-mountain'].strokeMm);
-      expect(fold.dashMm).toEqual(MARK_STYLES['fold-mountain'].dashMm);
+      expect(fold.strokeMm).toBe(MARK_STYLES['fold-valley'].strokeMm);
+      expect(fold.dashMm).toEqual(MARK_STYLES['fold-valley'].dashMm);
       expect(fold.fixedStroke).toBe(true);
     }
     // 표시선이 통째로 빠졌던 회귀를 여기서 잡는다 — 전개도 2벌의 바깥 윤곽과
-    // 지붕 창, 접는선(벌마다 다섯), 풀칠면 빗금이 전부 읽혀야 한다.
+    // 접는선(벌마다 일곱)이 전부 읽혀야 한다.
     const cuts = paths(art.items).filter((p) => p.mark === 'cut');
+    // 풀칠면도 칼집도 없다(2026-09-06) — 겹으로 탭을 물어 잠근다.
     const glues = paths(art.items).filter((p) => p.mark === 'glue');
-    expect(cuts.length).toBe(4);
-    expect(folds.length).toBe(10);
-    expect(glues.length).toBeGreaterThan(0);
-    for (const mark of [...cuts, ...folds, ...glues]) {
+    expect(cuts.length).toBe(2);
+    expect(folds.length).toBe(14);
+    expect(glues.length).toBe(0);
+    for (const mark of [...cuts, ...folds]) {
       expect(
         mark.commands.some((c) => c.c !== 'Z' && 'x' in c && c.x !== 0),
       ).toBe(true);
