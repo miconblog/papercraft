@@ -10,8 +10,19 @@ import type { Draw, PathDraw, TextDraw } from '../draw';
 import { tileMarks } from '../sheetMarks';
 import { planTiles, type TilePlan } from '../tile';
 
-const tiled = planTiles({ partWidthMm: 594, partHeightMm: 420 });
-const single = planTiles({ partWidthMm: 148.5, partHeightMm: 105 });
+/** 표식이 인쇄 불가 여백 밖으로 나가지 않는지 보는 검사라, 기본값(0mm)이 아니라
+ *  여백이 있는 프린터를 가정한다. */
+const MARGIN_MM = 6;
+const tiled = planTiles({
+  partWidthMm: 594,
+  partHeightMm: 420,
+  marginMm: MARGIN_MM,
+});
+const single = planTiles({
+  partWidthMm: 148.5,
+  partHeightMm: 105,
+  marginMm: MARGIN_MM,
+});
 
 const marksFor = (plan: TilePlan, index = 0, copies = 1): Draw[] =>
   tileMarks({

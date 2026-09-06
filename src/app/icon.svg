@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="아이와 함께 만드는 종이 보드게임">
+  <!-- 공유용 이미지(opengraph-image)와 같은 표식이다 — 크림 바탕에 잉크 테두리
+       종이 한 장, 벽돌빛 그림자, 청록 고리. 색은 src/lib/og-theme.ts와 같다. -->
+  <rect width="32" height="32" rx="7" fill="#f7efe0"/>
+  <rect x="7.5" y="8" width="20.5" height="20.5" rx="4" fill="#b04522"/>
+  <rect x="4" y="4" width="20.5" height="20.5" rx="4" fill="#ffffff" stroke="#39251b" stroke-width="1.6"/>
+  <circle cx="14.25" cy="14.25" r="6" fill="none" stroke="#277678" stroke-width="2.4"/>
+</svg>

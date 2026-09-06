@@ -33,15 +33,13 @@ export type PartSelection = z.infer<typeof partSelection>;
 
 export const exportOptions = z.strictObject({
   parts: z.array(partSelection).min(1),
-  /** 프린터의 인쇄 불가 여백. 사용자가 탐침 시트로 재서 낮출 수 있다. */
+  /** 프린터의 인쇄 불가 여백. 사용자가 탐침 시트로 재서 올릴 수 있다. */
   marginMm: z
     .number()
     .min(MIN_PRINTER_MARGIN_MM)
     .max(MAX_PRINTER_MARGIN_MM)
     .default(DEFAULT_PRINTER_MARGIN_MM),
   overlapMm: z.number().min(0).max(50).default(DEFAULT_OVERLAP_MM),
-  /** 조립 안내 시트를 첫 장에 넣을지. */
-  includeGuide: z.boolean().default(true),
 });
 export type ExportOptions = z.infer<typeof exportOptions>;
 
@@ -63,7 +61,6 @@ export const defaultExportOptions = (game: GameDefinition): ExportOptions => ({
   parts: game.parts.map(defaultSelection),
   marginMm: DEFAULT_PRINTER_MARGIN_MM,
   overlapMm: DEFAULT_OVERLAP_MM,
-  includeGuide: true,
 });
 
 /**

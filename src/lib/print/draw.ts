@@ -1,7 +1,7 @@
 /**
  * 렌더러가 받는 그리기 목록 (IDE-007)
  *
- * 도안 SVG도, 타일 표식도, 조립 안내도 전부 이 두 종류로 내려온다. 렌더러는
+ * 도안 SVG도, 타일 표식도 전부 이 두 종류로 내려온다. 렌더러는
  * 여기 있는 것만 그릴 줄 알면 되고, 새 게임이 늘어도 렌더러는 그대로다.
  */
 import type { MarkKind } from '@/lib/schema';
@@ -33,7 +33,7 @@ export interface PathDraw {
    * (`docs/game-authoring.md` 표시 규약).
    */
   readonly fixedStroke: boolean;
-  /** 이 도형이 속한 표시 종류. 조립 안내가 무엇을 설명할지 정할 때 쓴다. */
+  /** 이 도형이 속한 표시 종류(오림선·접는선 …). 표식의 획 규칙이 이걸 본다. */
   readonly mark: MarkKind | null;
 }
 

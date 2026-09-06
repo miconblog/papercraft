@@ -35,17 +35,18 @@ export default async function PrintGamePage({ params }: Props) {
     <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
       <Link
         href={`/games/${game.id}/edit`}
-        className="text-sm text-zinc-500 hover:underline dark:text-zinc-400"
+        className="text-sm text-muted-foreground hover:underline"
       >
         ← 만들기로 돌아가기
       </Link>
       <h1 className="mt-4 text-3xl font-bold tracking-tight">
         {game.title} 인쇄하기
       </h1>
-      <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-400">
+      <p className="mt-2 max-w-2xl text-muted-foreground">
         배율 100%가 원본 크기다
         {board && ` — ${board.title}이 ${board.widthMm}×${board.heightMm}mm`}.
-        크게 뽑으면 A4 여러 장에 나눠 나오고, 안내 시트대로 붙이면 이어진다.
+        크게 뽑으면 A4 여러 장에 나눠 나오고, 장마다 찍힌 번호와 귀퉁이 눈금을
+        맞춰 붙이면 이어진다.
       </p>
       <ExportClient game={game} />
     </div>

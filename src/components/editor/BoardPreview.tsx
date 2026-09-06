@@ -231,7 +231,7 @@ export function BoardPreview({
 
   return (
     <div
-      className="relative w-full overflow-hidden rounded-lg border border-black/10 bg-white dark:border-white/15"
+      className="relative w-full overflow-hidden rounded-lg border border-border bg-paper"
       style={{ aspectRatio: `${part.widthMm} / ${part.heightMm}` }}
     >
       {paintedBackground ? (
@@ -242,7 +242,7 @@ export function BoardPreview({
           dangerouslySetInnerHTML={{ __html: paintedBackground }}
         />
       ) : (
-        <div className="absolute inset-0 flex items-center justify-center text-sm text-zinc-400">
+        <div className="absolute inset-0 flex items-center justify-center text-sm text-paper-foreground">
           미리보기를 불러오는 중이다…
         </div>
       )}

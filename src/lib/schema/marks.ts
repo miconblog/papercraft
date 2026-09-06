@@ -21,8 +21,6 @@ export interface MarkStyle {
   /** SVG stroke-dasharray와 같은 뜻. 실선이면 null. */
   readonly dashMm: readonly number[] | null;
   readonly color: string;
-  /** 사용자가 인쇄물에서 이 표시를 어떻게 읽어야 하는지. 조립 안내에 그대로 쓴다. */
-  readonly instruction: string;
 }
 
 export const MARK_STYLES: Readonly<Record<MarkKind, MarkStyle>> = Object.freeze(
@@ -33,7 +31,6 @@ export const MARK_STYLES: Readonly<Record<MarkKind, MarkStyle>> = Object.freeze(
       strokeMm: 0.25,
       dashMm: null,
       color: '#000000',
-      instruction: '실선을 따라 자른다.',
     },
     'fold-mountain': {
       layerId: 'pc-fold-mountain',
@@ -41,7 +38,6 @@ export const MARK_STYLES: Readonly<Record<MarkKind, MarkStyle>> = Object.freeze(
       strokeMm: 0.2,
       dashMm: [4, 1.2, 0.6, 1.2],
       color: '#000000',
-      instruction: '일점쇄선은 인쇄면이 바깥으로 오게 접는다.',
     },
     'fold-valley': {
       layerId: 'pc-fold-valley',
@@ -49,7 +45,6 @@ export const MARK_STYLES: Readonly<Record<MarkKind, MarkStyle>> = Object.freeze(
       strokeMm: 0.2,
       dashMm: [3, 1.5],
       color: '#000000',
-      instruction: '파선은 인쇄면이 안으로 오게 접는다.',
     },
     glue: {
       layerId: 'pc-glue',
@@ -57,7 +52,6 @@ export const MARK_STYLES: Readonly<Record<MarkKind, MarkStyle>> = Object.freeze(
       strokeMm: 0.15,
       dashMm: [1, 1],
       color: '#000000',
-      instruction: '빗금 친 면에 풀을 발라 맞은편에 붙인다.',
     },
   },
 );

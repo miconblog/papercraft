@@ -25,7 +25,6 @@ import {
   markerValueColor,
 } from '@/lib/customization/render';
 import { parseArtwork } from './artwork';
-import { assemblyGuidePages } from './assembly';
 import {
   INK,
   mirrorDrawsX,
@@ -46,7 +45,7 @@ export type LoadArtwork = (assetRef: string) => string;
 export interface ExportPage {
   readonly widthMm: number;
   readonly heightMm: number;
-  /** 도안을 잘라 내는 용지 위 사각형. `null`이면 자르지 않는다(안내 시트). */
+  /** 도안을 잘라 내는 용지 위 사각형. `null`이면 자르지 않는다. */
   readonly clip: {
     readonly xMm: number;
     readonly yMm: number;
@@ -311,14 +310,9 @@ export function composeExport({
     pages.push(...partPageList);
   }
 
-  const guide = options.includeGuide
-    ? assemblyGuidePages({ game, parts, options })
-    : [];
-
   return {
     title: `${game.title} — ${parts.map((p) => p.part.title).join(' · ')}`,
-    // 안내가 먼저다. 뒷장을 뽑기 전에 몇 장이 나오는지·어떻게 붙이는지 읽는다.
-    pages: [...guide, ...pages],
+    pages,
     parts,
   };
 }

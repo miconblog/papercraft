@@ -166,12 +166,11 @@ describe('partDraws', () => {
 describe('composeExport', () => {
   const compose = (
     parts: Array<{ partId: string; scale: number; copies: number }>,
-    includeGuide = false,
   ) =>
     composeExport({
       game,
       customization: defaultCustomization(game),
-      options: { ...defaultExportOptions(game), parts, includeGuide },
+      options: { ...defaultExportOptions(game), parts },
       loadArtwork,
     });
 
@@ -220,15 +219,5 @@ describe('composeExport', () => {
       { partId: 'field', scale: 1, copies: 1 },
     ]);
     expect(doc.parts.map((p) => p.part.id)).toEqual(['field', 'score-sheet']);
-  });
-
-  it('조립 안내는 맨 앞에 오고, 안 넣을 수도 있다', () => {
-    const withGuide = compose([{ partId: 'field', scale: 1, copies: 1 }], true);
-    const without = compose([{ partId: 'field', scale: 1, copies: 1 }], false);
-    expect(withGuide.pages.length - without.pages.length).toBeGreaterThan(0);
-    expect(withGuide.pages[0].clip).toBeNull();
-    expect(
-      texts(withGuide.pages[0].marks).some((t) => t.text.includes('조립 안내')),
-    ).toBe(true);
   });
 });

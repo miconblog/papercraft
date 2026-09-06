@@ -12,8 +12,8 @@
  *
  * 게임 id와 파트 id가 이미 소문자·숫자·하이픈 슬러그라(IDE-003) 한글을 섞지
  * 않는다. 한글 파일명은 브라우저·OS·압축 프로그램을 지날 때마다 깨질 자리가
- * 생기는데, 얻는 것은 파일 목록의 읽기 쉬움 하나뿐이다. 한글 제목은 PDF 메타데이터와
- * 조립 안내 시트에 남는다.
+ * 생기는데, 얻는 것은 파일 목록의 읽기 쉬움 하나뿐이다. 한글 제목은 PDF 메타데이터에
+ * 남는다.
  */
 import type { GameDefinition } from '@/lib/schema';
 import type { PartSelection } from './options';
