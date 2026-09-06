@@ -296,15 +296,14 @@ describe('흑백에서 골키퍼 구분', () => {
     expect(goalkeeper.length).toBeGreaterThan(player.length);
   });
 
-  it('골키퍼 그림은 장갑만큼 도형이 더 많다 — 필드 선수와 실루엣이 다르다', () => {
+  it('골키퍼 그림은 손이 원이 아니라 장갑이다 — 필드 선수와 실루엣이 다르다', () => {
     for (const mode of ['illustration', 'outline'] as const) {
-      const keeper = svgOf(
-        markerArtworkId(GOALKEEPER_POSE.id, mode),
-      ).getElementById('pc-marker-team')!;
-      const player = svgOf(
-        markerArtworkId(MARKER_POSES[0].id, mode),
-      ).getElementById('pc-marker-team')!;
-      expect(keeper.children.length, mode).toBe(player.children.length + 2);
+      const circlesOf = (poseId: string) =>
+        svgOf(markerArtworkId(poseId, mode)).querySelectorAll('circle').length;
+      // 필드 선수는 머리 하나 + 손 둘이 원이고, 골키퍼는 손이 둥근 네모(장갑)라
+      // 원이 머리 하나뿐이다.
+      expect(circlesOf(MARKER_POSES[0].id), mode).toBe(3);
+      expect(circlesOf(GOALKEEPER_POSE.id), mode).toBe(1);
     }
   });
 });
