@@ -54,16 +54,17 @@ describe('축구 게임판 — 파트', () => {
       expect(part.defaultScale).toBeLessThanOrEqual(part.maxScale);
       expect(part.defaultCopies).toBeGreaterThanOrEqual(1);
     }
-    // 잃어버리기 쉬운 공 마커는 처음부터 여벌을 뽑는다.
-    expect(
-      soccer.parts.find((p) => p.id === 'ball-markers')!.defaultCopies,
-    ).toBeGreaterThan(1);
+    // 골대는 양쪽에 하나씩 필요하지만 전개도 한 장에 두 벌이 들어 있다 —
+    // 그래서 기본 벌 수가 1이다.
+    expect(soccer.parts.find((p) => p.id === 'goals')!.defaultCopies).toBe(1);
   });
 
   it('조립물에는 오림선과 접는선이, 오림용 부속에는 오림선이 선언돼 있다', () => {
     const goals = soccer.parts.find((p) => p.id === 'goals')!;
     expect(goals.marks).toContain('cut');
     expect(goals.marks.some((m) => m.startsWith('fold-'))).toBe(true);
+    // 지붕 탭을 옆벽에 붙여야 상자 모양이 유지된다. 선언은 실제로 그리는 표시와
+    // 같아야 한다 — 어긋나면 조립 안내에 있지도 않은 표시 설명이 따라 나온다.
     expect(goals.marks).toContain('glue');
     for (const part of soccer.parts.filter((p) => p.kind === 'cutout')) {
       expect(part.marks, part.id).toContain('cut');
@@ -98,10 +99,27 @@ describe('축구 게임판 — 슬롯', () => {
     );
   });
 
-  it('팀 색은 파트의 레이어에 칠해진다', () => {
+  it('팀 색은 마커 테두리와 점수 기록칸 막대에 쓰인다', () => {
     const color = soccer.slots.find((s) => s.id === 'home-color')!;
     expect(color.kind).toBe('color');
+    // 점수 기록칸에는 `paint` 배치로 간다. 마커 색은 배치가 아니라 그룹의
+    // `colorSlotId`를 통해 렌더러가 읽어 간다 — 마커는 파트 레이어가 아니라
+    // 슬롯마다 따로 그려지기 때문이다.
     expect(color.placements.every((p) => p.mode === 'paint')).toBe(true);
+    expect(color.placements.map((p) => p.partId)).toEqual(['score-sheet']);
+  });
+
+  it('속을 비우는 변형만 채우지 않는다고 선언한다 — 등번호 색이 여기서 갈린다', () => {
+    // 자세마다 세트가 하나씩이라(2026-09-06) 규칙은 세트 전부에 걸린다.
+    for (const set of soccer.styleSets) {
+      const filledOf = (id: string) =>
+        set.variants.find((v) => v.id === id)!.filled;
+      expect(filledOf('circle'), set.id).toBe(false);
+      // 실루엣만 팀 색으로 꽉 찬다 — 등번호를 반전해야 읽힌다.
+      expect(filledOf('illustration'), set.id).toBe(true);
+      // 윤곽선은 아이가 칠할 흰 면이 남는다 — 빈 원과 같은 규칙이다.
+      expect(filledOf('outline'), set.id).toBe(false);
+    }
   });
 
   it('그룹이 이름·색 슬롯을 가리킨다', () => {
@@ -114,20 +132,29 @@ describe('축구 게임판 — 슬롯', () => {
 });
 
 describe('축구 게임판 — 마커 스타일', () => {
-  it('원형과 일러스트 두 변형을 사용자가 고른다', () => {
-    const set = soccer.styleSets.find((s) => s.id === 'player-marker')!;
-    expect(set.variants.map((v) => v.id)).toEqual(['circle', 'illustration']);
+  it('빈 원·선수 그림·색칠용 세 변형을 사용자가 고르고, 고른 값이 모든 자세에 걸린다', () => {
+    // 세트는 자세라 사용자가 고르지 않는다. 고르는 것은 변형이고, 슬롯 하나가
+    // 스물두 명을 한꺼번에 바꾼다.
+    const setIds = soccer.styleSets.map((s) => s.id);
+    expect(setIds.length).toBeGreaterThan(2);
 
     const customization = defaultCustomization(soccer);
-    expect(resolveVariant(soccer, 'player-marker', customization).id).toBe(
-      'circle',
-    );
+    for (const setId of setIds) {
+      expect(resolveVariant(soccer, setId, customization).id, setId).toBe(
+        'circle',
+      );
+    }
 
-    customization.values['marker-style'] = 'illustration';
-    expect(validateCustomization(soccer, customization)).toEqual([]);
-    expect(resolveVariant(soccer, 'player-marker', customization).id).toBe(
-      'illustration',
-    );
+    for (const variantId of ['illustration', 'outline']) {
+      customization.values['marker-style'] = variantId;
+      expect(validateCustomization(soccer, customization)).toEqual([]);
+      for (const setId of setIds) {
+        expect(
+          resolveVariant(soccer, setId, customization).id,
+          `${setId}/${variantId}`,
+        ).toBe(variantId);
+      }
+    }
   });
 });
 
@@ -163,9 +190,8 @@ describe('축구 게임판 — 전술 대형 프리셋', () => {
   it('어떤 대형 조합을 골라도 22명이 필드 안에 있고 서로 겹치지 않는다', () => {
     const homePresets = soccer.presets.filter((p) => p.groupId === 'home');
     const awayPresets = soccer.presets.filter((p) => p.groupId === 'away');
-    const bounds = styleSetBounds(
-      soccer.styleSets.find((s) => s.id === 'player-marker')!,
-    );
+    // 세트가 자세마다 있지만 크기는 전부 같다(`player-markers.test.ts`가 지킨다).
+    const bounds = styleSetBounds(soccer.styleSets[0]);
 
     for (const home of homePresets) {
       for (const away of awayPresets) {

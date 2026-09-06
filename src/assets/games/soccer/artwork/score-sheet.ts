@@ -46,6 +46,10 @@ const columnEdgesMm = [
   tableRightMm,
 ];
 
+/**
+ * 팀 색 막대. 슬롯 값으로 채워진다 — 마커 테두리와 같은 색이라, 종이에서
+ * "파랑 팀 = 파란 테두리 마커"가 한눈에 맞물린다.
+ */
 const teamColorBar = (index: 0 | 1, layerId: string, fill: string): string =>
   group({ id: layerId, fill, stroke: 'none' }, [
     rect(

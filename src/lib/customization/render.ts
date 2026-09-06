@@ -9,13 +9,18 @@
 import type { GameCustomization, GameDefinition } from '@/lib/schema';
 
 /**
- * 마커 아트워크가 팀 색을 받는 레이어 id.
+ * 마커 아트워크가 그룹 색을 받는 레이어 id.
  *
  * 파트 레벨의 `pc-team-<그룹 id>`와 달리 스키마 검증이 닿지 않는 관례다 —
- * `IDE-010`(`artwork/player-markers.ts`)이 정하고 "렌더러가 이 id로 채워 넣는다"고
+ * `IDE-010`(`artwork/player-markers.ts`)이 정하고 "렌더러가 이 id를 칠한다"고
  * 문서에 남겨 둔 계약이다.
+ *
+ * **`fill`과 `stroke`를 둘 다 칠한다.** 마커에 따라 색이 붙는 자리가 다르기
+ * 때문이다 — 축구 게임판의 빈 원은 테두리로, 일러스트 실루엣은 채움으로 팀을
+ * 가른다(2026-09-05). 레이어 안의 개별 도형이 `fill="#ffffff"`처럼 제 값을
+ * 명시하면 그쪽이 이긴다.
  */
-export const MARKER_FILL_LAYER_ID = 'pc-marker-fill';
+export const MARKER_TEAM_LAYER_ID = 'pc-marker-team';
 
 /** 마커 색을 못 찾았을 때의 중간 회색. 흑백으로 뽑아도 도형이 남는다. */
 export const FALLBACK_MARKER_COLOR = '#9ca3af';
@@ -41,6 +46,20 @@ export function markerMirrored(
   groupId: string | undefined,
 ): boolean {
   return game.groups.find((g) => g.id === groupId)?.mirrorMarkers ?? false;
+}
+
+/**
+ * 마커 위 값(등번호)의 색.
+ *
+ * 채워진 마커는 배경이 그룹 색이라 밝기에 맞춰 반전하고, 채우지 않는 마커는
+ * 배경이 흰 종이라 그룹 색을 그대로 쓴다 — 후자에 `readableTextColor`를 쓰면
+ * 파란 테두리 원 안에 **흰 글자**가 찍혀 사라진다.
+ */
+export function markerValueColor(
+  variant: { filled: boolean },
+  groupColor: string,
+): string {
+  return variant.filled ? readableTextColor(groupColor) : groupColor;
 }
 
 /** 슬롯이 속한 그룹의 색 슬롯 값. 그룹이 없거나 색 슬롯이 없으면 중간 회색. */

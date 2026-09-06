@@ -16,8 +16,8 @@ import {
   BOARD,
   FIELD,
   FIELD_CENTER_X_MM,
+  FIELD_RIGHT_MM,
   FIELD_MARKS,
-  GOAL,
   FORMATION_LANES,
   PLAYER_MARKER,
 } from '../dimensions';
@@ -38,8 +38,12 @@ const MARKER_W = Math.max(
   PLAYER_MARKER.illustration.widthMm,
 );
 
-const homeGoalRightXMm = FIELD.xMm + GOAL.depthMm;
-const awayGoalLeftXMm = FIELD.xMm + FIELD.widthMm - GOAL.depthMm;
+/**
+ * 골대는 골라인 **위**에 선다(2026-09-05). 필드 안으로 들어오는 깊이가 없으므로
+ * 골라인이 곧 골대 자리이고, 슛 사거리도 골라인까지로 잰다.
+ */
+const homeGoalXMm = FIELD.xMm;
+const awayGoalXMm = FIELD_RIGHT_MM;
 
 describe('두 팀이 섞여 선다 — 경기 성립 조건', () => {
   it.each(formationIds)('%s · 홈 팀이 상대 진영에도 선수를 둔다', (id) => {
@@ -64,11 +68,11 @@ describe('두 팀이 섞여 선다 — 경기 성립 조건', () => {
       const furthest = Math.max(...home.map((p) => p.xMm));
       // 예전 배치는 최전방이 x=130이라 골대까지 143mm였다 — 한 번에 튕겨 넣을 수
       // 없는 거리다. 필드 길이의 1/3 안으로 들어와야 슛이 성립한다.
-      expect(awayGoalLeftXMm - furthest).toBeLessThan(FIELD.widthMm / 3);
+      expect(awayGoalXMm - furthest).toBeLessThan(FIELD.widthMm / 3);
     },
   );
 
-  it('골키퍼는 골대 자리를 비켜선다 — 종이 골대를 세울 자리다', () => {
+  it('골키퍼가 골라인을 넘지 않는다 — 골대가 서는 자리다', () => {
     for (const id of formationIds) {
       const homeGk = presetOf(id, 'home').positions.find(
         (p) => p.slotId === 'home-player-1',
@@ -76,15 +80,16 @@ describe('두 팀이 섞여 선다 — 경기 성립 조건', () => {
       const awayGk = presetOf(id, 'away').positions.find(
         (p) => p.slotId === 'away-player-1',
       )!;
-      expect(homeGk.xMm - MARKER_W / 2).toBeGreaterThan(homeGoalRightXMm);
-      expect(awayGk.xMm + MARKER_W / 2).toBeLessThan(awayGoalLeftXMm);
+      expect(homeGk.xMm - MARKER_W / 2).toBeGreaterThanOrEqual(homeGoalXMm);
+      expect(awayGk.xMm + MARKER_W / 2).toBeLessThanOrEqual(awayGoalXMm);
     }
   });
 
   /**
-   * 골대를 세우고 나면 골키퍼가 설 수 있는 자리는 골대 앞뿐이다. 그 자리가
-   * 골 에어리어 **안**이어야 골키퍼가 제 구역에 선 것으로 보인다 — 골 에어리어
-   * 깊이가 골대 깊이 + 마커 폭보다 얕으면 둘 다 만족할 수 없다.
+   * 골키퍼는 골문 앞에 서고 그 자리가 골 에어리어 **안**이어야 제 구역에 선
+   * 것으로 보인다. 골대가 필드 안을 차지하던 때는 그 깊이를 피하느라 골
+   * 에어리어를 실제의 2배로 늘려야 했다 — 지금은 실제 축척(16mm)으로 되돌렸고,
+   * 마커 폭 절반을 더한 20.5mm가 그 안에 들어가는지를 여기서 지킨다.
    */
   it('골키퍼가 골 에어리어 안에 온전히 들어간다', () => {
     const goalAreaRightXMm = FIELD.xMm + FIELD_MARKS.goalAreaDepthMm;

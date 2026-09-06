@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 자동 생성 파일. 고치려면 src/assets/games/soccer/artwork/ 를 고치고 `npm run artwork` 를 돌린다. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="18mm" height="22mm" viewBox="0 0 18 22" font-family="Noto Sans KR">
+<title>축구 게임판 · 선수 마커 · 패스 · 윤곽선</title>
+<g id="pc-art">
+<g id="pc-marker-team" fill="#1a1a1a" stroke="#1a1a1a">
+<path d="M 6.263 5.915 L 3.87 7.788 L 1.333 9.277 L 1.872 10.291 L 4.632 8.962 L 7.125 7.018 Z" fill="#ffffff" stroke-width="0.55" />
+<path d="M 5.885 12.067 L 5.494 15.795 L 5.66 19.444 L 7.177 19.444 L 7.342 15.892 L 7.725 12.261 Z" fill="#ffffff" stroke-width="0.55" />
+<path d="M 6.103 18.919 L 8.318 19.076 L 8.318 19.969 L 6.103 19.969 Z" fill="#ffffff" stroke-width="0.55" />
+<path d="M 6.694 6.467 L 11.675 6.903 L 10.605 12.441 L 6.805 12.441 Z" fill="#ffffff" stroke-width="0.55" />
+<path d="M 9.804 12.626 L 11.688 15.885 L 14.074 18.672 L 15.269 17.738 L 13.222 14.851 L 11.406 11.701 Z" fill="#ffffff" stroke-width="0.55" />
+<path d="M 14.356 17.68 L 16.571 17.837 L 16.571 18.73 L 14.356 18.73 Z" fill="#ffffff" stroke-width="0.55" />
+<path d="M 11.155 7.371 L 13.318 9.758 L 16.128 11.122 L 16.667 10.108 L 14.18 8.655 L 12.195 6.434 Z" fill="#ffffff" stroke-width="0.55" />
+<circle cx="9.395" cy="4.281" r="2.25" fill="#ffffff" stroke-width="0.55" />
+</g>
+</g>
+</svg>

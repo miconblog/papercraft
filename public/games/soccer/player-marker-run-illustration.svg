@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 자동 생성 파일. 고치려면 src/assets/games/soccer/artwork/ 를 고치고 `npm run artwork` 를 돌린다. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="18mm" height="22mm" viewBox="0 0 18 22" font-family="Noto Sans KR">
+<title>축구 게임판 · 선수 마커 · 달리기 · 실루엣</title>
+<g id="pc-art">
+<g id="pc-marker-team" fill="#1a1a1a" stroke="none">
+<path d="M 6.331 6.367 L 4.88 8.793 L 2.228 9.429 L 2.467 10.552 L 5.683 9.94 L 7.518 7.109 Z" stroke="none" />
+<path d="M 5.918 12.098 L 4.344 15.145 L 1.463 16.82 L 2.175 18.159 L 5.652 16.453 L 7.552 12.967 Z" stroke="none" />
+<path d="M 1.504 16.964 L 3.719 17.122 L 3.719 18.014 L 1.504 18.014 Z" stroke="none" />
+<path d="M 6.925 6.738 L 11.876 7.434 L 10.535 12.81 L 6.735 12.81 Z" stroke="none" />
+<path d="M 9.806 13.102 L 11.924 15.703 L 11.682 18.949 L 13.191 19.107 L 13.702 15.193 L 11.264 11.963 Z" stroke="none" />
+<path d="M 12.121 18.503 L 14.336 18.661 L 14.336 19.553 L 12.121 19.553 Z" stroke="none" />
+<path d="M 11.282 7.805 L 13.169 10.669 L 16.497 10.741 L 16.537 9.594 L 13.869 9.456 L 12.47 7.063 Z" stroke="none" />
+<circle cx="9.736" cy="4.697" r="2.25" stroke="none" />
+</g>
+</g>
+</svg>

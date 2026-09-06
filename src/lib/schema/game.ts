@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { assetRef, part, type Part } from './parts';
 import { isMovable, slot, slotMarker, type Slot } from './slots';
 import { layoutPreset } from './presets';
+import { ruleBlock } from './rules';
 import { markerStyleSet, styleSetBounds } from './styles';
 import {
   containsPoint,
@@ -69,6 +70,14 @@ export const gameDefinition = z
     /** 인쇄물 외에 필요한 것. 예: 연필, 가위, 풀. */
     supplies: z.array(z.string().min(1).max(60)).min(1),
     thumbnail: assetRef,
+    /**
+     * 게임 방법. 소개 페이지가 이 값을 그린다.
+     *
+     * 축구 게임판은 이 규칙을 인쇄물(`rules-card` 파트)로도 뽑았지만 그 카드를
+     * 출력물에서 뺐다(2026-09-05). 규칙이 도안 정의에 있으면 인쇄물 구성과
+     * 무관하게 어디서든 읽을 수 있다.
+     */
+    rules: z.array(ruleBlock).default([]),
 
     parts: z.array(part).min(1),
     slots: z.array(slot).min(1),

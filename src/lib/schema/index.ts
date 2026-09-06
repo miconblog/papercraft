@@ -9,5 +9,6 @@ export * from './parts';
 export * from './slots';
 export * from './styles';
 export * from './presets';
+export * from './rules';
 export * from './game';
 export * from './customization';

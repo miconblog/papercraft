@@ -8,7 +8,6 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { getGame } from '@/lib/games';
-import { readableTextColor } from '@/lib/customization/render';
 import { defaultCustomization, type GameDefinition } from '@/lib/schema';
 import { composeExport, partDraws } from '../compose';
 import type { Draw, PathDraw, TextDraw } from '../draw';
@@ -59,41 +58,80 @@ describe('partDraws', () => {
     expect(texts(board).map((t) => t.text)).not.toContain('초록 번개');
   });
 
-  it('팀 색이 도안 레이어와 마커에 함께 반영된다', () => {
+  /**
+   * 팀 색 슬롯이 사라지면서(2026-09-05) 축구 도안에는 `paint` 배치가 하나도
+   * 남지 않았다. 그 규약 자체는 스키마·렌더러에 그대로 있고
+   * (`paintOverrides`), 밝기에 따른 글자색은 `readableTextColor` 단위
+   * 테스트가 지킨다(`components/editor/__tests__/svgOverlay.test.ts`).
+   */
+  it('등번호를 넣으면 마커 위에 글자로 얹힌다', () => {
     const items = partDraws(
       game,
-      withValues({ 'home-color': '#15803d' }),
+      withValues({ 'home-player-9': '9' }),
       field,
       loadArtwork,
     );
-    // 보드 위쪽 팀 색 막대(pc-team-home)와 마커 아트워크(pc-marker-fill) 양쪽.
-    expect(
-      paths(items).filter((p) => p.fill === '#15803d').length,
-    ).toBeGreaterThan(1);
+    expect(texts(items).some((t) => t.text === '9')).toBe(true);
   });
 
-  it('마커 위 등번호는 배경 밝기에 따라 색이 바뀐다', () => {
-    const dark = partDraws(
+  it('등번호가 비어 있으면 글자를 얹지 않는다 — 아이가 직접 쓰는 자리다', () => {
+    const items = partDraws(
       game,
-      withValues({ 'home-color': '#111111' }),
+      defaultCustomization(game),
       field,
       loadArtwork,
     );
-    const light = partDraws(
+    expect(texts(items).filter((t) => t.text === '')).toHaveLength(0);
+  });
+
+  /**
+   * 사용자가 마커를 돌린 각도는 인쇄물에도 그대로 나가야 한다 — 미리보기에서
+   * 방향을 맞춰 놓고 뽑았는데 종이에서 제자리로 돌아오면 화면이 거짓말이 된다.
+   * 축은 **마커 중심**이라 회전해도 중심 좌표는 움직이지 않는다.
+   */
+  it('마커를 돌리면 그 각도로 그려지고 중심은 그대로다', () => {
+    const c = defaultCustomization(game);
+    const at = { xMm: 120, yMm: 60 };
+    const upright = partDraws(
       game,
-      withValues({ 'home-color': '#f5f5f5' }),
+      { ...c, positions: { ...c.positions, 'home-player-9': at } },
       field,
       loadArtwork,
     );
-    const numberFill = (items: Draw[]) =>
-      texts(items).find((t) => t.text === '9')!.fill;
-    expect(numberFill(dark)).toBe(readableTextColor('#111111'));
-    expect(numberFill(light)).toBe(readableTextColor('#f5f5f5'));
-    expect(numberFill(dark)).not.toBe(numberFill(light));
+    const turned = partDraws(
+      game,
+      {
+        ...c,
+        positions: {
+          ...c.positions,
+          'home-player-9': { ...at, rotationDeg: 90 },
+        },
+      },
+      field,
+      loadArtwork,
+    );
+
+    const spanOf = (items: Draw[]) => {
+      const xs = paths(items).flatMap((p) =>
+        p.commands.flatMap((cmd) => ('x' in cmd ? [cmd.x] : [])),
+      );
+      const ys = paths(items).flatMap((p) =>
+        p.commands.flatMap((cmd) => ('y' in cmd ? [cmd.y] : [])),
+      );
+      return {
+        cx: (Math.min(...xs) + Math.max(...xs)) / 2,
+        cy: (Math.min(...ys) + Math.max(...ys)) / 2,
+      };
+    };
+
+    // 그림이 달라졌는데(돌았는데) 가운데는 제자리다.
+    expect(JSON.stringify(turned)).not.toBe(JSON.stringify(upright));
+    expect(spanOf(turned).cx).toBeCloseTo(spanOf(upright).cx, 6);
+    expect(spanOf(turned).cy).toBeCloseTo(spanOf(upright).cy, 6);
   });
 
   it('마커를 옮기면 그 좌표에 그려진다 — 기준점은 마커 중심이다', () => {
-    const c = defaultCustomization(game);
+    const c = withValues({ 'home-player-9': '9' });
     const moved = {
       ...c,
       positions: { ...c.positions, 'home-player-9': { xMm: 120, yMm: 60 } },
@@ -178,7 +216,7 @@ describe('composeExport', () => {
   });
 
   it('벌 수만큼 같은 페이지가 반복되고 한 벌씩 이어 붙는다', () => {
-    const doc = compose([{ partId: 'ball-markers', scale: 1, copies: 3 }]);
+    const doc = compose([{ partId: 'score-sheet', scale: 1, copies: 3 }]);
     expect(doc.pages).toHaveLength(3);
     expect(doc.pages[0].items).toBe(doc.pages[1].items);
     expect(doc.pages[0].marks).not.toEqual(doc.pages[1].marks);
@@ -186,10 +224,10 @@ describe('composeExport', () => {
 
   it('도안이 선언한 순서대로 담는다 — 보드가 먼저다', () => {
     const doc = compose([
-      { partId: 'ball-markers', scale: 1, copies: 1 },
+      { partId: 'score-sheet', scale: 1, copies: 1 },
       { partId: 'field', scale: 1, copies: 1 },
     ]);
-    expect(doc.parts.map((p) => p.part.id)).toEqual(['field', 'ball-markers']);
+    expect(doc.parts.map((p) => p.part.id)).toEqual(['field', 'score-sheet']);
   });
 
   it('조립 안내는 맨 앞에 오고, 안 넣을 수도 있다', () => {

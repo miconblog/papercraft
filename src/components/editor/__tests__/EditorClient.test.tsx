@@ -27,13 +27,18 @@ describe('EditorClient (IDE-006 수용 기준)', () => {
   it('축구 게임판의 등번호 22개·팀명 2개·팀 색 2개를 모두 편집할 수 있다', () => {
     render(<EditorClient game={game} />);
 
-    const numberInputs = screen
-      .getAllByRole('spinbutton')
-      .filter((el) => el.getAttribute('type') === 'number');
-    expect(numberInputs).toHaveLength(22);
+    // 등번호는 `text` 슬롯이다 — 기본값이 **비어 있어야** 해서(아이가 종이에
+    // 직접 쓴다) 빈 값을 못 받는 `number`를 쓸 수 없다(2026-09-05).
+    for (const team of ['홈 팀', '원정 팀']) {
+      for (let n = 1; n <= 11; n += 1) {
+        const input = screen.getByLabelText(`${team} ${n}번`);
+        expect(input).toHaveValue('');
+      }
+    }
 
     expect(screen.getByLabelText('홈 팀 이름')).toBeInTheDocument();
     expect(screen.getByLabelText('원정 팀 이름')).toBeInTheDocument();
+    // 색은 마커 **테두리**와 점수 기록칸 막대에 쓰인다 — 원 안은 비어 있다.
     expect(screen.getByLabelText('홈 팀 색')).toBeInTheDocument();
     expect(screen.getByLabelText('원정 팀 색')).toBeInTheDocument();
   });
@@ -83,12 +88,13 @@ describe('EditorClient (IDE-006 수용 기준)', () => {
 
     const input = screen.getByLabelText('홈 팀 1번');
     fireEvent.change(input, { target: { value: '77' } });
-    await waitFor(() => expect(input).toHaveValue(77));
+    await waitFor(() => expect(input).toHaveValue('77'));
 
     fireEvent.click(
       screen.getByRole('button', { name: '기본값으로 되돌리기' }),
     );
-    await waitFor(() => expect(input).toHaveValue(1));
+    // 기본값은 빈 칸이다.
+    await waitFor(() => expect(input).toHaveValue(''));
   });
 
   it('그룹은 좌우로 갈리고 공통 값은 가운데 한 번만 나온다', () => {
@@ -122,17 +128,19 @@ describe('EditorClient (IDE-006 수용 기준)', () => {
           .find((p) => p.formationId === formationId && p.groupId === 'home')!
           .positions.find((pos) => pos.slotId === 'home-player-2')!.yMm,
       );
+    // 등번호가 기본으로 비어 있어(2026-09-05) 글자로는 마커를 찾을 수 없다.
+    // 마커의 접근성 이름이 좌표를 그대로 읽어 준다.
     const findPlayer2At = (y: string) =>
-      screen
-        .getAllByText('2')
-        .find((el) => el.tagName === 'text' && el.getAttribute('y') === y);
+      screen.queryByRole('button', {
+        name: new RegExp(`홈 팀 2번 마커 — 가로 .+mm, 세로 ${y}mm`),
+      });
 
-    expect(findPlayer2At(homeY('4-4-2'))).toBeDefined();
+    expect(findPlayer2At(homeY('4-4-2'))).not.toBeNull();
 
     fireEvent.click(within(homeSection).getByRole('button', { name: '3-5-2' }));
 
     await waitFor(() => {
-      expect(findPlayer2At(homeY('3-5-2'))).toBeDefined();
+      expect(findPlayer2At(homeY('3-5-2'))).not.toBeNull();
     });
     // 버튼도 눌린 상태로 표시된다.
     expect(

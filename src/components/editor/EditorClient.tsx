@@ -86,7 +86,9 @@ function EditorForm({
           ? { id: group.id, label: group.label, hex: value }
           : null;
       })
-      .filter((c): c is { id: string; label: string; hex: string } => c !== null);
+      .filter(
+        (c): c is { id: string; label: string; hex: string } => c !== null,
+      );
     return findIndistinguishablePair(colors);
   }, [game, customization]);
 
@@ -133,6 +135,10 @@ function EditorForm({
 
   const currentPart =
     game.parts.find((p) => p.id === currentPartId) ?? game.parts[0];
+
+  // 그룹에 속하지 않는 슬롯(축구 게임판이라면 마커 모양)이 있는 게임만 미리보기
+  // 위에 그 칸을 낸다. 없는 게임에서 빈 상자가 여백만 남기지 않게 한다.
+  const hasUngroupedSlots = game.slots.some((slot) => !slot.groupId);
 
   const formProps = {
     game,
@@ -216,6 +222,17 @@ function EditorForm({
           maxWidth: `calc(85vh * ${currentPart.widthMm} / ${currentPart.heightMm})`,
         }}
       >
+        {/* 어느 그룹에도 속하지 않는 값(마커 모양)은 양 팀에 함께 걸린다.
+            바꾸면 미리보기의 마커가 통째로 달라지므로 **미리보기 오른쪽 위**에
+            둔다 — 결과를 보면서 고르는 값이라 팀별 입력 사이에 섞이면 멀다.
+            미리보기와 같은 폭 상자 안이라 파트를 바꿔도 오른쪽 끝에 붙는다. */}
+        {hasUngroupedSlots && (
+          <div className="mb-3 flex justify-end">
+            <div className="w-full max-w-56">
+              <CustomizationForm {...formProps} groupIds={[]} />
+            </div>
+          </div>
+        )}
         <BoardPreview
           key={currentPart.id}
           game={game}
@@ -223,12 +240,6 @@ function EditorForm({
           customization={customization}
           onMoveSlot={handleMoveSlot}
         />
-      </div>
-
-      {/* 어느 그룹에도 속하지 않는 값(마커 모양)은 양 팀에 함께 걸린다.
-          팀별 입력보다 먼저 오는 자리가 그 뜻에 맞는다. */}
-      <div className="mt-6 max-w-xs">
-        <CustomizationForm {...formProps} groupIds={[]} />
       </div>
 
       {/* 그룹(팀)을 나란히 놓는다. 축구 게임판이라면 홈과 원정이다 — 게임을

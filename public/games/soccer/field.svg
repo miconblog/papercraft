@@ -9,8 +9,8 @@
 <circle cx="148.5" cy="105" r="0.8" fill="#2f7d32" stroke="none" />
 <path d="M 6 47.5 H 53 V 162.5 H 6" />
 <path d="M 291 47.5 H 244 V 162.5 H 291" />
-<path d="M 6 65 H 38 V 145 H 6" />
-<path d="M 291 65 H 259 V 145 H 291" />
+<path d="M 6 66 H 32 V 144 H 6" />
+<path d="M 291 66 H 265 V 144 H 291" />
 <circle cx="37" cy="105" r="0.8" fill="#2f7d32" stroke="none" />
 <circle cx="260" cy="105" r="0.8" fill="#2f7d32" stroke="none" />
 <path d="M 53 84.506 A 26 26 0 0 1 53 125.494" />
@@ -19,10 +19,12 @@
 <path d="M 291 9 A 3 3 0 0 1 288 6" />
 <path d="M 288 204 A 3 3 0 0 1 291 201" />
 <path d="M 6 201 A 3 3 0 0 1 9 204" />
-<path d="M 6 85 H 22 V 125 H 6" stroke-dasharray="2 1.5" />
-<path d="M 291 85 H 275 V 125 H 291" stroke-dasharray="2 1.5" />
-<text x="14" y="105" font-size="3" dominant-baseline="central" fill="#2f7d32" stroke="none" text-anchor="middle">골대</text>
-<text x="283" y="105" font-size="3" dominant-baseline="central" fill="#2f7d32" stroke="none" text-anchor="middle">골대</text>
+<line x1="2" y1="85.5" x2="8" y2="85.5" />
+<line x1="2" y1="124.5" x2="8" y2="124.5" />
+<line x1="6" y1="105" x2="8.5" y2="105" />
+<line x1="295" y1="85.5" x2="289" y2="85.5" />
+<line x1="295" y1="124.5" x2="289" y2="124.5" />
+<line x1="291" y1="105" x2="288.5" y2="105" />
 </g>
 <g id="pc-slot" />
 </svg>

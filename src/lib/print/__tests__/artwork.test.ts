@@ -67,11 +67,16 @@ describe('parseArtwork', () => {
       expect(fold.dashMm).toEqual(MARK_STYLES['fold-mountain'].dashMm);
       expect(fold.fixedStroke).toBe(true);
     }
-    // 접는선·풀칠면이 통째로 빠졌던 회귀를 여기서 잡는다.
-    expect(paths(art.items).filter((p) => p.mark === 'glue').length).toBe(40);
-    for (const glue of paths(art.items).filter((p) => p.mark === 'glue')) {
+    // 표시선이 통째로 빠졌던 회귀를 여기서 잡는다 — 전개도 2벌의 바깥 윤곽과
+    // 지붕 창, 접는선(벌마다 다섯), 풀칠면 빗금이 전부 읽혀야 한다.
+    const cuts = paths(art.items).filter((p) => p.mark === 'cut');
+    const glues = paths(art.items).filter((p) => p.mark === 'glue');
+    expect(cuts.length).toBe(4);
+    expect(folds.length).toBe(10);
+    expect(glues.length).toBeGreaterThan(0);
+    for (const mark of [...cuts, ...folds, ...glues]) {
       expect(
-        glue.commands.some((c) => c.c !== 'Z' && 'x' in c && c.x !== 0),
+        mark.commands.some((c) => c.c !== 'Z' && 'x' in c && c.x !== 0),
       ).toBe(true);
     }
   });
@@ -85,11 +90,26 @@ describe('parseArtwork', () => {
     expect(paths(art.items).some((p) => p.fill === '#1d4ed8')).toBe(false);
   });
 
-  it('글자의 크기·정렬·굵기를 그대로 옮긴다', () => {
-    const art = parseArtwork(read('rules-card.svg'));
-    const title = texts(art.items).find((t) => t.text.includes('게임 방법'));
-    expect(title).toMatchObject({ sizeMm: 5, bold: true, baseline: 'central' });
-    expect(texts(art.items).some((t) => !t.bold)).toBe(true);
+  it('글자의 크기·정렬을 그대로 옮긴다', () => {
+    const art = parseArtwork(read('goals.svg'));
+    const title = texts(art.items).find((t) => t.text.includes('골대 전개도'));
+    expect(title).toMatchObject({
+      sizeMm: 5,
+      baseline: 'central',
+      anchor: 'middle',
+    });
+  });
+
+  it('font-weight를 굵기로 읽는다', () => {
+    // 지금 축구 도안에는 굵은 글자가 없다 — 굵은 제목을 쓰던 게임 방법 카드를
+    // 출력물에서 뺐다(2026-09-05). 파서 쪽 규약이라 도안과 별개로 지킨다.
+    const art = parseArtwork(
+      '<svg viewBox="0 0 10 10">' +
+        '<text x="1" y="2" font-size="5" font-weight="700">굵게</text>' +
+        '<text x="1" y="8" font-size="5">보통</text>' +
+        '</svg>',
+    );
+    expect(texts(art.items).map((t) => t.bold)).toEqual([true, false]);
   });
 
   it('`fill="none"`은 칠하지 않는다', () => {

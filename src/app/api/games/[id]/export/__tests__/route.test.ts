@@ -73,7 +73,7 @@ describe('POST /api/games/[id]/export', () => {
   it('도안 하한보다 작은 배율은 400으로 막는다 — 값 검증을 클라이언트에만 맡기지 않는다', async () => {
     const res = await call('soccer', {
       customization: defaultCustomization(game),
-      options: options([{ partId: 'rules-card', scale: 0.2, copies: 1 }]),
+      options: options([{ partId: 'goals', scale: 0.2, copies: 1 }]),
     });
     expect(res.status).toBe(400);
     expect(

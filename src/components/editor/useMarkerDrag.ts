@@ -14,13 +14,15 @@ import type { SlotPoint } from '@/lib/schema';
  * **누른 자리와 마커 중심의 차이를 기억한다.** 그러지 않으면 마커를 잡는 순간
  * 중심이 포인터로 튀어, 가장자리를 잡았을 때 배치가 흐트러진다.
  *
- * 끌지 않고 누르기만 한 것은 클릭으로 돌려준다(`onTap`) — 미리보기의 마커를
- * 눌러 그 입력으로 이동하는 기존 조작(IDE-006)을 드래그가 잡아먹지 않게 한다.
+ * 끌지 않고 누르기만 한 것은 클릭으로 돌려준다(`onTap`). 지금 그 클릭은 마커를
+ * **돌리는** 조작이다(2026-09-05) — 누른 자리의 좌표와 Shift 여부를 함께 넘겨
+ * 부르는 쪽이 어느 쪽으로 얼마나 돌릴지 정한다.
  */
 export interface MarkerDragOptions {
   /** 파트 로컬 mm로 옮긴 자리. 경계 처리는 부르는 쪽이 한다. */
   onMove: (slotId: string, point: SlotPoint) => void;
-  onTap: (slotId: string) => void;
+  /** 끌지 않고 눌렀을 때. `shiftKey`는 반대 방향 회전 같은 보조 조작에 쓴다. */
+  onTap: (slotId: string, point: SlotPoint, shiftKey: boolean) => void;
   /** 파트 크기(mm). 화면 픽셀을 도안 좌표로 되돌릴 때 쓴다. */
   partWidthMm: number;
   partHeightMm: number;
@@ -37,6 +39,11 @@ interface DragState {
   readonly grabOffsetYMm: number;
   readonly startClientX: number;
   readonly startClientY: number;
+  /**
+   * 누를 때의 마커 좌표. 끌지 않고 놓았을 때 `onTap`에 그대로 넘긴다 —
+   * 회전은 이 값에 각도를 더해 만들어지므로 좌표·각도를 잃으면 안 된다.
+   */
+  readonly startPoint: SlotPoint;
 }
 
 export function useMarkerDrag({
@@ -84,6 +91,7 @@ export function useMarkerDrag({
         grabOffsetYMm: point.yMm - at.yMm,
         startClientX: event.clientX,
         startClientY: event.clientY,
+        startPoint: point,
       };
       movedRef.current = false;
       setDraggingSlotId(slotId);
@@ -104,6 +112,8 @@ export function useMarkerDrag({
       movedRef.current = true;
     }
     onMove(drag.slotId, {
+      // 회전 각도는 끌어도 그대로다 — 좌표만 갈아 끼운다.
+      ...drag.startPoint,
       xMm: at.xMm + drag.grabOffsetXMm,
       yMm: at.yMm + drag.grabOffsetYMm,
     });
@@ -115,7 +125,7 @@ export function useMarkerDrag({
     event.currentTarget.releasePointerCapture?.(event.pointerId);
     dragRef.current = null;
     setDraggingSlotId(null);
-    if (!movedRef.current) onTap(drag.slotId);
+    if (!movedRef.current) onTap(drag.slotId, drag.startPoint, event.shiftKey);
   };
 
   return {
