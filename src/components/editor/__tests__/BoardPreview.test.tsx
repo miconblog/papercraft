@@ -34,7 +34,7 @@ describe('BoardPreview — 마커 아트워크 (선수 마커 모양을 실제 �
     vi.unstubAllGlobals();
   });
 
-  it('기본 스타일(빈 원)의 실제 아트워크를 불러온다', async () => {
+  it('기본 스타일(선수 그림 · 색칠용)의 실제 아트워크를 불러온다', async () => {
     const customization = defaultCustomization(game);
     render(
       <BoardPreview game={game} part={board} customization={customization} />,

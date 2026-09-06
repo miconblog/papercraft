@@ -2,7 +2,11 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { defaultCustomization, type GameDefinition } from '@/lib/schema';
+import {
+  defaultCustomization,
+  type GameCustomization,
+  type GameDefinition,
+} from '@/lib/schema';
 import { useHydrated } from '@/lib/customization/useHydrated';
 import { useStoredCustomization } from '@/lib/customization/useStoredCustomization';
 import { PRINT_SETTINGS } from '@/lib/print/assembly';
@@ -29,12 +33,26 @@ import { PrintPreview } from './PrintPreview';
  *
  * 장수는 **고르는 즉시** 보여 준다. 200%가 A4 여덟 장이라는 사실은 뽑기 전에
  * 알아야 하는 정보다(`docs/print-spec.md` §5).
+ *
+ * 에디터의 출력 모달(`PrintDialog`)도 이 화면을 그대로 쓴다(2026-09-06). 그때는
+ * 저장값을 읽는 대신 에디터가 지금 들고 있는 값을 `customization`으로 받고,
+ * `embedded`로 페이지 전용 문구(값의 출처·에디터 링크)를 뺀다.
  */
-export function ExportClient({ game }: { game: GameDefinition }) {
+export function ExportClient({
+  game,
+  customization: given,
+  embedded = false,
+}: {
+  game: GameDefinition;
+  /** 뽑을 값. 주지 않으면 브라우저 저장값을 읽는다(인쇄 페이지). */
+  customization?: GameCustomization;
+  /** 모달 안에 들어간 모습 — 위 여백과 페이지 전용 문구를 뺀다. */
+  embedded?: boolean;
+}) {
   const hydrated = useHydrated();
   const stored = useStoredCustomization(game);
   const customization =
-    hydrated && stored ? stored : defaultCustomization(game);
+    given ?? (hydrated && stored ? stored : defaultCustomization(game));
 
   const [selections, setSelections] = useState<PartSelection[]>(() =>
     game.parts.map(defaultSelection),
@@ -157,7 +175,12 @@ export function ExportClient({ game }: { game: GameDefinition }) {
   };
 
   return (
-    <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
+    <div
+      className={
+        (embedded ? 'mt-5 ' : 'mt-8 ') +
+        'grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]'
+      }
+    >
       <div>
         <section>
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -369,17 +392,20 @@ export function ExportClient({ game }: { game: GameDefinition }) {
           </ul>
         </div>
 
-        <p className="mt-4 text-xs text-zinc-500 dark:text-zinc-400">
-          {hydrated && stored
-            ? '에디터에서 만든 값으로 뽑는다.'
-            : '아직 만든 값이 없어 도안 기본값으로 뽑는다.'}{' '}
-          <Link
-            href={`/games/${game.id}/edit`}
-            className="underline underline-offset-2"
-          >
-            에디터로 가기
-          </Link>
-        </p>
+        {/* 모달에서는 값의 출처를 말할 필요가 없다 — 뒤에 보이는 판 그대로다. */}
+        {!embedded && (
+          <p className="mt-4 text-xs text-zinc-500 dark:text-zinc-400">
+            {hydrated && stored
+              ? '에디터에서 만든 값으로 뽑는다.'
+              : '아직 만든 값이 없어 도안 기본값으로 뽑는다.'}{' '}
+            <Link
+              href={`/games/${game.id}/edit`}
+              className="underline underline-offset-2"
+            >
+              에디터로 가기
+            </Link>
+          </p>
+        )}
       </div>
     </div>
   );

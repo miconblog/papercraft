@@ -140,9 +140,19 @@ describe('골대 전개도', () => {
     }
   });
 
-  it('골문이 실제 골대의 가로세로비(3:1)를 지킨다', () => {
-    // 실제 7.32 × 2.44m. 축척은 공 크기 때문에 과장되어 있지만 비율은 같다.
-    expect(GOAL.mouthWidthMm / GOAL.mouthHeightMm).toBeCloseTo(3, 5);
+  /**
+   * 예전에는 여기서 실제 골대의 3:1(7.32×2.44m)을 지켰다. 그 비율로 잡은
+   * 39×13mm를 아이와 종이로 뽑아 만들어 보니 크로스바가 지름 12mm 공 바로 1mm
+   * 위에 걸려 골이 안 들어갔다(2026-09-06 사용자 지적). 이 공은 축척보다 19배
+   * 크므로 실제 비율은 뜻이 없다 — 기준을 **공 지름**으로 바꿨다.
+   */
+  it('골문이 공 지름을 기준으로 넉넉하다', () => {
+    // 크로스바 아래로 공 하나가 더 지나갈 여유. 골이 안 들어가던 원인이 여기였다.
+    expect(GOAL.mouthHeightMm).toBeGreaterThanOrEqual(BALL.diameterMm * 2);
+    // 폭은 공 넷이 나란히 설 만큼. 겨냥이 조금 빗나가도 들어간다.
+    expect(GOAL.mouthWidthMm).toBeGreaterThanOrEqual(BALL.diameterMm * 4);
+    // 그래도 정면에서 골대로 읽혀야 한다 — 세로로 선 상자면 골대가 아니다.
+    expect(GOAL.mouthWidthMm / GOAL.mouthHeightMm).toBeGreaterThanOrEqual(1.5);
   });
 
   /**
@@ -277,8 +287,8 @@ describe('공', () => {
   it('골문보다 작아 실제로 골대 안으로 들어간다', () => {
     expect(BALL.diameterMm).toBeLessThan(GOAL.mouthWidthMm);
     expect(BALL.diameterMm).toBeLessThan(GOAL.mouthHeightMm);
-    // '뚜렷이 작게' — 골문 폭의 절반 아래.
-    expect(BALL.diameterMm * 2).toBeLessThan(GOAL.mouthWidthMm);
+    // '뚜렷이 작게' — 골문 폭의 4분의 1 아래.
+    expect(BALL.diameterMm * 4).toBeLessThanOrEqual(GOAL.mouthWidthMm);
   });
 
   it('준비물 안내가 그 지름을 그대로 알려 준다', () => {
@@ -371,8 +381,10 @@ describe('게임 방법', () => {
   });
 
   it('용지 안내가 규칙 본문에 들어 있다', () => {
-    // 규칙 카드가 사라졌으므로 이 글이 읽히는 곳도 규칙 본문뿐이다.
-    expect(PAPER_NOTE).toMatch(/g\/m²/);
+    // 규칙 카드가 사라졌으므로 이 글이 읽히는 곳도 규칙 본문뿐이다. 문구는
+    // 사용자가 다듬는다(두꺼운 종이 → A4를 스케치북에 붙이기, 2026-09-06) —
+    // 여기서는 그 글이 규칙에 실리는지만 본다.
+    expect(PAPER_NOTE.length).toBeGreaterThan(0);
     expect(ruleText).toContain(PAPER_NOTE);
   });
 });

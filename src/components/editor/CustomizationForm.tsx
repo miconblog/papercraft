@@ -110,7 +110,7 @@ export function CustomizationForm({
               presets={groupPresets}
               selectedPresetId={selectedPresetByGroup[group.id]}
               onApply={(presetId) => onApplyPreset(group.id, presetId)}
-              inline
+              groupLabel={group.label}
             />
             {restSlots.map((slot) => (
               <SlotField

@@ -6,6 +6,7 @@ import {
   waitFor,
   within,
 } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { getGame } from '@/lib/games';
 import { defaultCustomization, slotMarker } from '@/lib/schema';
 import { loadCustomization } from '@/lib/customization/storage';
@@ -92,13 +93,18 @@ describe('EditorClient (IDE-006 수용 기준)', () => {
     }
   });
 
-  it('대형 버튼을 누르면 그 그룹 마커의 좌표가 바뀐다', async () => {
+  /** 홈 팀 대형 셀렉트에서 한 대형을 고른다. */
+  const chooseHomeFormation = async (formationId: string) => {
+    const user = userEvent.setup();
+    await user.click(screen.getByLabelText('홈 팀 대형'));
+    // 팝업이 열리는 애니메이션 상태가 걷힐 때까지 기다린다.
+    await user.click(await screen.findByRole('option', { name: formationId }));
+  };
+
+  it('대형을 고르면 그 그룹 마커의 좌표가 바뀐다', async () => {
     render(<EditorClient game={game} />);
 
-    const homeSection = screen
-      .getByRole('heading', { name: '홈 팀' })
-      .closest('section')!;
-    // 좌표는 도안에서 읽는다 — 대형 값이 바뀌어도 "버튼이 좌표를 옮긴다"는
+    // 좌표는 도안에서 읽는다 — 대형 값이 바뀌어도 "고르면 좌표를 옮긴다"는
     // 이 테스트의 뜻은 그대로여야 한다.
     const homeY = (formationId: string) =>
       String(
@@ -113,31 +119,23 @@ describe('EditorClient (IDE-006 수용 기준)', () => {
         name: new RegExp(`홈 팀 2번 마커 — 가로 .+mm, 세로 ${y}mm`),
       });
 
-    expect(findPlayer2At(homeY('4-4-2'))).not.toBeNull();
+    // 첫 화면은 기본 대형이고 셀렉트도 그렇게 보인다 — 좌표에서 알아낸다.
+    expect(findPlayer2At(homeY('4-3-3'))).not.toBeNull();
+    expect(screen.getByLabelText('홈 팀 대형')).toHaveTextContent('4-3-3');
 
-    fireEvent.click(within(homeSection).getByRole('button', { name: '3-5-2' }));
+    await chooseHomeFormation('3-5-2');
 
     await waitFor(() => {
       expect(findPlayer2At(homeY('3-5-2'))).not.toBeNull();
     });
-    // 버튼도 눌린 상태로 표시된다.
-    expect(
-      within(homeSection).getByRole('button', { name: '3-5-2' }),
-    ).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByLabelText('홈 팀 대형')).toHaveTextContent('3-5-2');
+    // 원정은 그대로다.
+    expect(screen.getByLabelText('원정 팀 대형')).toHaveTextContent('4-3-3');
   });
 
-  it('마커를 옮기면 그 팀의 대형 선택 표시가 풀린다', async () => {
+  it('마커를 옮기면 그 팀의 대형 표시가 "직접 배치"로 바뀐다', async () => {
     render(<EditorClient game={game} />);
-    const homeSection = screen
-      .getByRole('heading', { name: '홈 팀' })
-      .closest('section')!;
-
-    fireEvent.click(within(homeSection).getByRole('button', { name: '3-5-2' }));
-    await waitFor(() =>
-      expect(
-        within(homeSection).getByRole('button', { name: '3-5-2' }),
-      ).toHaveAttribute('aria-pressed', 'true'),
-    );
+    expect(screen.getByLabelText('홈 팀 대형')).toHaveTextContent('4-3-3');
 
     // 손으로 옮긴 순간 그 팀은 더 이상 그 대형이 아니다.
     const marker = screen
@@ -146,9 +144,9 @@ describe('EditorClient (IDE-006 수용 기준)', () => {
     fireEvent.keyDown(marker, { key: 'ArrowRight' });
 
     await waitFor(() =>
-      expect(
-        within(homeSection).getByRole('button', { name: '3-5-2' }),
-      ).toHaveAttribute('aria-pressed', 'false'),
+      expect(screen.getByLabelText('홈 팀 대형')).toHaveTextContent(
+        '직접 배치',
+      ),
     );
   });
 
@@ -179,26 +177,41 @@ describe('EditorClient (IDE-006 수용 기준)', () => {
     );
   });
 
-  it('기본값으로 되돌리면 대형 선택도 함께 풀린다', async () => {
+  it('기본값으로 되돌리면 대형 표시도 기본 대형으로 돌아간다', async () => {
     render(<EditorClient game={game} />);
-    const homeSection = screen
-      .getByRole('heading', { name: '홈 팀' })
-      .closest('section')!;
-    const formationButton = within(homeSection).getByRole('button', {
-      name: '3-5-2',
-    });
-
-    fireEvent.click(formationButton);
+    await chooseHomeFormation('3-5-2');
     await waitFor(() =>
-      expect(formationButton).toHaveAttribute('aria-pressed', 'true'),
+      expect(screen.getByLabelText('홈 팀 대형')).toHaveTextContent('3-5-2'),
     );
 
     fireEvent.click(
       screen.getByRole('button', { name: '기본값으로 되돌리기' }),
     );
     await waitFor(() =>
-      expect(formationButton).toHaveAttribute('aria-pressed', 'false'),
+      expect(screen.getByLabelText('홈 팀 대형')).toHaveTextContent('4-3-3'),
     );
+  });
+
+  it('출력하기를 누르면 페이지를 옮기지 않고 인쇄 설정 모달이 뜬다', async () => {
+    render(<EditorClient game={game} />);
+    expect(screen.queryByRole('dialog')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: '출력하기' }));
+
+    const dialog = await screen.findByRole('dialog');
+    expect(
+      within(dialog).getByRole('heading', { name: '축구 게임판 출력하기' }),
+    ).toBeInTheDocument();
+    // 인쇄 페이지와 같은 설정 화면이다 — 파트 목록과 내려받기 버튼.
+    expect(
+      within(dialog).getByRole('list', { name: '뽑을 파트' }),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByRole('button', { name: 'PDF 내려받기' }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(within(dialog).getByRole('button', { name: '닫기' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   });
 
   it('새로고침해도 입력값이 유지된다 — 저장 후 다시 마운트하면 복원된다', async () => {

@@ -13,7 +13,8 @@
  *   └────┘          └────┘     ← 발 둘. 바깥으로 눕힌다
  * ```
  *
- * 왜 상자로 돌아왔는지는 `../dimensions.ts`의 `GOAL` 주석에 세 단계로 적었다.
+ * 왜 상자로 돌아왔는지, 그리고 2026-09-06에 왜 한 번 더 커졌는지는
+ * `../dimensions.ts`의 `GOAL` 주석에 적었다.
  * 한 줄로 줄이면 **평면 프레임은 공을 세워 주지 못해 골인지 아닌지 보이지
  * 않았기 때문**이다. 다만 예전 터널과 달리 골라인 **바깥**에 서므로 필드 안
  * 공간을 쓰지 않고, 골 판정은 여전히 골라인이다.
@@ -286,10 +287,15 @@ export const goalRoofWindowRect = (
   };
 };
 
-/** 시트 위 두 벌의 좌상단. */
+/**
+ * 시트 위 두 벌의 좌상단.
+ *
+ * 한 벌이 88×52mm라 A5 가로(210×148.5) 폭에 둘이 나란히 서면 좌우 12mm·사이
+ * 10mm가 남는다. 아래 절반은 접는 법과 도해 몫이다.
+ */
 export const GOAL_NET_ORIGINS: ReadonlyArray<readonly [number, number]> = [
-  [24, 26],
-  [119, 26],
+  [12, 22],
+  [110, 22],
 ];
 
 /**
@@ -320,9 +326,9 @@ const assemblyDiagrams = (leftMm: number, topMm: number): string[] => {
   const centerXMm = (i: number) => stepXMm(i) + ASSEMBLY_DIAGRAM_WIDTH_MM / 2;
   const baseYMm = topMm + ASSEMBLY_DIAGRAM_HEIGHT_MM - 3;
 
-  // ① 정면에서 본 골대 — 골문과 그 위 크로스바.
+  // ① 정면에서 본 골대 — 골문과 그 위 크로스바. 실제 골문 비율(2:1)로 그린다.
   const w = 24;
-  const h = 11;
+  const h = 12;
   const a = centerXMm(0) - w / 2;
   const one = [
     path(
@@ -337,13 +343,14 @@ const assemblyDiagrams = (leftMm: number, topMm: number): string[] => {
     caption('① 오린다', centerXMm(0)),
   ];
 
-  // ② 옆에서 본 접기 — 벽을 세우고 발을 바깥으로 눕힌다.
+  // ② 옆에서 본 접기 — 벽을 세우고 발을 바깥으로 눕힌다. 지붕 9 : 벽 13으로
+  // 깊이(18)보다 높이(26)가 큰 실제 비례를 따른다.
   const b = centerXMm(1) - 5;
   const two = [
     // 지붕
-    path(`M ${num(b)} ${num(baseYMm - 11)} H ${num(b + 11)}`, bold),
+    path(`M ${num(b)} ${num(baseYMm - 13)} H ${num(b + 9)}`, bold),
     // 뒷벽
-    path(`M ${num(b)} ${num(baseYMm - 11)} V ${num(baseYMm)}`, bold),
+    path(`M ${num(b)} ${num(baseYMm - 13)} V ${num(baseYMm)}`, bold),
     // 발 — 바깥(왼쪽)으로 눕는다.
     path(`M ${num(b)} ${num(baseYMm)} H ${num(b - 7)}`, bold),
     // 눕는 방향. 발 선과 겹치지 않게 위쪽에서 돌아 내려온다.
@@ -361,7 +368,7 @@ const assemblyDiagrams = (leftMm: number, topMm: number): string[] => {
 
   // ③ 위에서 본 놓는 자리 — 골라인 눈금에 골대 앞면 좌우를 맞춘다.
   const c = centerXMm(2) + 3;
-  const halfMm = 6;
+  const halfMm = 7;
   const topEdgeYMm = baseYMm - 16;
   const three = [
     // 골라인.
@@ -375,7 +382,7 @@ const assemblyDiagrams = (leftMm: number, topMm: number): string[] => {
     ),
     path(`M ${num(c)} ${num(baseYMm - 8)} H ${num(c + 1.5)}`, bold),
     // 골대 — 눈금 사이에 맞춰 골라인 바깥(왼쪽)으로 놓인다.
-    rect(c - 9, baseYMm - 8 - halfMm, 9, halfMm * 2, {
+    rect(c - 5, baseYMm - 8 - halfMm, 5, halfMm * 2, {
       ...thin,
       'stroke-dasharray': '1 1',
     }),
@@ -396,8 +403,10 @@ const assemblyDiagrams = (leftMm: number, topMm: number): string[] => {
 export const renderGoals = (): string => {
   const grids = GOAL_NET_ORIGINS.map(([x, y]) => gridOf(x, y));
   const assemblyLeftMm = 24;
-  const assemblyTopMm = 78;
-  const assemblyLineMm = 5.4;
+  // 전개도가 커져 바닥이 y=74까지 내려왔다. 글 블록은 그 아래에서 시작하되
+  // 줄간을 조금 좁혀 도해까지 시트 안에 담는다.
+  const assemblyTopMm = 80;
+  const assemblyLineMm = 5.2;
   const assemblyFontMm = 3.2;
   const assemblyIndentMm = 5.4;
   // 번호를 왼쪽에 세우고 본문만 접는다 — 둘째 줄이 번호 아래로 흘러내리면

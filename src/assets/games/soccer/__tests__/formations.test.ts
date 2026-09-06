@@ -1,13 +1,11 @@
 /**
- * 전술 대형이 **경기가 되는 배치**인지 (IDE-010)
+ * 전술 대형이 **판에 맞는 배치**인지 (IDE-010)
  *
- * 처음에는 두 팀을 각자 진영 절반에 세웠는데 그러면 경기를 할 수 없었다.
- * 선수 마커는 운동장에 인쇄되어 움직이지 않고, 규칙은 패스가 자기 팀 선수에게
- * 닿아야 이어지고 슛도 공이 자기 팀 선수 위에 있을 때만 되게 되어 있다 —
- * 상대 골대 쪽에 자기 팀 선수가 하나도 없으면 공을 앞으로 보낼 방법이 없다.
- *
- * 여기 있는 것은 "도안이 스키마를 만족하는가"가 아니라 **"이 배치로 놀 수
- * 있는가"**를 지키는 테스트다. 좌표를 손볼 때 이 조건들이 먼저 깨진다.
+ * 골키퍼를 뺀 열 명이 자기 진영에 다섯, 상대 진영에 다섯 선다(2026-09-06 사용자
+ * 요청). 여기 있는 것은 "도안이 스키마를 만족하는가"가 아니라 **"이 배치가
+ * 판의 약속을 지키는가"**를 지키는 테스트다 — 반반이 맞는지, 마커가 하프라인을
+ * 물지 않는지, 골키퍼가 골 에어리어에 서는지. 좌표를 손볼 때 이 조건들이 먼저
+ * 깨진다.
  */
 import { describe, expect, it } from 'vitest';
 import { getGame } from '@/lib/games';
@@ -45,32 +43,41 @@ const MARKER_W = Math.max(
 const homeGoalXMm = FIELD.xMm;
 const awayGoalXMm = FIELD_RIGHT_MM;
 
-describe('두 팀이 섞여 선다 — 경기 성립 조건', () => {
-  it.each(formationIds)('%s · 홈 팀이 상대 진영에도 선수를 둔다', (id) => {
-    const forwards = presetOf(id, 'home').positions.filter(
-      (p) => p.xMm > FIELD_CENTER_X_MM,
+describe('골키퍼를 뺀 열 명이 반반으로 선다', () => {
+  const outfield = (id: string, groupId: string) =>
+    presetOf(id, groupId).positions.filter(
+      (p) => !p.slotId.endsWith('-player-1'),
     );
-    // 상대 진영에 받아 줄 선수가 없으면 공을 앞으로 보낼 수 없다.
-    expect(forwards.length).toBeGreaterThanOrEqual(1);
+
+  it.each(formationIds)('%s · 홈은 자기 진영 다섯, 상대 진영 다섯', (id) => {
+    const own = outfield(id, 'home').filter((p) => p.xMm < FIELD_CENTER_X_MM);
+    expect(own).toHaveLength(5);
   });
 
-  it.each(formationIds)('%s · 원정 팀이 상대 진영에도 선수를 둔다', (id) => {
-    const forwards = presetOf(id, 'away').positions.filter(
-      (p) => p.xMm < FIELD_CENTER_X_MM,
-    );
-    expect(forwards.length).toBeGreaterThanOrEqual(1);
+  it.each(formationIds)('%s · 원정도 자기 진영 다섯, 상대 진영 다섯', (id) => {
+    const own = outfield(id, 'away').filter((p) => p.xMm > FIELD_CENTER_X_MM);
+    expect(own).toHaveLength(5);
   });
 
-  it.each(formationIds)(
-    '%s · 최전방이 상대 골대에 닿을 만한 거리에 있다',
-    (id) => {
-      const home = presetOf(id, 'home').positions;
-      const furthest = Math.max(...home.map((p) => p.xMm));
-      // 예전 배치는 최전방이 x=130이라 골대까지 143mm였다 — 한 번에 튕겨 넣을 수
-      // 없는 거리다. 필드 길이의 1/3 안으로 들어와야 슛이 성립한다.
-      expect(awayGoalXMm - furthest).toBeLessThan(FIELD.widthMm / 3);
-    },
-  );
+  it.each(formationIds)('%s · 어느 마커도 하프라인을 물지 않는다', (id) => {
+    for (const groupId of ['home', 'away']) {
+      for (const pos of presetOf(id, groupId).positions) {
+        const left = pos.xMm - MARKER_W / 2;
+        const right = pos.xMm + MARKER_W / 2;
+        expect(
+          left >= FIELD_CENTER_X_MM || right <= FIELD_CENTER_X_MM,
+          `${groupId} ${pos.slotId}`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it.each(formationIds)('%s · 골키퍼는 자기 골문 앞이다', (id) => {
+    const homeGk = presetOf(id, 'home').positions[0];
+    const awayGk = presetOf(id, 'away').positions[0];
+    expect(homeGk.xMm).toBeLessThan(FIELD_CENTER_X_MM);
+    expect(awayGk.xMm).toBeGreaterThan(FIELD_CENTER_X_MM);
+  });
 
   it('골키퍼가 골라인을 넘지 않는다 — 골대가 서는 자리다', () => {
     for (const id of formationIds) {
@@ -127,37 +134,23 @@ describe('두 팀이 섞여 선다 — 경기 성립 조건', () => {
   });
 
   /**
-   * 골키퍼를 뺀 10명이 운동장 1/3마다 흩어져 있어야 한다.
-   *
-   * 선수가 한 구역에 몰리면 그 구역 밖에서는 패스를 받아 줄 사람이 없어 공이
-   * 앞으로 나가지 못한다. 4-2-3-1의 공격형 미드필더가 중원에 서던 때는 상대
-   * 진영에 공격수 한 명만 남아 다른 대형보다 앞이 헐거웠다.
+   * 골키퍼를 뺀 10명이 한 줄에 몰리지 않는다 — 수비·중원·공격 세 줄이 있어야
+   * 자기 진영 안에서 패스를 이어 갈 수 있다.
    */
-  it.each(formationIds)('%s · 골키퍼를 뺀 10명이 1/3마다 흩어져 있다', (id) => {
-    const thirdMm = FIELD.widthMm / 3;
+  it.each(formationIds)('%s · 골키퍼를 뺀 10명이 세 줄 이상에 선다', (id) => {
     for (const groupId of ['home', 'away']) {
       const positions = presetOf(id, groupId).positions.filter(
         (p) => !p.slotId.endsWith('-player-1'),
       );
       expect(positions).toHaveLength(10);
-      const counts = [0, 0, 0];
-      for (const pos of positions) {
-        const index = Math.min(2, Math.floor((pos.xMm - FIELD.xMm) / thirdMm));
-        counts[index] += 1;
-      }
-      for (const [index, count] of counts.entries()) {
-        expect(
-          count,
-          `${id} ${groupId}의 ${index + 1}번째 1/3`,
-        ).toBeGreaterThanOrEqual(2);
-      }
-      expect(counts.reduce((a, b) => a + b, 0)).toBe(10);
+      const lanes = new Set(positions.map((p) => p.xMm));
+      expect(lanes.size, `${id} ${groupId}`).toBeGreaterThanOrEqual(3);
     }
   });
 });
 
 describe('레인', () => {
-  it('모든 대형이 정해진 다섯 레인만 쓴다', () => {
+  it('모든 대형이 정해진 여섯 레인만 쓴다', () => {
     const lanes = new Set<number>(Object.values(FORMATION_LANES));
     for (const id of formationIds) {
       for (const pos of presetOf(id, 'home').positions) {

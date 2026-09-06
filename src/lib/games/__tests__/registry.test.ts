@@ -131,14 +131,15 @@ describe('축구 게임판 — 마커 스타일', () => {
     const setIds = soccer.styleSets.map((s) => s.id);
     expect(setIds.length).toBeGreaterThan(2);
 
+    // 기본은 색칠용 선수 그림이다(2026-09-06).
     const customization = defaultCustomization(soccer);
     for (const setId of setIds) {
       expect(resolveVariant(soccer, setId, customization).id, setId).toBe(
-        'circle',
+        'outline',
       );
     }
 
-    for (const variantId of ['illustration', 'outline']) {
+    for (const variantId of ['circle', 'illustration']) {
       customization.values['marker-style'] = variantId;
       expect(validateCustomization(soccer, customization)).toEqual([]);
       for (const setId of setIds) {
@@ -154,8 +155,11 @@ describe('축구 게임판 — 마커 스타일', () => {
 describe('축구 게임판 — 전술 대형 프리셋', () => {
   it('대형마다 홈·원정 프리셋이 있고 각각 11명을 배치한다', () => {
     const byFormation = presetsByFormation(soccer);
+    // 현대 축구에서 흔한 여섯 대형(2026-09-06).
     expect([...byFormation.keys()].sort()).toEqual([
+      '3-4-3',
       '3-5-2',
+      '4-1-4-1',
       '4-2-3-1',
       '4-3-3',
       '4-4-2',

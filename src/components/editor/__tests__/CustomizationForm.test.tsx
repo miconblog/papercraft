@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { defaultCustomization, parseGame } from '@/lib/schema';
 import { makeGameWithMarkers } from '@/lib/schema/__tests__/fixtures';
 import { CustomizationForm } from '../CustomizationForm';
@@ -72,25 +73,22 @@ describe('CustomizationForm (IDE-006 — 스키마를 읽어 폼을 자동 생�
     expect(screen.getByRole('alert')).toHaveTextContent('10자 이내로 입력한다');
   });
 
-  it('그룹에 배치 프리셋이 있으면 대형 버튼을 보여준다', () => {
+  it('그룹에 배치 프리셋이 있으면 대형 셀렉트를 보여주고, 고른 것이 없으면 "직접 배치"다', () => {
     renderForm();
-    expect(
-      screen.getByRole('button', { name: '벌린 배치' }),
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText(/대형$/)).toHaveTextContent('직접 배치');
   });
 
-  it('대형 버튼을 누르면 그룹 id와 프리셋 id로 onApplyPreset을 부른다', () => {
+  it('대형을 고르면 그룹 id와 프리셋 id로 onApplyPreset을 부른다', async () => {
+    const user = userEvent.setup();
     const onApplyPreset = vi.fn();
     renderForm({ onApplyPreset });
-    fireEvent.click(screen.getByRole('button', { name: '벌린 배치' }));
+    await user.click(screen.getByLabelText(/대형$/));
+    await user.click(await screen.findByRole('option', { name: '벌린 배치' }));
     expect(onApplyPreset).toHaveBeenCalledWith('red', 'spread');
   });
 
-  it('선택된 프리셋 버튼을 눌린 상태로 표시한다', () => {
+  it('선택된 프리셋을 셀렉트에 보여준다', () => {
     renderForm({ selectedPresetByGroup: { red: 'spread' } });
-    expect(screen.getByRole('button', { name: '벌린 배치' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    expect(screen.getByLabelText(/대형$/)).toHaveTextContent('벌린 배치');
   });
 });
