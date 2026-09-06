@@ -9,7 +9,6 @@ import {
   SCORE_TABLE_WIDTH_MM,
   SCORE_TEAM_NAME_Y_MM,
   SHEETS,
-  scoreTeamColumnCenterXMm,
 } from '../dimensions.ts';
 import {
   ART_LAYER_ID,
@@ -18,7 +17,6 @@ import {
   group,
   line,
   markLayer,
-  num,
   rect,
   svgDocument,
   text,
@@ -42,7 +40,7 @@ const tableBottomMm = bodyTopMm + rowHeightMm * rows;
 const columnEdgesMm = [
   xMm,
   xMm + indexColumnMm,
-  scoreTeamColumnCenterXMm(0) + SCORE_TABLE.teamColumnMm / 2,
+  xMm + indexColumnMm + SCORE_TABLE.teamColumnMm,
   tableRightMm,
 ];
 
@@ -119,9 +117,8 @@ export const renderScoreSheet = (): string =>
         ),
       ]),
 
-      `<!-- 팀 이름: y=${num(SCORE_TEAM_NAME_Y_MM)}, x=${num(
-        scoreTeamColumnCenterXMm(0),
-      )} / ${num(scoreTeamColumnCenterXMm(1))} -->`,
+      // 팀 칸(색 막대 아래)은 비워 둔다 — 팀 이름 슬롯을 뺐고(2026-09-06)
+      // 아이가 직접 쓰는 자리다. 등번호와 같은 이유다.
       '<g id="pc-slot" />',
     ],
   });

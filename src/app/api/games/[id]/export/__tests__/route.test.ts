@@ -54,7 +54,7 @@ describe('POST /api/games/[id]/export', () => {
     const res = await call('soccer', {
       customization: {
         ...customization,
-        values: { ...customization.values, 'home-name': '초록 번개' },
+        values: { ...customization.values, 'home-player-9': '77' },
       },
       options: options([{ partId: 'field', scale: 1, copies: 1 }]),
     });

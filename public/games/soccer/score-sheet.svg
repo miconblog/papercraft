@@ -48,6 +48,5 @@
 <text x="30" y="130" font-size="3.6" dominant-baseline="central" fill="#6b7280" text-anchor="middle">12</text>
 <text x="15" y="136.6" font-size="2.8" dominant-baseline="central" fill="#6b7280" text-anchor="start">한 판이 끝날 때마다 양쪽 점수를 적는다. 칸이 모자라면 한 장 더 뽑는다.</text>
 </g>
-<!-- 팀 이름: y=33.25, x=82.5 / 157.5 -->
 <g id="pc-slot" />
 </svg>

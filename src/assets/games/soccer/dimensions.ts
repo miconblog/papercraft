@@ -327,13 +327,12 @@ export const SCORE_TABLE = {
 export const SCORE_TABLE_WIDTH_MM =
   SCORE_TABLE.indexColumnMm + SCORE_TABLE.teamColumnMm * 2; // 180
 
-/** 홈·원정 팀 열의 가운데 x. 팀 이름 슬롯이 여기 놓인다. */
-export const scoreTeamColumnCenterXMm = (index: 0 | 1): number =>
-  SCORE_TABLE.xMm +
-  SCORE_TABLE.indexColumnMm +
-  SCORE_TABLE.teamColumnMm * (index + 0.5);
-
-/** 헤더 행에서 팀 이름 글자의 세로 중심. 색 막대 아래 남는 칸의 가운데다. */
+/**
+ * 헤더 행 글자의 세로 중심. 색 막대 아래 남는 칸의 가운데다.
+ *
+ * 팀 칸에는 글자를 찍지 않는다 — 팀 이름 슬롯을 뺐고(2026-09-06) 그 자리는
+ * 아이가 직접 쓴다. 지금 이 y를 쓰는 글자는 왼쪽 "판" 머리글뿐이다.
+ */
 export const SCORE_TEAM_NAME_Y_MM =
   SCORE_TABLE.headerYMm +
   SCORE_TABLE.colorBarHeightMm +

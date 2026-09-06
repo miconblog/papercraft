@@ -39,23 +39,15 @@ describe('partDraws', () => {
     expect(texts(items).map((t) => t.text)).toContain('77');
   });
 
-  it('팀 이름은 그것이 놓인 파트에 들어간다', () => {
+  it('값은 그것이 놓인 파트에만 들어간다 — 등번호는 운동장에, 점수 기록칸에는 없다', () => {
     const scoreSheet = game.parts.find((p) => p.id === 'score-sheet')!;
     const items = partDraws(
       game,
-      withValues({ 'home-name': '초록 번개' }),
+      withValues({ 'home-player-9': 77 }),
       scoreSheet,
       loadArtwork,
     );
-    expect(texts(items).map((t) => t.text)).toContain('초록 번개');
-    // 운동장에는 팀 이름을 두지 않는다 — 놀 면을 넓혔다(IDE-010).
-    const board = partDraws(
-      game,
-      withValues({ 'home-name': '초록 번개' }),
-      field,
-      loadArtwork,
-    );
-    expect(texts(board).map((t) => t.text)).not.toContain('초록 번개');
+    expect(texts(items).map((t) => t.text)).not.toContain('77');
   });
 
   /**

@@ -9,7 +9,6 @@ import {
   rectsOverlap,
   resolveVariant,
   slotMarker,
-  slotsOfPart,
   styleSetBounds,
   validateCustomization,
   type GameDefinition,
@@ -88,15 +87,9 @@ describe('축구 게임판 — 슬롯', () => {
     );
   });
 
-  it('팀 이름은 점수 기록칸에 놓인다 — 운동장은 놀 면으로 비워 뒀다', () => {
-    const homeName = soccer.slots.find((s) => s.id === 'home-name')!;
-    expect(homeName.placements.map((p) => p.partId)).toEqual(['score-sheet']);
-    expect(slotsOfPart(soccer, 'score-sheet').map((s) => s.id)).toContain(
-      'home-name',
-    );
-    expect(slotsOfPart(soccer, 'field').map((s) => s.id)).not.toContain(
-      'home-name',
-    );
+  it('팀 이름 슬롯이 없다 — 점수 기록칸의 팀 칸은 아이가 직접 쓴다', () => {
+    // 2026-09-06 사용자 요청("팀 이름 입력칸도 필요없어"). 등번호와 같은 이유다.
+    expect(soccer.slots.find((s) => s.id.endsWith('-name'))).toBeUndefined();
   });
 
   it('팀 색은 마커 테두리와 점수 기록칸 막대에 쓰인다', () => {
@@ -122,10 +115,10 @@ describe('축구 게임판 — 슬롯', () => {
     }
   });
 
-  it('그룹이 이름·색 슬롯을 가리킨다', () => {
+  it('그룹이 색 슬롯을 가리키고 이름 슬롯은 없다', () => {
     expect(soccer.groups.map((g) => g.id)).toEqual(['home', 'away']);
     for (const group of soccer.groups) {
-      expect(group.nameSlotId).toBe(`${group.id}-name`);
+      expect(group.nameSlotId).toBeUndefined();
       expect(group.colorSlotId).toBe(`${group.id}-color`);
     }
   });

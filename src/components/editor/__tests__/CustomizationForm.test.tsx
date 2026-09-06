@@ -26,7 +26,9 @@ const game = parseGame(
 );
 
 /** 공통 props에서 필요한 것만 덮어써 렌더링한다. */
-function renderForm(overrides: Partial<Parameters<typeof CustomizationForm>[0]> = {}) {
+function renderForm(
+  overrides: Partial<Parameters<typeof CustomizationForm>[0]> = {},
+) {
   const customization = defaultCustomization(game);
   return render(
     <CustomizationForm
@@ -42,12 +44,14 @@ function renderForm(overrides: Partial<Parameters<typeof CustomizationForm>[0]> 
 }
 
 describe('CustomizationForm (IDE-006 — 스키마를 읽어 폼을 자동 생성)', () => {
-  it('그룹의 이름·색·마커 슬롯을 모두 그린다', () => {
+  it('그룹의 이름·색 슬롯은 그리고, 마커로 놓이는 슬롯은 입력을 내지 않는다', () => {
     renderForm();
     expect(screen.getByLabelText('팀 이름')).toBeInTheDocument();
     expect(screen.getByLabelText('팀 색')).toBeInTheDocument();
-    expect(screen.getByLabelText('빨강 1번')).toBeInTheDocument();
-    expect(screen.getByLabelText('빨강 2번')).toBeInTheDocument();
+    // 마커 슬롯의 편집은 미리보기에서 끌어 놓는 것이다(IDE-012). 값은 아이가
+    // 종이에 쓰는 자리라 입력을 두지 않는다(2026-09-06).
+    expect(screen.queryByLabelText('빨강 1번')).toBeNull();
+    expect(screen.queryByLabelText('빨강 2번')).toBeNull();
   });
 
   it('그룹 소속이 아닌 슬롯도 그린다', () => {
@@ -70,7 +74,9 @@ describe('CustomizationForm (IDE-006 — 스키마를 읽어 폼을 자동 생�
 
   it('그룹에 배치 프리셋이 있으면 대형 버튼을 보여준다', () => {
     renderForm();
-    expect(screen.getByRole('button', { name: '벌린 배치' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: '벌린 배치' }),
+    ).toBeInTheDocument();
   });
 
   it('대형 버튼을 누르면 그룹 id와 프리셋 id로 onApplyPreset을 부른다', () => {

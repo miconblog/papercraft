@@ -25,11 +25,12 @@ import {
 
 const game = getGame('soccer') as GameDefinition;
 const playerSlot = findSlot(game, 'home-player-9')!;
-const nameSlot = findSlot(game, 'home-name')!;
+// 마커가 아닌 슬롯 — 마커 모양 선택. 옮길 자리가 없다.
+const styleSlot = findSlot(game, 'marker-style')!;
 
 describe('markerBounds', () => {
   it('옮길 수 없는 슬롯은 범위가 없다', () => {
-    expect(markerBounds(game, nameSlot)).toBeNull();
+    expect(markerBounds(game, styleSlot)).toBeNull();
   });
 
   it('슬롯이 가리키는 영역 안으로 제한한다', () => {

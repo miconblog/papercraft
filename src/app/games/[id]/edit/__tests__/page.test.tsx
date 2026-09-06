@@ -20,7 +20,7 @@ describe('에디터 진입 경로 (IDE-006)', () => {
   it('실제 커스터마이즈 폼이 함께 렌더링된다', async () => {
     const element = await Page({ params: Promise.resolve({ id: 'soccer' }) });
     render(element);
-    expect(screen.getByLabelText('홈 팀 이름')).toBeInTheDocument();
+    expect(screen.getByLabelText('홈 팀 색')).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: '기본값으로 되돌리기' }),
     ).toBeInTheDocument();

@@ -25,22 +25,17 @@ import {
   GOAL,
   PLAYER_MARKER,
   SHEETS,
-  SCORE_TABLE,
-  SCORE_TEAM_NAME_Y_MM,
-  scoreTeamColumnCenterXMm,
 } from './dimensions';
 
 const TEAMS = [
   {
     id: 'home',
     label: '홈 팀',
-    defaultName: '파랑 팀',
     defaultColor: '#1d4ed8',
   },
   {
     id: 'away',
     label: '원정 팀',
-    defaultName: '빨강 팀',
     defaultColor: '#dc2626',
   },
 ] as const;
@@ -273,28 +268,11 @@ const markerStyleSets = [
   markerStyleSet(GOALKEEPER_POSE, true),
 ];
 
-const teamNameSlots = TEAMS.map((team, i) => ({
-  id: `${team.id}-name`,
-  kind: 'text' as const,
-  label: `${team.label} 이름`,
-  groupId: team.id,
-  maxLength: 12,
-  default: team.defaultName,
-  placeholder: '팀 이름',
-  // 점수 기록칸에만 나온다. 운동장에서는 뺐다 — 팀 이름 띠가 놀 면을 좁혔고,
-  // 어느 팀이 어느 쪽인지는 마커 색과 화살표 방향이 이미 말해 준다(2026-09-05).
-  placements: [
-    {
-      partId: 'score-sheet',
-      mode: 'text' as const,
-      xMm: scoreTeamColumnCenterXMm(i as 0 | 1),
-      yMm: SCORE_TEAM_NAME_Y_MM,
-      align: 'center' as const,
-      fontSizeMm: 5,
-      maxWidthMm: SCORE_TABLE.teamColumnMm - 6,
-    },
-  ],
-}));
+/*
+ * 팀 이름 슬롯은 없다(2026-09-06 사용자 요청 — "팀 이름 입력칸도 필요없어").
+ * 점수 기록칸 헤더의 팀 칸은 색 막대 아래를 **비워 둔다** — 등번호처럼 아이가
+ * 종이에 직접 쓰는 자리다. 어느 팀 칸인지는 색 막대가 말해 준다.
+ */
 
 /**
  * 팀 색 — **마커 테두리와 점수 기록칸 색 막대**에 쓴다(2026-09-05 복원).
@@ -430,7 +408,7 @@ export default defineGame({
   groups: TEAMS.map((team) => ({
     id: team.id,
     label: team.label,
-    nameSlotId: `${team.id}-name`,
+    // 이름 슬롯은 없다 — 점수 기록칸의 팀 칸은 아이가 직접 쓴다(2026-09-06).
     colorSlotId: `${team.id}-color`,
     // 원정은 왼쪽 골대로 공격한다 — 마커의 화살촉이 그쪽을 가리키게 뒤집는다.
     // 두 팀이 필드 전체에 섞여 서기 때문에 위치로는 팀을 알 수 없고, 흑백으로
@@ -457,7 +435,6 @@ export default defineGame({
       default: 'circle',
       placements: [{ partId: 'field', mode: 'control' }],
     },
-    ...teamNameSlots,
     ...teamColorSlots,
     ...playerSlots,
   ],
