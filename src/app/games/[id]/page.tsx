@@ -65,14 +65,31 @@ export default async function GamePage({ params }: Props) {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
-      <Link
-        href="/"
-        className="text-sm text-zinc-500 hover:underline dark:text-zinc-400"
-      >
-        ← 목록으로
-      </Link>
+      {/* 만들기 버튼은 맨 위 오른쪽, 목록 링크와 같은 줄이다. 아래에 두면
+          규칙·구성을 지나 스크롤해야 닿았다(2026-09-06 사용자 요청). 인쇄는
+          여기 없다 — 만들기 페이지 안의 "출력하기"가 모달로 연다. */}
+      <div className="flex items-center justify-between gap-4">
+        <Link
+          href="/"
+          className="text-sm text-zinc-500 hover:underline dark:text-zinc-400"
+        >
+          ← 목록으로
+        </Link>
+        <Link
+          href={`/games/${game.id}/edit`}
+          className="inline-flex items-center justify-center rounded-full bg-foreground px-5 py-2 text-sm font-medium text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc]"
+        >
+          만들기
+        </Link>
+      </div>
 
-      <div className="mt-4 overflow-hidden rounded-lg border border-black/10 bg-white dark:border-white/15">
+      {/* 도안 그림도 만들기로 가는 문이다 — 보고 나서 바로 만지고 싶은 것이 첫
+          충동이다. */}
+      <Link
+        href={`/games/${game.id}/edit`}
+        aria-label={`${game.title} 만들기`}
+        className="mt-4 block overflow-hidden rounded-lg border border-black/10 bg-white outline-none transition-shadow hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current dark:border-white/15"
+      >
         <Image
           src={game.thumbnail}
           alt={`${game.title} 도안 미리보기`}
@@ -80,7 +97,7 @@ export default async function GamePage({ params }: Props) {
           height={board.heightMm}
           className="h-auto w-full"
         />
-      </div>
+      </Link>
 
       <h1 className="mt-6 text-3xl font-bold tracking-tight">{game.title}</h1>
       <p className="mt-2 text-lg text-zinc-600 dark:text-zinc-400">
@@ -177,22 +194,6 @@ export default async function GamePage({ params }: Props) {
           ))}
         </ul>
       </section>
-
-      <div className="mt-8 flex flex-wrap gap-3">
-        <Link
-          href={`/games/${game.id}/edit`}
-          className="inline-flex items-center justify-center rounded-full bg-foreground px-6 py-3 font-medium text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc]"
-        >
-          만들기 시작
-        </Link>
-        {/* 바꿀 것이 없어도 바로 뽑을 수 있어야 한다 — 기본값으로도 쓸 만한 도안이다. */}
-        <Link
-          href={`/games/${game.id}/print`}
-          className="inline-flex items-center justify-center rounded-full border border-black/15 px-6 py-3 font-medium transition-colors hover:border-black/30 dark:border-white/20 dark:hover:border-white/40"
-        >
-          바로 인쇄하기
-        </Link>
-      </div>
     </div>
   );
 }

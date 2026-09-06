@@ -10,7 +10,7 @@ describe('게임 상세 페이지', () => {
     );
   });
 
-  it('축구 게임판 상세를 렌더링한다 — 제목·인원·구성·에디터 링크', async () => {
+  it('축구 게임판 상세를 렌더링한다 — 제목·인원·구성·만들기 링크', async () => {
     const soccer = getGame('soccer')!;
     const element = await Page({ params: Promise.resolve({ id: 'soccer' }) });
     render(element);
@@ -22,15 +22,16 @@ describe('게임 상세 페이지', () => {
     for (const part of soccer.parts) {
       expect(screen.getByText(part.title)).toBeInTheDocument();
     }
-    expect(screen.getByRole('link', { name: '만들기 시작' })).toHaveAttribute(
+    // 만들기 문은 둘이다 — 맨 위 버튼과 도안 그림. 스크롤 없이 닿는다
+    // (2026-09-06). 인쇄 링크는 없다 — 만들기 페이지 안의 모달이 맡는다.
+    expect(screen.getByRole('link', { name: '만들기' })).toHaveAttribute(
       'href',
       '/games/soccer/edit',
     );
-    // 바꿀 것이 없어도 바로 뽑을 수 있어야 한다(IDE-007).
-    expect(screen.getByRole('link', { name: '바로 인쇄하기' })).toHaveAttribute(
-      'href',
-      '/games/soccer/print',
-    );
+    expect(
+      screen.getByRole('link', { name: `${soccer.title} 만들기` }),
+    ).toHaveAttribute('href', '/games/soccer/edit');
+    expect(screen.queryByRole('link', { name: /인쇄/ })).toBeNull();
   });
 
   it('없는 게임 id는 notFound를 던진다', async () => {

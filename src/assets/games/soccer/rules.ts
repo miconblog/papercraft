@@ -24,7 +24,7 @@ export const RULES_TITLE = '축구 게임판 · 게임 방법';
  * ⚠︎ 실물 출력으로 재확인이 필요하다.
  */
 export const PAPER_NOTE =
-  '운동장은 조금 두꺼운 종이(120g/m² 이상)에 뽑으면 공을 오래 튕겨도 잘 해지지 않습니다.';
+  '운동장은 A4 용지에 출력해서 스케치북에 붙여사용하면 좋습니다.';
 
 export const RULES: readonly RuleBlock[] = [
   { kind: 'heading', text: '준비물' },
@@ -86,7 +86,7 @@ export const RULES: readonly RuleBlock[] = [
   { kind: 'heading', text: '점수 계산 — 시작 전에 하나를 고른다' },
   {
     kind: 'bullet',
-    text: '목표 점수제 — 먼저 정한 점수(예: 3점)에 도달한 쪽이 이긴다.',
+    text: '목표 점수제 — 먼저 정한 점수(예: 전후반 각각 10점씩)에 도달한 쪽이 이긴다.',
   },
   {
     kind: 'bullet',
@@ -100,7 +100,7 @@ export const RULES: readonly RuleBlock[] = [
   },
   {
     kind: 'bullet',
-    text: '시작 전에 정해 두면 좋은 것 — 공이 운동장 밖으로 나갔을 때 어디서 다시 시작할지, 패스 시도를 몇 번으로 할지, 손이 공에 닿았을 때(핸들링) 어떻게 할지.',
+    text: '시작 전에 정해 두면 좋은 것 — 공이 운동장 밖으로 나갔을 때 어디서 다시 시작할지, 패스 시도를 몇 번으로 할지, 전반과 후반을 나눌지, 핸들링은 어떤 조건에서 적용할지, 그 밖의 파울은 어떤 조건에서 적용할지 등.',
   },
 ] as const;
 

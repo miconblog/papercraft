@@ -1,59 +1,74 @@
 'use client';
 
+import { useId } from 'react';
 import type { LayoutPreset } from '@/lib/schema';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 /**
- * 그룹(팀) 하나의 배치 프리셋(전술 대형) 선택 버튼 (IDE-006)
+ * 그룹(팀) 하나의 배치 프리셋(전술 대형) 선택 (IDE-006)
  *
  * `game.presets`만 읽는다 — 어떤 대형이 있는지, 몇 개인지는 게임마다 다르므로
  * 이름을 하드코딩하지 않는다. 축구 게임판이라면 그룹(팀)당 프리셋이 여러 개
- * (`4-4-2`·`3-5-2`·…) 있고, 버튼을 누르면 그 대형의 좌표로 마커가 옮겨간다.
+ * (`4-3-3`·`4-2-3-1`·…) 있고, 고르면 그 대형의 좌표로 마커가 옮겨간다.
  * 프리셋이 없는 그룹(위치를 가진 슬롯이 없는 그룹)에는 아무것도 그리지 않는다.
+ *
+ * 버튼 줄이었다가 **셀렉트 박스**가 됐다(2026-09-06 사용자 요청). 대형이 여섯
+ * 개가 되면서 버튼 여섯 개 × 두 팀이 팀 줄을 다 먹었다. 마커를 손으로 옮겨
+ * 어느 대형도 아니게 되면 "직접 배치"로 보인다 — 어떤 대형 이름을 남겨 두면
+ * 화면이 거짓말을 한다.
  */
 export interface FormationPickerProps {
   presets: readonly LayoutPreset[];
   selectedPresetId: string | undefined;
   onApply: (presetId: string) => void;
-  /**
-   * 제목 없이 버튼만 한 줄로 낸다. 팀 줄에 색 옆으로 붙는 자리라 "대형"이라는
-   * 말을 따로 두지 않아도 4-4-2 같은 숫자가 스스로 말한다(2026-09-06).
-   */
-  inline?: boolean;
+  /** 접근성 이름에 쓴다 — "홈 팀 대형". 화면에는 제목이 이미 있어 안 보인다. */
+  groupLabel: string;
 }
 
 export function FormationPicker({
   presets,
   selectedPresetId,
   onApply,
-  inline = false,
+  groupLabel,
 }: FormationPickerProps) {
+  const id = useId();
   if (presets.length === 0) return null;
 
+  const items = presets.map((preset) => ({
+    value: preset.id,
+    label: preset.formationId ?? preset.label,
+  }));
+
   return (
-    <div className={inline ? undefined : 'mt-3'}>
-      {!inline && <p className="text-sm font-medium">대형</p>}
-      <div
-        className={(inline ? '' : 'mt-1 ') + 'flex flex-wrap gap-1.5'}
-        role="group"
-        aria-label="대형 선택"
+    <Select
+      value={selectedPresetId ?? null}
+      onValueChange={(value) => {
+        // 단일 선택이라 실제로는 null이 오지 않는다 — 값이 온 경우만 반영한다.
+        if (value !== null) onApply(value);
+      }}
+      items={items}
+    >
+      <SelectTrigger
+        id={id}
+        aria-label={`${groupLabel} 대형`}
+        size="sm"
+        className="min-w-28"
       >
-        {presets.map((preset) => (
-          <button
-            key={preset.id}
-            type="button"
-            aria-pressed={preset.id === selectedPresetId}
-            onClick={() => onApply(preset.id)}
-            className={
-              'rounded-full px-2.5 py-1 text-xs font-medium outline-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current ' +
-              (preset.id === selectedPresetId
-                ? 'bg-foreground text-background'
-                : 'border border-black/15 hover:border-black/30 dark:border-white/20 dark:hover:border-white/40')
-            }
-          >
-            {preset.formationId ?? preset.label}
-          </button>
+        <SelectValue placeholder="직접 배치" />
+      </SelectTrigger>
+      <SelectContent>
+        {items.map((item) => (
+          <SelectItem key={item.value} value={item.value}>
+            {item.label}
+          </SelectItem>
         ))}
-      </div>
-    </div>
+      </SelectContent>
+    </Select>
   );
 }

@@ -14,6 +14,7 @@ import { movedPoint } from '@/lib/customization/movement';
 import { saveCustomization } from '@/lib/customization/storage';
 import { useHydrated } from '@/lib/customization/useHydrated';
 import { useStoredCustomization } from '@/lib/customization/useStoredCustomization';
+import { PrintDialog } from '@/components/print/PrintDialog';
 import { CustomizationForm } from './CustomizationForm';
 import { BoardPreview } from './BoardPreview';
 
@@ -51,11 +52,20 @@ function EditorForm({
   const [currentPartId, setCurrentPartId] = useState(
     () => game.parts.find((p) => p.kind === 'board')?.id ?? game.parts[0].id,
   );
-  // 그룹 id → 마지막으로 적용한 프리셋 id. 대형 버튼의 활성 표시에만 쓴다 —
-  // 좌표 자체는 `customization.positions`에 있다.
+  // 그룹 id → 지금 좌표가 어느 프리셋인지. 셀렉트 박스의 표시에만 쓴다 —
+  // 좌표 자체는 `customization.positions`에 있다. 처음 값은 좌표에서 알아낸다:
+  // 기본 좌표는 기본 대형이고, 저장값을 복원했을 때도 그 대형 그대로여야
+  // 셀렉트가 "직접 배치"라고 거짓말하지 않는다.
   const [selectedPresetByGroup, setSelectedPresetByGroup] = useState<
     Record<string, string | undefined>
-  >({});
+  >(() =>
+    Object.fromEntries(
+      game.groups.map((group) => [
+        group.id,
+        matchingPresetId(game, initial, group.id),
+      ]),
+    ),
+  );
 
   // 값이 바뀔 때마다 로컬 저장소에 동기화한다 — 새로고침해도 남아야 한다는
   // 수용 기준이 근거다.
@@ -81,8 +91,16 @@ function EditorForm({
   };
 
   const handleReset = () => {
-    setCustomization(defaultCustomization(game));
-    setSelectedPresetByGroup({});
+    const defaults = defaultCustomization(game);
+    setCustomization(defaults);
+    setSelectedPresetByGroup(
+      Object.fromEntries(
+        game.groups.map((group) => [
+          group.id,
+          matchingPresetId(game, defaults, group.id),
+        ]),
+      ),
+    );
   };
 
   /**
@@ -186,6 +204,9 @@ function EditorForm({
           >
             기본값으로 되돌리기
           </button>
+          {/* 인쇄는 여기서 모달로 연다 — 페이지를 옮기지 않는다(2026-09-06 사용자
+              요청). 지금 화면의 값을 그대로 넘겨 "보이는 그대로 뽑힌다". */}
+          <PrintDialog game={game} customization={customization} />
         </div>
       </div>
       {hasErrors && (
@@ -224,4 +245,23 @@ function EditorForm({
       </div>
     </div>
   );
+}
+
+/**
+ * 이 그룹의 지금 좌표와 **정확히 같은** 프리셋의 id. 없으면 `undefined`
+ * (손으로 옮긴 배치). 회전은 보지 않는다 — 프리셋은 좌표만 정한다.
+ */
+function matchingPresetId(
+  game: GameDefinition,
+  customization: GameCustomization,
+  groupId: string,
+): string | undefined {
+  return game.presets.find(
+    (preset) =>
+      preset.groupId === groupId &&
+      preset.positions.every((pos) => {
+        const point = customization.positions[pos.slotId];
+        return point?.xMm === pos.xMm && point?.yMm === pos.yMm;
+      }),
+  )?.id;
 }

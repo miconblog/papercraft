@@ -3,203 +3,251 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="148.5mm" viewBox="0 0 210 148.5" font-family="Noto Sans KR">
 <title>축구 게임판 · 골대 전개도</title>
 <g id="pc-cut" fill="none" stroke="#000000" stroke-width="0.25" stroke-linecap="butt">
-<path d="M 32 26 H 83 V 40 H 91 V 60 H 77 V 53 H 38 V 60 H 24 V 40 H 32 Z" />
-<path d="M 127 26 H 178 V 40 H 186 V 60 H 172 V 53 H 133 V 60 H 119 V 40 H 127 Z" />
-<rect x="42" y="30" width="31" height="7" />
-<rect x="137" y="30" width="31" height="7" />
+<path d="M 24 22 H 88 V 40 H 100 V 74 H 82 V 66 H 30 V 74 H 12 V 40 H 24 Z" />
+<path d="M 122 22 H 186 V 40 H 198 V 74 H 180 V 66 H 128 V 74 H 110 V 40 H 122 Z" />
+<rect x="34" y="26" width="44" height="11" />
+<rect x="132" y="26" width="44" height="11" />
 </g>
 <g id="pc-fold-mountain" fill="none" stroke="#000000" stroke-width="0.2" stroke-dasharray="4 1.2 0.6 1.2" stroke-linecap="butt">
-<line x1="38" y1="26" x2="38" y2="53" />
-<line x1="77" y1="26" x2="77" y2="53" />
-<line x1="38" y1="40" x2="77" y2="40" />
-<line x1="24" y1="53" x2="38" y2="53" />
-<line x1="77" y1="53" x2="91" y2="53" />
-<line x1="133" y1="26" x2="133" y2="53" />
-<line x1="172" y1="26" x2="172" y2="53" />
-<line x1="133" y1="40" x2="172" y2="40" />
-<line x1="119" y1="53" x2="133" y2="53" />
-<line x1="172" y1="53" x2="186" y2="53" />
+<line x1="30" y1="22" x2="30" y2="66" />
+<line x1="82" y1="22" x2="82" y2="66" />
+<line x1="30" y1="40" x2="82" y2="40" />
+<line x1="12" y1="66" x2="30" y2="66" />
+<line x1="82" y1="66" x2="100" y2="66" />
+<line x1="128" y1="22" x2="128" y2="66" />
+<line x1="180" y1="22" x2="180" y2="66" />
+<line x1="128" y1="40" x2="180" y2="40" />
+<line x1="110" y1="66" x2="128" y2="66" />
+<line x1="180" y1="66" x2="198" y2="66" />
 </g>
 <g id="pc-glue" fill="none" stroke="#000000" stroke-width="0.15" stroke-dasharray="1 1" stroke-linecap="butt">
-<line x1="32" y1="28.121" x2="34.121" y2="26" />
-<line x1="32" y1="30.243" x2="36.243" y2="26" />
-<line x1="32" y1="32.364" x2="38" y2="26.364" />
-<line x1="32" y1="34.485" x2="38" y2="28.485" />
-<line x1="32" y1="36.607" x2="38" y2="30.607" />
-<line x1="32" y1="38.728" x2="38" y2="32.728" />
-<line x1="32.849" y1="40" x2="38" y2="34.849" />
-<line x1="34.971" y1="40" x2="38" y2="36.971" />
-<line x1="37.092" y1="40" x2="38" y2="39.092" />
-<line x1="77" y1="28.121" x2="79.121" y2="26" />
-<line x1="77" y1="30.243" x2="81.243" y2="26" />
-<line x1="77" y1="32.364" x2="83" y2="26.364" />
-<line x1="77" y1="34.485" x2="83" y2="28.485" />
-<line x1="77" y1="36.607" x2="83" y2="30.607" />
-<line x1="77" y1="38.728" x2="83" y2="32.728" />
-<line x1="77.849" y1="40" x2="83" y2="34.849" />
-<line x1="79.971" y1="40" x2="83" y2="36.971" />
-<line x1="82.092" y1="40" x2="83" y2="39.092" />
-<line x1="127" y1="28.121" x2="129.121" y2="26" />
-<line x1="127" y1="30.243" x2="131.243" y2="26" />
-<line x1="127" y1="32.364" x2="133" y2="26.364" />
-<line x1="127" y1="34.485" x2="133" y2="28.485" />
-<line x1="127" y1="36.607" x2="133" y2="30.607" />
-<line x1="127" y1="38.728" x2="133" y2="32.728" />
-<line x1="127.849" y1="40" x2="133" y2="34.849" />
-<line x1="129.971" y1="40" x2="133" y2="36.971" />
-<line x1="132.092" y1="40" x2="133" y2="39.092" />
-<line x1="172" y1="28.121" x2="174.121" y2="26" />
-<line x1="172" y1="30.243" x2="176.243" y2="26" />
-<line x1="172" y1="32.364" x2="178" y2="26.364" />
-<line x1="172" y1="34.485" x2="178" y2="28.485" />
-<line x1="172" y1="36.607" x2="178" y2="30.607" />
-<line x1="172" y1="38.728" x2="178" y2="32.728" />
-<line x1="172.849" y1="40" x2="178" y2="34.849" />
-<line x1="174.971" y1="40" x2="178" y2="36.971" />
-<line x1="177.092" y1="40" x2="178" y2="39.092" />
+<line x1="24" y1="24.121" x2="26.121" y2="22" />
+<line x1="24" y1="26.243" x2="28.243" y2="22" />
+<line x1="24" y1="28.364" x2="30" y2="22.364" />
+<line x1="24" y1="30.485" x2="30" y2="24.485" />
+<line x1="24" y1="32.607" x2="30" y2="26.607" />
+<line x1="24" y1="34.728" x2="30" y2="28.728" />
+<line x1="24" y1="36.849" x2="30" y2="30.849" />
+<line x1="24" y1="38.971" x2="30" y2="32.971" />
+<line x1="25.092" y1="40" x2="30" y2="35.092" />
+<line x1="27.213" y1="40" x2="30" y2="37.213" />
+<line x1="29.335" y1="40" x2="30" y2="39.335" />
+<line x1="82" y1="24.121" x2="84.121" y2="22" />
+<line x1="82" y1="26.243" x2="86.243" y2="22" />
+<line x1="82" y1="28.364" x2="88" y2="22.364" />
+<line x1="82" y1="30.485" x2="88" y2="24.485" />
+<line x1="82" y1="32.607" x2="88" y2="26.607" />
+<line x1="82" y1="34.728" x2="88" y2="28.728" />
+<line x1="82" y1="36.849" x2="88" y2="30.849" />
+<line x1="82" y1="38.971" x2="88" y2="32.971" />
+<line x1="83.092" y1="40" x2="88" y2="35.092" />
+<line x1="85.213" y1="40" x2="88" y2="37.213" />
+<line x1="87.335" y1="40" x2="88" y2="39.335" />
+<line x1="122" y1="24.121" x2="124.121" y2="22" />
+<line x1="122" y1="26.243" x2="126.243" y2="22" />
+<line x1="122" y1="28.364" x2="128" y2="22.364" />
+<line x1="122" y1="30.485" x2="128" y2="24.485" />
+<line x1="122" y1="32.607" x2="128" y2="26.607" />
+<line x1="122" y1="34.728" x2="128" y2="28.728" />
+<line x1="122" y1="36.849" x2="128" y2="30.849" />
+<line x1="122" y1="38.971" x2="128" y2="32.971" />
+<line x1="123.092" y1="40" x2="128" y2="35.092" />
+<line x1="125.213" y1="40" x2="128" y2="37.213" />
+<line x1="127.335" y1="40" x2="128" y2="39.335" />
+<line x1="180" y1="24.121" x2="182.121" y2="22" />
+<line x1="180" y1="26.243" x2="184.243" y2="22" />
+<line x1="180" y1="28.364" x2="186" y2="22.364" />
+<line x1="180" y1="30.485" x2="186" y2="24.485" />
+<line x1="180" y1="32.607" x2="186" y2="26.607" />
+<line x1="180" y1="34.728" x2="186" y2="28.728" />
+<line x1="180" y1="36.849" x2="186" y2="30.849" />
+<line x1="180" y1="38.971" x2="186" y2="32.971" />
+<line x1="181.092" y1="40" x2="186" y2="35.092" />
+<line x1="183.213" y1="40" x2="186" y2="37.213" />
+<line x1="185.335" y1="40" x2="186" y2="39.335" />
 </g>
 <g id="pc-art" fill="#1a1a1a" stroke="none">
 <text x="105" y="12" font-size="5" dominant-baseline="central" text-anchor="middle">골대 전개도 · 2개</text>
-<text x="105" y="19" font-size="3" dominant-baseline="central" fill="#6b7280" text-anchor="middle">골문 39×13mm · 깊이 14mm · 골라인 바깥에 세운다</text>
+<text x="105" y="19" font-size="3" dominant-baseline="central" fill="#6b7280" text-anchor="middle">골문 52×26mm · 깊이 18mm · 골라인 바깥에 세운다</text>
 <g stroke="#6b7280" stroke-width="0.12" fill="none">
-<line x1="38" y1="45.657" x2="43.657" y2="40" />
-<line x1="38" y1="51.314" x2="49.314" y2="40" />
-<line x1="41.971" y1="53" x2="54.971" y2="40" />
-<line x1="47.627" y1="53" x2="60.627" y2="40" />
-<line x1="53.284" y1="53" x2="66.284" y2="40" />
-<line x1="58.941" y1="53" x2="71.941" y2="40" />
-<line x1="64.598" y1="53" x2="77" y2="40.598" />
-<line x1="70.255" y1="53" x2="77" y2="46.255" />
-<line x1="75.912" y1="53" x2="77" y2="51.912" />
-<line x1="38" y1="47.343" x2="43.657" y2="53" />
-<line x1="38" y1="41.686" x2="49.314" y2="53" />
-<line x1="41.971" y1="40" x2="54.971" y2="53" />
-<line x1="47.627" y1="40" x2="60.627" y2="53" />
-<line x1="53.284" y1="40" x2="66.284" y2="53" />
-<line x1="58.941" y1="40" x2="71.941" y2="53" />
-<line x1="64.598" y1="40" x2="77" y2="52.402" />
-<line x1="70.255" y1="40" x2="77" y2="46.745" />
-<line x1="75.912" y1="40" x2="77" y2="41.088" />
-<line x1="24" y1="45.657" x2="29.657" y2="40" />
-<line x1="24" y1="51.314" x2="35.314" y2="40" />
-<line x1="27.971" y1="53" x2="38" y2="42.971" />
-<line x1="33.627" y1="53" x2="38" y2="48.627" />
-<line x1="24" y1="47.343" x2="29.657" y2="53" />
-<line x1="24" y1="41.686" x2="35.314" y2="53" />
-<line x1="27.971" y1="40" x2="38" y2="50.029" />
-<line x1="33.627" y1="40" x2="38" y2="44.373" />
-<line x1="77" y1="45.657" x2="82.657" y2="40" />
-<line x1="77" y1="51.314" x2="88.314" y2="40" />
-<line x1="80.971" y1="53" x2="91" y2="42.971" />
-<line x1="86.627" y1="53" x2="91" y2="48.627" />
-<line x1="77" y1="47.343" x2="82.657" y2="53" />
-<line x1="77" y1="41.686" x2="88.314" y2="53" />
-<line x1="80.971" y1="40" x2="91" y2="50.029" />
-<line x1="86.627" y1="40" x2="91" y2="44.373" />
+<line x1="30" y1="45.657" x2="35.657" y2="40" />
+<line x1="30" y1="51.314" x2="41.314" y2="40" />
+<line x1="30" y1="56.971" x2="46.971" y2="40" />
+<line x1="30" y1="62.627" x2="52.627" y2="40" />
+<line x1="32.284" y1="66" x2="58.284" y2="40" />
+<line x1="37.941" y1="66" x2="63.941" y2="40" />
+<line x1="43.598" y1="66" x2="69.598" y2="40" />
+<line x1="49.255" y1="66" x2="75.255" y2="40" />
+<line x1="54.912" y1="66" x2="80.912" y2="40" />
+<line x1="60.569" y1="66" x2="82" y2="44.569" />
+<line x1="66.225" y1="66" x2="82" y2="50.225" />
+<line x1="71.882" y1="66" x2="82" y2="55.882" />
+<line x1="77.539" y1="66" x2="82" y2="61.539" />
+<line x1="30" y1="60.343" x2="35.657" y2="66" />
+<line x1="30" y1="54.686" x2="41.314" y2="66" />
+<line x1="30" y1="49.029" x2="46.971" y2="66" />
+<line x1="30" y1="43.373" x2="52.627" y2="66" />
+<line x1="32.284" y1="40" x2="58.284" y2="66" />
+<line x1="37.941" y1="40" x2="63.941" y2="66" />
+<line x1="43.598" y1="40" x2="69.598" y2="66" />
+<line x1="49.255" y1="40" x2="75.255" y2="66" />
+<line x1="54.912" y1="40" x2="80.912" y2="66" />
+<line x1="60.569" y1="40" x2="82" y2="61.431" />
+<line x1="66.225" y1="40" x2="82" y2="55.775" />
+<line x1="71.882" y1="40" x2="82" y2="50.118" />
+<line x1="77.539" y1="40" x2="82" y2="44.461" />
+<line x1="12" y1="45.657" x2="17.657" y2="40" />
+<line x1="12" y1="51.314" x2="23.314" y2="40" />
+<line x1="12" y1="56.971" x2="28.971" y2="40" />
+<line x1="12" y1="62.627" x2="30" y2="44.627" />
+<line x1="14.284" y1="66" x2="30" y2="50.284" />
+<line x1="19.941" y1="66" x2="30" y2="55.941" />
+<line x1="25.598" y1="66" x2="30" y2="61.598" />
+<line x1="12" y1="60.343" x2="17.657" y2="66" />
+<line x1="12" y1="54.686" x2="23.314" y2="66" />
+<line x1="12" y1="49.029" x2="28.971" y2="66" />
+<line x1="12" y1="43.373" x2="30" y2="61.373" />
+<line x1="14.284" y1="40" x2="30" y2="55.716" />
+<line x1="19.941" y1="40" x2="30" y2="50.059" />
+<line x1="25.598" y1="40" x2="30" y2="44.402" />
+<line x1="82" y1="45.657" x2="87.657" y2="40" />
+<line x1="82" y1="51.314" x2="93.314" y2="40" />
+<line x1="82" y1="56.971" x2="98.971" y2="40" />
+<line x1="82" y1="62.627" x2="100" y2="44.627" />
+<line x1="84.284" y1="66" x2="100" y2="50.284" />
+<line x1="89.941" y1="66" x2="100" y2="55.941" />
+<line x1="95.598" y1="66" x2="100" y2="61.598" />
+<line x1="82" y1="60.343" x2="87.657" y2="66" />
+<line x1="82" y1="54.686" x2="93.314" y2="66" />
+<line x1="82" y1="49.029" x2="98.971" y2="66" />
+<line x1="82" y1="43.373" x2="100" y2="61.373" />
+<line x1="84.284" y1="40" x2="100" y2="55.716" />
+<line x1="89.941" y1="40" x2="100" y2="50.059" />
+<line x1="95.598" y1="40" x2="100" y2="44.402" />
 </g>
 <g stroke="#6b7280" stroke-width="0.12" fill="none">
-<line x1="133" y1="45.657" x2="138.657" y2="40" />
-<line x1="133" y1="51.314" x2="144.314" y2="40" />
-<line x1="136.971" y1="53" x2="149.971" y2="40" />
-<line x1="142.627" y1="53" x2="155.627" y2="40" />
-<line x1="148.284" y1="53" x2="161.284" y2="40" />
-<line x1="153.941" y1="53" x2="166.941" y2="40" />
-<line x1="159.598" y1="53" x2="172" y2="40.598" />
-<line x1="165.255" y1="53" x2="172" y2="46.255" />
-<line x1="170.912" y1="53" x2="172" y2="51.912" />
-<line x1="133" y1="47.343" x2="138.657" y2="53" />
-<line x1="133" y1="41.686" x2="144.314" y2="53" />
-<line x1="136.971" y1="40" x2="149.971" y2="53" />
-<line x1="142.627" y1="40" x2="155.627" y2="53" />
-<line x1="148.284" y1="40" x2="161.284" y2="53" />
-<line x1="153.941" y1="40" x2="166.941" y2="53" />
-<line x1="159.598" y1="40" x2="172" y2="52.402" />
-<line x1="165.255" y1="40" x2="172" y2="46.745" />
-<line x1="170.912" y1="40" x2="172" y2="41.088" />
-<line x1="119" y1="45.657" x2="124.657" y2="40" />
-<line x1="119" y1="51.314" x2="130.314" y2="40" />
-<line x1="122.971" y1="53" x2="133" y2="42.971" />
-<line x1="128.627" y1="53" x2="133" y2="48.627" />
-<line x1="119" y1="47.343" x2="124.657" y2="53" />
-<line x1="119" y1="41.686" x2="130.314" y2="53" />
-<line x1="122.971" y1="40" x2="133" y2="50.029" />
-<line x1="128.627" y1="40" x2="133" y2="44.373" />
-<line x1="172" y1="45.657" x2="177.657" y2="40" />
-<line x1="172" y1="51.314" x2="183.314" y2="40" />
-<line x1="175.971" y1="53" x2="186" y2="42.971" />
-<line x1="181.627" y1="53" x2="186" y2="48.627" />
-<line x1="172" y1="47.343" x2="177.657" y2="53" />
-<line x1="172" y1="41.686" x2="183.314" y2="53" />
-<line x1="175.971" y1="40" x2="186" y2="50.029" />
-<line x1="181.627" y1="40" x2="186" y2="44.373" />
+<line x1="128" y1="45.657" x2="133.657" y2="40" />
+<line x1="128" y1="51.314" x2="139.314" y2="40" />
+<line x1="128" y1="56.971" x2="144.971" y2="40" />
+<line x1="128" y1="62.627" x2="150.627" y2="40" />
+<line x1="130.284" y1="66" x2="156.284" y2="40" />
+<line x1="135.941" y1="66" x2="161.941" y2="40" />
+<line x1="141.598" y1="66" x2="167.598" y2="40" />
+<line x1="147.255" y1="66" x2="173.255" y2="40" />
+<line x1="152.912" y1="66" x2="178.912" y2="40" />
+<line x1="158.569" y1="66" x2="180" y2="44.569" />
+<line x1="164.225" y1="66" x2="180" y2="50.225" />
+<line x1="169.882" y1="66" x2="180" y2="55.882" />
+<line x1="175.539" y1="66" x2="180" y2="61.539" />
+<line x1="128" y1="60.343" x2="133.657" y2="66" />
+<line x1="128" y1="54.686" x2="139.314" y2="66" />
+<line x1="128" y1="49.029" x2="144.971" y2="66" />
+<line x1="128" y1="43.373" x2="150.627" y2="66" />
+<line x1="130.284" y1="40" x2="156.284" y2="66" />
+<line x1="135.941" y1="40" x2="161.941" y2="66" />
+<line x1="141.598" y1="40" x2="167.598" y2="66" />
+<line x1="147.255" y1="40" x2="173.255" y2="66" />
+<line x1="152.912" y1="40" x2="178.912" y2="66" />
+<line x1="158.569" y1="40" x2="180" y2="61.431" />
+<line x1="164.225" y1="40" x2="180" y2="55.775" />
+<line x1="169.882" y1="40" x2="180" y2="50.118" />
+<line x1="175.539" y1="40" x2="180" y2="44.461" />
+<line x1="110" y1="45.657" x2="115.657" y2="40" />
+<line x1="110" y1="51.314" x2="121.314" y2="40" />
+<line x1="110" y1="56.971" x2="126.971" y2="40" />
+<line x1="110" y1="62.627" x2="128" y2="44.627" />
+<line x1="112.284" y1="66" x2="128" y2="50.284" />
+<line x1="117.941" y1="66" x2="128" y2="55.941" />
+<line x1="123.598" y1="66" x2="128" y2="61.598" />
+<line x1="110" y1="60.343" x2="115.657" y2="66" />
+<line x1="110" y1="54.686" x2="121.314" y2="66" />
+<line x1="110" y1="49.029" x2="126.971" y2="66" />
+<line x1="110" y1="43.373" x2="128" y2="61.373" />
+<line x1="112.284" y1="40" x2="128" y2="55.716" />
+<line x1="117.941" y1="40" x2="128" y2="50.059" />
+<line x1="123.598" y1="40" x2="128" y2="44.402" />
+<line x1="180" y1="45.657" x2="185.657" y2="40" />
+<line x1="180" y1="51.314" x2="191.314" y2="40" />
+<line x1="180" y1="56.971" x2="196.971" y2="40" />
+<line x1="180" y1="62.627" x2="198" y2="44.627" />
+<line x1="182.284" y1="66" x2="198" y2="50.284" />
+<line x1="187.941" y1="66" x2="198" y2="55.941" />
+<line x1="193.598" y1="66" x2="198" y2="61.598" />
+<line x1="180" y1="60.343" x2="185.657" y2="66" />
+<line x1="180" y1="54.686" x2="191.314" y2="66" />
+<line x1="180" y1="49.029" x2="196.971" y2="66" />
+<line x1="180" y1="43.373" x2="198" y2="61.373" />
+<line x1="182.284" y1="40" x2="198" y2="55.716" />
+<line x1="187.941" y1="40" x2="198" y2="50.059" />
+<line x1="193.598" y1="40" x2="198" y2="44.402" />
 </g>
-<line x1="42" y1="28" x2="73" y2="28" stroke="#1a1a1a" stroke-width="1" stroke-linecap="round" />
-<line x1="137" y1="28" x2="168" y2="28" stroke="#1a1a1a" stroke-width="1" stroke-linecap="round" />
-<rect x="53.195" y="44.55" width="8.61" height="3.9" fill="#ffffff" stroke="none" />
-<text x="57.5" y="46.5" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">골대 1</text>
-<rect x="27.8" y="44.55" width="6.4" height="3.9" fill="#ffffff" stroke="none" />
-<text x="31" y="46.5" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">옆벽</text>
-<rect x="80.8" y="44.55" width="6.4" height="3.9" fill="#ffffff" stroke="none" />
-<text x="84" y="46.5" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">옆벽</text>
-<rect x="29.1" y="54.55" width="3.8" height="3.9" fill="#ffffff" stroke="none" />
-<text x="31" y="56.5" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">발</text>
-<rect x="82.1" y="54.55" width="3.8" height="3.9" fill="#ffffff" stroke="none" />
-<text x="84" y="56.5" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">발</text>
-<rect x="148.195" y="44.55" width="8.61" height="3.9" fill="#ffffff" stroke="none" />
-<text x="152.5" y="46.5" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">골대 2</text>
-<rect x="122.8" y="44.55" width="6.4" height="3.9" fill="#ffffff" stroke="none" />
-<text x="126" y="46.5" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">옆벽</text>
-<rect x="175.8" y="44.55" width="6.4" height="3.9" fill="#ffffff" stroke="none" />
-<text x="179" y="46.5" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">옆벽</text>
-<rect x="124.1" y="54.55" width="3.8" height="3.9" fill="#ffffff" stroke="none" />
-<text x="126" y="56.5" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">발</text>
-<rect x="177.1" y="54.55" width="3.8" height="3.9" fill="#ffffff" stroke="none" />
-<text x="179" y="56.5" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">발</text>
-<text x="24" y="78" font-size="4" dominant-baseline="central" text-anchor="start">접는 법</text>
-<text x="24" y="86.1" font-size="3.2" dominant-baseline="central" text-anchor="start">1.</text>
-<text x="29.4" y="86.1" font-size="3.2" dominant-baseline="central" text-anchor="start">바깥 실선을 따라 오리고, 지붕 가운데 창도 오려서 떼어낸다.</text>
-<text x="24" y="91.5" font-size="3.2" dominant-baseline="central" text-anchor="start">2.</text>
-<text x="29.4" y="91.5" font-size="3.2" dominant-baseline="central" text-anchor="start">일점쇄선은 모두 인쇄면이 바깥으로 오게 접는다.</text>
-<text x="24" y="96.9" font-size="3.2" dominant-baseline="central" text-anchor="start">3.</text>
-<text x="29.4" y="96.9" font-size="3.2" dominant-baseline="central" text-anchor="start">뒷벽을 세우고 옆벽 둘을 앞으로 접는다. 바닥은 없다 — 공이 종이 위를 미끄러져 들어와야 한다.</text>
-<text x="24" y="102.3" font-size="3.2" dominant-baseline="central" text-anchor="start">4.</text>
-<text x="29.4" y="102.3" font-size="3.2" dominant-baseline="central" text-anchor="start">지붕을 앞으로 접어 양옆 벽 위에 얹고, 빗금 친 탭에 풀을 발라 벽 안쪽에 붙인다.</text>
-<text x="24" y="107.7" font-size="3.2" dominant-baseline="central" text-anchor="start">5.</text>
-<text x="29.4" y="107.7" font-size="3.2" dominant-baseline="central" text-anchor="start">아래쪽 발 두 개를 바깥으로 접어 눕히면 골대가 선다.</text>
-<text x="24" y="113.1" font-size="3.2" dominant-baseline="central" text-anchor="start">6.</text>
-<text x="29.4" y="113.1" font-size="3.2" dominant-baseline="central" text-anchor="start">골라인 바깥에 골문이 필드를 향하도록 놓고, 앞면 좌우를 운동장 눈금에 맞춘다.</text>
-<path d="M 32 139.28 V 128.28 H 56 V 139.28" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<line x1="34" y1="24" x2="78" y2="24" stroke="#1a1a1a" stroke-width="1" stroke-linecap="round" />
+<line x1="132" y1="24" x2="176" y2="24" stroke="#1a1a1a" stroke-width="1" stroke-linecap="round" />
+<rect x="51.695" y="51.05" width="8.61" height="3.9" fill="#ffffff" stroke="none" />
+<text x="56" y="53" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">골대 1</text>
+<rect x="17.8" y="51.05" width="6.4" height="3.9" fill="#ffffff" stroke="none" />
+<text x="21" y="53" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">옆벽</text>
+<rect x="87.8" y="51.05" width="6.4" height="3.9" fill="#ffffff" stroke="none" />
+<text x="91" y="53" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">옆벽</text>
+<rect x="19.1" y="68.05" width="3.8" height="3.9" fill="#ffffff" stroke="none" />
+<text x="21" y="70" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">발</text>
+<rect x="89.1" y="68.05" width="3.8" height="3.9" fill="#ffffff" stroke="none" />
+<text x="91" y="70" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">발</text>
+<rect x="149.695" y="51.05" width="8.61" height="3.9" fill="#ffffff" stroke="none" />
+<text x="154" y="53" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">골대 2</text>
+<rect x="115.8" y="51.05" width="6.4" height="3.9" fill="#ffffff" stroke="none" />
+<text x="119" y="53" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">옆벽</text>
+<rect x="185.8" y="51.05" width="6.4" height="3.9" fill="#ffffff" stroke="none" />
+<text x="189" y="53" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">옆벽</text>
+<rect x="117.1" y="68.05" width="3.8" height="3.9" fill="#ffffff" stroke="none" />
+<text x="119" y="70" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">발</text>
+<rect x="187.1" y="68.05" width="3.8" height="3.9" fill="#ffffff" stroke="none" />
+<text x="189" y="70" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">발</text>
+<text x="24" y="80" font-size="4" dominant-baseline="central" text-anchor="start">접는 법</text>
+<text x="24" y="87.8" font-size="3.2" dominant-baseline="central" text-anchor="start">1.</text>
+<text x="29.4" y="87.8" font-size="3.2" dominant-baseline="central" text-anchor="start">바깥 실선을 따라 오리고, 지붕 가운데 창도 오려서 떼어낸다.</text>
+<text x="24" y="93" font-size="3.2" dominant-baseline="central" text-anchor="start">2.</text>
+<text x="29.4" y="93" font-size="3.2" dominant-baseline="central" text-anchor="start">일점쇄선은 모두 인쇄면이 바깥으로 오게 접는다.</text>
+<text x="24" y="98.2" font-size="3.2" dominant-baseline="central" text-anchor="start">3.</text>
+<text x="29.4" y="98.2" font-size="3.2" dominant-baseline="central" text-anchor="start">뒷벽을 세우고 옆벽 둘을 앞으로 접는다. 바닥은 없다 — 공이 종이 위를 미끄러져 들어와야 한다.</text>
+<text x="24" y="103.4" font-size="3.2" dominant-baseline="central" text-anchor="start">4.</text>
+<text x="29.4" y="103.4" font-size="3.2" dominant-baseline="central" text-anchor="start">지붕을 앞으로 접어 양옆 벽 위에 얹고, 빗금 친 탭에 풀을 발라 벽 안쪽에 붙인다.</text>
+<text x="24" y="108.6" font-size="3.2" dominant-baseline="central" text-anchor="start">5.</text>
+<text x="29.4" y="108.6" font-size="3.2" dominant-baseline="central" text-anchor="start">아래쪽 발 두 개를 바깥으로 접어 눕히면 골대가 선다.</text>
+<text x="24" y="113.8" font-size="3.2" dominant-baseline="central" text-anchor="start">6.</text>
+<text x="29.4" y="113.8" font-size="3.2" dominant-baseline="central" text-anchor="start">골라인 바깥에 골문이 필드를 향하도록 놓고, 앞면 좌우를 운동장 눈금에 맞춘다.</text>
+<path d="M 32 139.64 V 127.64 H 56 V 139.64" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
 <g stroke="#6b7280" stroke-width="0.12" fill="none">
-<line x1="33" y1="134.088" x2="37.808" y2="129.28" />
-<line x1="33.617" y1="138.28" x2="42.617" y2="129.28" />
-<line x1="38.425" y1="138.28" x2="47.425" y2="129.28" />
-<line x1="43.233" y1="138.28" x2="52.233" y2="129.28" />
-<line x1="48.042" y1="138.28" x2="55" y2="131.322" />
-<line x1="52.85" y1="138.28" x2="55" y2="136.13" />
-<line x1="33" y1="133.472" x2="37.808" y2="138.28" />
-<line x1="33.617" y1="129.28" x2="42.617" y2="138.28" />
-<line x1="38.425" y1="129.28" x2="47.425" y2="138.28" />
-<line x1="43.233" y1="129.28" x2="52.233" y2="138.28" />
-<line x1="48.042" y1="129.28" x2="55" y2="136.238" />
-<line x1="52.85" y1="129.28" x2="55" y2="131.43" />
+<line x1="33" y1="133.448" x2="37.808" y2="128.64" />
+<line x1="33" y1="138.257" x2="42.617" y2="128.64" />
+<line x1="37.425" y1="138.64" x2="47.425" y2="128.64" />
+<line x1="42.233" y1="138.64" x2="52.233" y2="128.64" />
+<line x1="47.042" y1="138.64" x2="55" y2="130.682" />
+<line x1="51.85" y1="138.64" x2="55" y2="135.49" />
+<line x1="33" y1="133.832" x2="37.808" y2="138.64" />
+<line x1="33" y1="129.023" x2="42.617" y2="138.64" />
+<line x1="37.425" y1="128.64" x2="47.425" y2="138.64" />
+<line x1="42.233" y1="128.64" x2="52.233" y2="138.64" />
+<line x1="47.042" y1="128.64" x2="55" y2="136.598" />
+<line x1="51.85" y1="128.64" x2="55" y2="131.79" />
 </g>
-<text x="44" y="146.78" font-size="3.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">① 오린다</text>
-<path d="M 91 128.28 H 102" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
-<path d="M 91 128.28 V 139.28" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
-<path d="M 91 139.28 H 84" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
-<path d="M 90 132.28 A 7 7 0 0 0 85 136.88" fill="none" stroke="#6b7280" stroke-width="0.3" />
-<path d="M 86.6 135.68 L 84.6 137.28 L 87.2 138.08" fill="none" stroke="#6b7280" stroke-width="0.3" />
-<text x="87.5" y="142.48" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">발</text>
-<text x="96" y="146.78" font-size="3.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">② 발을 바깥으로</text>
-<path d="M 151 122.28 V 140.28" fill="none" stroke="#6b7280" stroke-width="0.3" />
-<path d="M 148.5 125.28 H 152.5" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
-<path d="M 148.5 137.28 H 152.5" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
-<path d="M 151 131.28 H 152.5" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
-<rect x="142" y="125.28" width="9" height="12" fill="none" stroke="#6b7280" stroke-width="0.3" stroke-dasharray="1 1" />
-<path d="M 164 131.28 H 154" fill="none" stroke="#6b7280" stroke-width="0.3" />
-<path d="M 155.6 130.08 L 153.6 131.28 L 155.6 132.48" fill="none" stroke="#6b7280" stroke-width="0.3" />
-<text x="146.5" y="122.78" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">골대</text>
-<text x="157" y="128.28" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">눈금</text>
-<text x="148" y="146.78" font-size="3.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">③ 눈금에 맞춘다</text>
+<text x="44" y="147.14" font-size="3.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">① 오린다</text>
+<path d="M 91 126.64 H 100" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<path d="M 91 126.64 V 139.64" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<path d="M 91 139.64 H 84" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<path d="M 90 132.64 A 7 7 0 0 0 85 137.24" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<path d="M 86.6 136.04 L 84.6 137.64 L 87.2 138.44" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<text x="87.5" y="142.84" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">발</text>
+<text x="96" y="147.14" font-size="3.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">② 발을 바깥으로</text>
+<path d="M 151 122.64 V 140.64" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<path d="M 148.5 124.64 H 152.5" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<path d="M 148.5 138.64 H 152.5" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<path d="M 151 131.64 H 152.5" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<rect x="146" y="124.64" width="5" height="14" fill="none" stroke="#6b7280" stroke-width="0.3" stroke-dasharray="1 1" />
+<path d="M 164 131.64 H 154" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<path d="M 155.6 130.44 L 153.6 131.64 L 155.6 132.84" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<text x="146.5" y="123.14" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">골대</text>
+<text x="157" y="128.64" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">눈금</text>
+<text x="148" y="147.14" font-size="3.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">③ 눈금에 맞춘다</text>
 </g>
 </svg>
