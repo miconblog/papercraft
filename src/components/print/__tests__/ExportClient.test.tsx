@@ -43,10 +43,11 @@ describe('내보내기 화면 (IDE-007)', () => {
     const user = userEvent.setup();
     render(<ExportClient game={game} />);
     const board = rowOf('운동장');
-    expect(within(board).getByText('A4 2장')).toBeInTheDocument();
+    // 여백 기본값이 0mm라 100%는 한 장이다(print-spec §4).
+    expect(within(board).getByText('A4 1장')).toBeInTheDocument();
 
     await user.click(within(board).getByRole('button', { name: '200%' }));
-    expect(within(board).getByText('A4 8장')).toBeInTheDocument();
+    expect(within(board).getByText('A4 6장')).toBeInTheDocument();
 
     await user.click(within(board).getByRole('button', { name: '50%' }));
     expect(within(board).getByText('A4 1장')).toBeInTheDocument();
@@ -86,7 +87,7 @@ describe('내보내기 화면 (IDE-007)', () => {
     const user = userEvent.setup();
     render(<ExportClient game={game} />);
     await user.click(screen.getByRole('button', { name: '게임판만' }));
-    expect(screen.getByText('모두 A4 2장')).toBeInTheDocument();
+    expect(screen.getByText('모두 A4 1장')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: '부속만' }));
     // 점수 기록칸·골대 전개도 각 1장 = 2장. 게임 방법과 공 마커는 출력물에서
@@ -101,18 +102,18 @@ describe('내보내기 화면 (IDE-007)', () => {
     const copies = within(rowOf('운동장')).getByLabelText('운동장 몇 벌');
     await user.clear(copies);
     await user.type(copies, '3');
-    expect(screen.getByText('모두 A4 6장')).toBeInTheDocument();
+    expect(screen.getByText('모두 A4 3장')).toBeInTheDocument();
   });
 
-  it('프린터 여백을 줄이면 장수가 줄어든다 — 무여백에 가까우면 100%가 한 장이다', async () => {
+  it('프린터 여백을 올리면 장수가 늘어난다 — 재서 넣은 값이 결과를 바꾼다', async () => {
     const user = userEvent.setup();
     render(<ExportClient game={game} />);
     await user.click(screen.getByRole('button', { name: '게임판만' }));
-    expect(screen.getByText('모두 A4 2장')).toBeInTheDocument();
+    expect(screen.getByText('모두 A4 1장')).toBeInTheDocument();
     const margin = screen.getByLabelText('인쇄 불가 여백');
     await user.clear(margin);
-    await user.type(margin, '0');
-    expect(screen.getByText('모두 A4 1장')).toBeInTheDocument();
+    await user.type(margin, '6');
+    expect(screen.getByText('모두 A4 2장')).toBeInTheDocument();
   });
 
   it('배율 100%로 인쇄하라는 안내를 화면에 노출한다', () => {

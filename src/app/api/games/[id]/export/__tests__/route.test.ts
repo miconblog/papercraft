@@ -30,7 +30,7 @@ const call = (id: string, body: Body) =>
 
 const options = (
   parts: Array<{ partId: string; scale: number; copies: number }>,
-) => ({ parts, marginMm: 6, overlapMm: 10, includeGuide: true });
+) => ({ parts, marginMm: 6, overlapMm: 10 });
 
 describe('POST /api/games/[id]/export', () => {
   it('PDF를 내려준다 — 파일명 규칙과 함께', async () => {
@@ -45,8 +45,8 @@ describe('POST /api/games/[id]/export', () => {
     );
 
     const pdf = await PDFDocument.load(await res.arrayBuffer());
-    // 안내 시트 1장 + 200% 보드 8장
-    expect(pdf.getPageCount()).toBe(9);
+    // 200% 보드 8장
+    expect(pdf.getPageCount()).toBe(8);
   });
 
   it('커스터마이즈한 값이 담긴 PDF가 나온다', async () => {

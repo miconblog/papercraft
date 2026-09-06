@@ -30,27 +30,27 @@ export function PrintDialog({
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
-      <Dialog.Trigger className="rounded-full bg-foreground px-3 py-1 text-xs font-medium text-background outline-none transition-colors hover:bg-[#383838] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current dark:hover:bg-[#ccc]">
+      <Dialog.Trigger className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground outline-none transition-colors hover:bg-primary/85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current">
         출력하기
       </Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/50 transition-opacity data-ending-style:opacity-0 data-starting-style:opacity-0" />
+        <Dialog.Backdrop className="fixed inset-0 z-40 bg-primary/45 transition-opacity data-ending-style:opacity-0 data-starting-style:opacity-0" />
         {/* 설정이 길어 모달 안에서 스크롤한다 — 화면 높이의 90%를 넘지 않는다.
             바깥 페이지는 base-ui가 스크롤을 잠근다. */}
-        <Dialog.Popup className="fixed inset-x-4 top-1/2 z-50 mx-auto max-h-[90vh] w-auto max-w-6xl -translate-y-1/2 overflow-y-auto rounded-xl bg-background p-5 text-foreground shadow-2xl ring-1 ring-black/10 transition-all data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0 sm:p-6 dark:ring-white/15">
+        <Dialog.Popup className="fixed inset-x-4 top-1/2 z-50 mx-auto max-h-[90vh] w-auto max-w-6xl -translate-y-1/2 overflow-y-auto rounded-xl bg-background p-5 text-foreground shadow-2xl ring-1 ring-border transition-all data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0 sm:p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
               <Dialog.Title className="text-xl font-bold tracking-tight">
                 {game.title} 출력하기
               </Dialog.Title>
-              <Dialog.Description className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+              <Dialog.Description className="mt-1 text-sm text-muted-foreground">
                 배율 100%가 원본 크기다. 크게 뽑으면 A4 여러 장에 나눠 나오고,
-                안내 시트대로 붙이면 이어진다.
+                장마다 찍힌 번호와 귀퉁이 눈금을 맞춰 붙이면 이어진다.
               </Dialog.Description>
             </div>
             <Dialog.Close
               aria-label="닫기"
-              className="rounded-full border border-black/15 px-3 py-1 text-xs font-medium outline-none transition-colors hover:border-black/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current dark:border-white/20 dark:hover:border-white/40"
+              className="rounded-full border border-border px-3 py-1 text-xs font-medium outline-none transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
             >
               닫기
             </Dialog.Close>

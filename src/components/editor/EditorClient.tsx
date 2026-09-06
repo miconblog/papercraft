@@ -184,8 +184,8 @@ function EditorForm({
                 className={
                   'rounded-full px-3 py-1 text-xs font-medium outline-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current ' +
                   (part.id === currentPartId
-                    ? 'bg-foreground text-background'
-                    : 'border border-black/15 hover:border-black/30 dark:border-white/20 dark:hover:border-white/40')
+                    ? 'bg-primary text-primary-foreground'
+                    : 'border border-border hover:border-primary')
                 }
               >
                 {part.title}
@@ -200,7 +200,7 @@ function EditorForm({
           <button
             type="button"
             onClick={handleReset}
-            className="rounded-full border border-black/15 px-3 py-1 text-xs font-medium outline-none transition-colors hover:border-black/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current dark:border-white/20 dark:hover:border-white/40"
+            className="rounded-full border border-border px-3 py-1 text-xs font-medium outline-none transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
           >
             기본값으로 되돌리기
           </button>
@@ -210,7 +210,7 @@ function EditorForm({
         </div>
       </div>
       {hasErrors && (
-        <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+        <p className="mt-2 text-sm text-destructive">
           빨간 글씨로 표시된 값을 고쳐야 인쇄물이 정확하다.
         </p>
       )}

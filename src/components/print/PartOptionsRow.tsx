@@ -87,7 +87,7 @@ function NumberField({
         }
       }}
       onFocus={(event) => event.currentTarget.select()}
-      className="w-20 rounded-md border border-black/15 px-2 py-1 text-sm tabular-nums dark:border-white/20 dark:bg-transparent"
+      className="w-20 rounded-md border border-border px-2 py-1 text-sm tabular-nums"
     />
   );
 }
@@ -123,9 +123,7 @@ export function PartOptionsRow({
     <li
       className={
         'rounded-lg border p-4 transition-colors ' +
-        (on
-          ? 'border-black/15 dark:border-white/20'
-          : 'border-black/5 bg-black/[0.02] dark:border-white/10 dark:bg-white/[0.02]')
+        (on ? 'border-border' : 'border-border/60 bg-muted/40')
       }
     >
       <div className="flex items-start gap-3">
@@ -140,7 +138,7 @@ export function PartOptionsRow({
           <label htmlFor={`${id}-on`} className="font-medium">
             {part.title}
           </label>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="text-xs text-muted-foreground">
             {PART_KIND_LABEL[part.kind]} · 배율 100%에서 {sizeText(part, 1)}
           </p>
         </div>
@@ -148,12 +146,9 @@ export function PartOptionsRow({
           <p className="shrink-0 text-right text-sm">
             <span className="font-semibold">A4 {plan.total}장</span>
             {copies > 1 && (
-              <span className="text-zinc-500 dark:text-zinc-400">
-                {' '}
-                × {copies}벌
-              </span>
+              <span className="text-muted-foreground"> × {copies}벌</span>
             )}
-            <span className="block text-xs text-zinc-500 dark:text-zinc-400">
+            <span className="block text-xs text-muted-foreground">
               {plan.cols}×{plan.rows} · {sizeText(part, scale)}
             </span>
           </p>
@@ -174,8 +169,8 @@ export function PartOptionsRow({
                   className={
                     'rounded-full px-3 py-1 text-xs font-medium outline-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current ' +
                     (Math.abs(scale - preset) < 1e-9
-                      ? 'bg-foreground text-background'
-                      : 'border border-black/15 hover:border-black/30 dark:border-white/20 dark:hover:border-white/40')
+                      ? 'bg-primary text-primary-foreground'
+                      : 'border border-border hover:border-primary')
                   }
                 >
                   {scaleLabel(preset)}
@@ -189,8 +184,8 @@ export function PartOptionsRow({
                   className={
                     'rounded-full px-3 py-1 text-xs font-medium transition-colors ' +
                     (Math.abs(scale - fitScale) < 1e-9
-                      ? 'bg-foreground text-background'
-                      : 'border border-black/15 hover:border-black/30 dark:border-white/20 dark:hover:border-white/40')
+                      ? 'bg-primary text-primary-foreground'
+                      : 'border border-border hover:border-primary')
                   }
                 >
                   A4 한 장({scaleLabel(fitScale)})
@@ -211,9 +206,7 @@ export function PartOptionsRow({
                     onChange(part.id, { scale: percent / 100 })
                   }
                 />
-                <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                  %
-                </span>
+                <span className="text-xs text-muted-foreground">%</span>
               </span>
             </div>
           </div>
@@ -243,20 +236,16 @@ export function PartOptionsRow({
       {/* 배율이 100%가 아니면 실측 치수가 달라진다는 사실을 화면에 분명히 적는다
           — 특히 "A4 한 장 맞춤"이 100%처럼 보이면 안 된다(print-spec §4). */}
       {on && !isFullSize && !blockingMessage && (
-        <p className="mt-2 pl-7 text-xs text-zinc-500 dark:text-zinc-400">
+        <p className="mt-2 pl-7 text-xs text-muted-foreground">
           배율 {scaleLabel(scale)}는 원본 크기가 아니다 — 뽑히는 크기는{' '}
           {sizeText(part, scale)}다.
         </p>
       )}
       {on && blockingMessage && (
-        <p className="mt-2 pl-7 text-sm text-red-600 dark:text-red-400">
-          {blockingMessage}
-        </p>
+        <p className="mt-2 pl-7 text-sm text-destructive">{blockingMessage}</p>
       )}
       {on && !blockingMessage && warningMessage && (
-        <p className="mt-2 pl-7 text-sm text-amber-700 dark:text-amber-400">
-          {warningMessage}
-        </p>
+        <p className="mt-2 pl-7 text-sm text-warning">{warningMessage}</p>
       )}
     </li>
   );

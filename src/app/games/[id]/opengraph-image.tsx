@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { getGame } from '@/lib/games';
+import { OG_BANDS, OG_COLORS } from '@/lib/og-theme';
 
 // 루트 공유 이미지(`src/app/opengraph-image.tsx`)와 같은 이유로 글자는 그리지
 // 않는다 — 한글 폰트를 넣기엔 `next/og`의 500KB 번들 한도가 너무 작다.
@@ -9,7 +10,13 @@ export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
 /** 게임 id로 고리 색을 고른다 — 게임이 늘어도 이름을 분기하지 않는다. */
-const RING_COLORS = ['#2f7d32', '#1d4ed8', '#dc2626', '#a16207', '#7c3aed'];
+const RING_COLORS = [
+  OG_COLORS.teal,
+  OG_COLORS.brick,
+  OG_COLORS.mustard,
+  OG_COLORS.olive,
+  OG_COLORS.plum,
+];
 const ringColorFor = (id: string): string => {
   let hash = 0;
   for (const ch of id) hash = (hash * 31 + ch.charCodeAt(0)) | 0;
@@ -32,7 +39,7 @@ export default async function Image({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: '#faf6ef',
+        background: OG_COLORS.paperCream,
       }}
     >
       <div
@@ -41,9 +48,9 @@ export default async function Image({
           width: 220,
           height: 220,
           borderRadius: 24,
-          background: '#ffffff',
-          border: '3px solid #1a1a1a',
-          boxShadow: '14px 14px 0 #1a1a1a',
+          background: OG_COLORS.paper,
+          border: `3px solid ${OG_COLORS.ink}`,
+          boxShadow: `14px 14px 0 ${OG_COLORS.brick}`,
           alignItems: 'center',
           justifyContent: 'center',
         }}
@@ -57,6 +64,16 @@ export default async function Image({
             border: `6px solid ${ring}`,
           }}
         />
+      </div>
+
+      {/* 루트 공유 이미지와 같은 색 맞춤 막대. */}
+      <div style={{ display: 'flex', position: 'absolute', bottom: 0 }}>
+        {OG_BANDS.map((color) => (
+          <div
+            key={color}
+            style={{ width: 400, height: 16, background: color }}
+          />
+        ))}
       </div>
     </div>,
     { ...size },

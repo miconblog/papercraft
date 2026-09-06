@@ -22,8 +22,8 @@ const customization = defaultCustomization(game);
 const loadArtwork = (ref: string) =>
   readFileSync(join(process.cwd(), 'public', ref), 'utf8');
 
-const build = async (parts: PartSelection[], includeGuide = false) => {
-  const options = { ...defaultExportOptions(game), parts, includeGuide };
+const build = async (parts: PartSelection[]) => {
+  const options = { ...defaultExportOptions(game), parts };
   const doc = composeExport({ game, customization, options, loadArtwork });
   const bytes = await renderPdf(doc);
   return { doc, bytes, pdf: await PDFDocument.load(bytes) };
@@ -54,10 +54,11 @@ describe('PDF 산출', () => {
   });
 
   it('배율마다 타일 계획이 정한 만큼 장이 나온다', async () => {
+    // 여백 기본값이 0mm라 100%는 A4 한 장에 그대로 담긴다(print-spec §4).
     for (const [scale, expected] of [
       [0.5, 1],
-      [1, 2],
-      [2, 8],
+      [1, 1],
+      [2, 6],
     ] as const) {
       const { pdf } = await build([sel('field', scale)]);
       expect(pdf.getPageCount()).toBe(expected);
@@ -86,15 +87,6 @@ describe('PDF 산출', () => {
     ]);
     // 부속만 뽑아도 보드가 딸려 오지 않는다. 점수 기록칸 1장 + 골대 1장 × 2벌.
     expect(accessories.pdf.getPageCount()).toBe(3);
-  });
-
-  it('조립 안내 시트가 맨 앞에 붙는다', async () => {
-    const withGuide = await build([sel('field', 2)], true);
-    const without = await build([sel('field', 2)], false);
-    expect(withGuide.pdf.getPageCount()).toBeGreaterThan(
-      without.pdf.getPageCount(),
-    );
-    expect(withGuide.doc.pages[0].clip).toBeNull();
   });
 
   it('벡터라 파일이 작다 — 래스터 안(IDE-002 §8.4)의 25MB와 대비된다', async () => {

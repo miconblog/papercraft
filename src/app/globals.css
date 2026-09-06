@@ -29,51 +29,97 @@
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) * 1.4);
+
+  /* 레트로 팔레트의 강조색. UI에서 직접 쓰는 색이라 유틸리티로 노출한다
+   * (`text-retro-mustard`, `border-retro-teal` …). 도안(SVG) 색과는 무관하다
+   * — 인쇄물 색은 src/assets 쪽 아트워크가 따로 정한다. */
+  --color-retro-brick: var(--retro-brick);
+  --color-retro-mustard: var(--retro-mustard);
+  --color-retro-teal: var(--retro-teal);
+  --color-warning: var(--warning);
+  --color-warning-surface: var(--warning-surface);
+  /* 도안 미리보기가 놓이는 '종이' 면과 그 위의 글자. 인쇄되는 흰 종이라
+   * 배경 크림색도, 다크 모드도 따라가지 않는다. */
+  --color-paper: var(--paper);
+  --color-paper-foreground: var(--paper-foreground);
 }
 
+/* 빛바랜 인쇄물 색감 — 크림 종이 바탕에 잉크 갈색 글자, 벽돌빛 주황과
+ * 겨자·청록 강조. 채도를 낮게 유지해야 '레트로'로 읽힌다. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --radius: 0.625rem;
+  --background: oklch(0.954 0.022 85);
+  --foreground: oklch(0.285 0.035 48);
+  --paper: #ffffff;
+  --paper-foreground: oklch(0.44 0.03 55);
+  --popover: oklch(0.975 0.016 88);
+  --popover-foreground: oklch(0.285 0.035 48);
+  --primary: oklch(0.53 0.148 38);
+  --primary-foreground: oklch(0.97 0.02 88);
+  --secondary: oklch(0.895 0.042 82);
+  --secondary-foreground: oklch(0.3 0.04 48);
+  --muted: oklch(0.915 0.032 83);
+  --muted-foreground: oklch(0.495 0.036 58);
+  --accent: oklch(0.885 0.055 78);
+  --accent-foreground: oklch(0.3 0.04 48);
+  --destructive: oklch(0.5 0.17 28);
+  --border: oklch(0.805 0.04 74);
+  --input: oklch(0.805 0.04 74);
+  --ring: oklch(0.66 0.13 62);
+  --radius: 0.5rem;
+
+  --retro-brick: oklch(0.53 0.148 38);
+  --retro-mustard: oklch(0.62 0.115 78);
+  --retro-teal: oklch(0.52 0.075 197);
+  --warning: oklch(0.48 0.1 70);
+  --warning-surface: oklch(0.93 0.055 82);
+  --paper-grain: oklch(0.285 0.035 48 / 0.04);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
+    --background: oklch(0.235 0.021 56);
+    --foreground: oklch(0.925 0.026 85);
+    --paper: #ffffff;
+    --paper-foreground: oklch(0.44 0.03 55);
+    --popover: oklch(0.275 0.024 56);
+    --popover-foreground: oklch(0.925 0.026 85);
+    --primary: oklch(0.68 0.128 48);
+    --primary-foreground: oklch(0.22 0.03 48);
+    --secondary: oklch(0.325 0.03 60);
+    --secondary-foreground: oklch(0.925 0.026 85);
+    --muted: oklch(0.325 0.03 60);
+    --muted-foreground: oklch(0.76 0.032 80);
+    --accent: oklch(0.345 0.038 62);
+    --accent-foreground: oklch(0.925 0.026 85);
+    --destructive: oklch(0.66 0.17 30);
+    --border: oklch(0.93 0.026 85 / 18%);
+    --input: oklch(0.93 0.026 85 / 22%);
+    --ring: oklch(0.62 0.11 64);
+
+    --retro-brick: oklch(0.68 0.128 48);
+    --retro-mustard: oklch(0.78 0.115 80);
+    --retro-teal: oklch(0.7 0.075 197);
+    --warning: oklch(0.82 0.11 82);
+    --warning-surface: oklch(0.36 0.05 74);
+    --paper-grain: oklch(0.93 0.026 85 / 0.035);
   }
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
+  /* 종이 결 — 아주 옅은 사선 격자가 크림 바탕에 인쇄물 질감을 준다. 도안
+   * 미리보기는 흰 `--paper` 면 위에 놓여 이 결의 영향을 받지 않는다. */
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      var(--paper-grain) 0 1px,
+      transparent 1px 7px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      var(--paper-grain) 0 1px,
+      transparent 1px 7px
+    );
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }

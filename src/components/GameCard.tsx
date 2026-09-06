@@ -10,9 +10,9 @@ export function GameCard({ game }: { game: GameDefinition }) {
     <li>
       <Link
         href={`/games/${game.id}`}
-        className="group block h-full rounded-lg border border-black/10 p-4 transition-colors hover:border-black/30 dark:border-white/15 dark:hover:border-white/40"
+        className="group block h-full rounded-lg border border-border p-4 transition-colors hover:border-primary"
       >
-        <div className="overflow-hidden rounded-md border border-black/5 bg-white dark:border-white/10">
+        <div className="overflow-hidden rounded-md border border-border/60 bg-paper">
           <Image
             src={game.thumbnail}
             alt={`${game.title} 미리보기`}
@@ -24,10 +24,8 @@ export function GameCard({ game }: { game: GameDefinition }) {
         <h2 className="mt-3 text-lg font-semibold group-hover:underline">
           {game.title}
         </h2>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          {game.tagline}
-        </p>
-        <dl className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
+        <p className="mt-1 text-sm text-muted-foreground">{game.tagline}</p>
+        <dl className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
           <div className="flex gap-1">
             <dt className="font-medium">인원</dt>
             <dd>{formatPlayers(game.players)}</dd>

@@ -1,10 +1,26 @@
-/** 모든 라우트 하단에 붙는 푸터. 프로젝트 한 줄 소개는 README·BOARD와 같은
- * 문구를 쓴다 — 여기서 새로 짓지 않는다. */
+/** 모든 라우트 하단에 붙는 푸터. 왼쪽은 저작권, 오른쪽은 만든 사람에게 닿는
+ * 링크(문의·후원)다. */
 export function SiteFooter() {
   return (
-    <footer className="border-t border-black/10 dark:border-white/15">
-      <div className="mx-auto max-w-5xl px-4 py-6 text-sm text-zinc-500 sm:px-6 dark:text-zinc-400">
-        추억의 종이 보드게임을 되살려, 원하는 크기로 인쇄할 수 있는 사이트.
+    <footer className="border-t border-border bg-secondary/40">
+      <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <p>© 2026 Daddy&apos;s Craft. All rights reserved</p>
+        <nav className="flex items-center gap-4">
+          <a
+            href="mailto:miconblog@gmail.com"
+            className="rounded-sm underline-offset-4 transition-colors hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
+          >
+            문의하기
+          </a>
+          <a
+            href="https://buymeacoffee.com/miconblog"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="rounded-sm underline-offset-4 transition-colors hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
+          >
+            Buy Me a Coffee
+          </a>
+        </nav>
       </div>
     </footer>
   );

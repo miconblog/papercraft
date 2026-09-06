@@ -63,9 +63,7 @@ export function SlotField({
         {slot.label}
       </label>
       {slot.help && !inline && (
-        <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-          {slot.help}
-        </p>
+        <p className="mt-0.5 text-xs text-muted-foreground">{slot.help}</p>
       )}
       <div className={inline ? undefined : 'mt-1'}>
         <SlotInput
@@ -79,11 +77,7 @@ export function SlotField({
         />
       </div>
       {error && (
-        <p
-          id={errorId}
-          role="alert"
-          className="mt-1 text-xs text-red-600 dark:text-red-400"
-        >
+        <p id={errorId} role="alert" className="mt-1 text-xs text-destructive">
           {error}
         </p>
       )}
@@ -113,8 +107,8 @@ function SlotInput({
     (inline ? 'w-40 ' : 'w-full ') +
     'rounded-md border bg-transparent px-2.5 py-1.5 text-sm outline-none focus:ring-2 focus:ring-offset-0 ' +
     (invalid
-      ? 'border-red-500 focus:ring-red-500/40'
-      : 'border-black/15 focus:ring-black/20 dark:border-white/20 dark:focus:ring-white/30');
+      ? 'border-destructive focus:ring-destructive/40'
+      : 'border-border focus:ring-ring/50');
 
   switch (slot.kind) {
     case 'text':
@@ -162,7 +156,7 @@ function SlotInput({
             value={String(value)}
             aria-invalid={invalid}
             aria-describedby={invalid ? errorId : undefined}
-            className="h-7 w-10 cursor-pointer rounded border border-black/15 bg-transparent p-0.5 dark:border-white/20"
+            className="h-7 w-10 cursor-pointer rounded border border-border bg-transparent p-0.5"
             onChange={(e) => onChange(e.target.value)}
           />
           {slot.palette && (
@@ -176,9 +170,7 @@ function SlotInput({
                   onClick={() => onChange(hex)}
                   className={
                     'h-6 w-6 rounded-full border-2 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current ' +
-                    (value === hex
-                      ? 'border-black dark:border-white'
-                      : 'border-black/15 dark:border-white/20')
+                    (value === hex ? 'border-foreground' : 'border-border')
                   }
                   style={{ backgroundColor: hex }}
                 />

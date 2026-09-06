@@ -71,13 +71,13 @@ export default async function GamePage({ params }: Props) {
       <div className="flex items-center justify-between gap-4">
         <Link
           href="/"
-          className="text-sm text-zinc-500 hover:underline dark:text-zinc-400"
+          className="text-sm text-muted-foreground hover:underline"
         >
           ← 목록으로
         </Link>
         <Link
           href={`/games/${game.id}/edit`}
-          className="inline-flex items-center justify-center rounded-full bg-foreground px-5 py-2 text-sm font-medium text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc]"
+          className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/85"
         >
           만들기
         </Link>
@@ -88,7 +88,7 @@ export default async function GamePage({ params }: Props) {
       <Link
         href={`/games/${game.id}/edit`}
         aria-label={`${game.title} 만들기`}
-        className="mt-4 block overflow-hidden rounded-lg border border-black/10 bg-white outline-none transition-shadow hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current dark:border-white/15"
+        className="mt-4 block overflow-hidden rounded-lg border border-border bg-paper outline-none transition-shadow hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
       >
         <Image
           src={game.thumbnail}
@@ -100,34 +100,26 @@ export default async function GamePage({ params }: Props) {
       </Link>
 
       <h1 className="mt-6 text-3xl font-bold tracking-tight">{game.title}</h1>
-      <p className="mt-2 text-lg text-zinc-600 dark:text-zinc-400">
-        {game.tagline}
-      </p>
+      <p className="mt-2 text-lg text-muted-foreground">{game.tagline}</p>
 
       <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm">
         <div className="flex gap-1">
           <dt className="font-medium">인원</dt>
-          <dd className="text-zinc-600 dark:text-zinc-400">
+          <dd className="text-muted-foreground">
             {formatPlayers(game.players)}
           </dd>
         </div>
         <div className="flex gap-1">
           <dt className="font-medium">지원 용지</dt>
-          <dd className="text-zinc-600 dark:text-zinc-400">
-            {SUPPORTED_PAPER_SIZE}
-          </dd>
+          <dd className="text-muted-foreground">{SUPPORTED_PAPER_SIZE}</dd>
         </div>
         <div className="flex gap-1">
           <dt className="font-medium">준비물</dt>
-          <dd className="text-zinc-600 dark:text-zinc-400">
-            {game.supplies.join(' · ')}
-          </dd>
+          <dd className="text-muted-foreground">{game.supplies.join(' · ')}</dd>
         </div>
       </dl>
 
-      <p className="mt-6 leading-7 text-zinc-700 dark:text-zinc-300">
-        {game.description}
-      </p>
+      <p className="mt-6 leading-7 text-foreground/85">{game.description}</p>
 
       {/* 규칙은 인쇄물이 아니라 여기서 읽는다 — 게임 방법 카드를 출력물에서
           뺐다(2026-09-05). 무엇을 뽑을지(구성)보다 어떻게 노는지가 먼저 궁금한
@@ -135,7 +127,7 @@ export default async function GamePage({ params }: Props) {
       {sections.length > 0 && (
         <section className="mt-8">
           <h2 className="text-lg font-semibold">게임 방법</h2>
-          <div className="mt-3 space-y-5 rounded-lg border border-black/10 p-4 dark:border-white/15">
+          <div className="mt-3 space-y-5 rounded-lg border border-border p-4">
             {sections.map((section, i) => (
               <div key={section.heading ?? `intro-${i}`}>
                 {section.heading && (
@@ -147,7 +139,7 @@ export default async function GamePage({ params }: Props) {
                   run.kind === 'step' ? (
                     <ol
                       key={j}
-                      className="mt-2 list-decimal space-y-1 pl-5 text-sm leading-6 text-zinc-700 dark:text-zinc-300"
+                      className="mt-2 list-decimal space-y-1 pl-5 text-sm leading-6 text-foreground/85"
                     >
                       {run.texts.map((text) => (
                         <li key={text}>{text}</li>
@@ -156,7 +148,7 @@ export default async function GamePage({ params }: Props) {
                   ) : (
                     <ul
                       key={j}
-                      className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-zinc-700 dark:text-zinc-300"
+                      className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-foreground/85"
                     >
                       {run.texts.map((text) => (
                         <li key={text}>{text}</li>
@@ -172,23 +164,21 @@ export default async function GamePage({ params }: Props) {
 
       <section className="mt-8">
         <h2 className="text-lg font-semibold">구성</h2>
-        <ul className="mt-3 divide-y divide-black/10 rounded-lg border border-black/10 dark:divide-white/10 dark:border-white/15">
+        <ul className="mt-3 divide-y divide-border rounded-lg border border-border">
           {[board, ...accessories].map((part) => (
             <li key={part.id} className="p-3 text-sm">
               <div className="flex items-baseline justify-between gap-2">
                 <span className="font-medium">{part.title}</span>
-                <span className="text-zinc-500 dark:text-zinc-400">
+                <span className="text-muted-foreground">
                   {PART_KIND_LABEL[part.kind]}
                 </span>
               </div>
-              <div className="mt-1 text-zinc-500 dark:text-zinc-400">
+              <div className="mt-1 text-muted-foreground">
                 배율 100%에서 {part.widthMm}×{part.heightMm}mm ·{' '}
                 {ORIENTATION_LABEL[part.orientation]}
               </div>
               {part.description && (
-                <p className="mt-1 text-zinc-600 dark:text-zinc-400">
-                  {part.description}
-                </p>
+                <p className="mt-1 text-muted-foreground">{part.description}</p>
               )}
             </li>
           ))}

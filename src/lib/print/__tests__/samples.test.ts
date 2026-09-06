@@ -27,6 +27,13 @@ const game = getGame('soccer') as GameDefinition;
 const loadArtwork = (ref: string) =>
   readFileSync(join(process.cwd(), 'public', ref), 'utf8');
 
+/**
+ * 실측용 견본은 기본 여백(0mm)이 아니라 **6mm**로 뽑는다. 0은 "가장자리까지
+ * 쓴다"는 뜻이라 실제 가정용 프린터에서는 도안 끝이 잘려 자로 잴 수가 없다
+ * (`docs/print-spec.md` §4). 종이에 재는 절차(§11.6)가 가정하는 값이다.
+ */
+const SAMPLE_MARGIN_MM = 6;
+
 const sel = (partId: string, scale = 1, copies = 1): PartSelection => ({
   partId,
   scale,
@@ -42,29 +49,32 @@ describe.skipIf(!enabled)('견본 PDF', () => {
       console.log(`${name}.pdf  ${(bytes.length / 1024).toFixed(1)}KB`);
     };
 
-    const cases: Array<[string, PartSelection[], boolean]> = [
-      ['board-50', [sel('field', 0.5)], false],
-      ['board-100', [sel('field', 1)], true],
-      ['board-200', [sel('field', 2)], true],
+    const cases: Array<[string, PartSelection[]]> = [
+      ['board-50', [sel('field', 0.5)]],
+      ['board-100', [sel('field', 1)]],
+      ['board-200', [sel('field', 2)]],
       [
         'accessories-100',
         game.parts.filter((p) => p.kind !== 'board').map((p) => sel(p.id)),
-        true,
       ],
-      ['board-100-x3', [sel('field', 1, 3)], true],
+      ['board-100-x3', [sel('field', 1, 3)]],
     ];
-    for (const [name, parts, includeGuide] of cases) {
+    for (const [name, parts] of cases) {
       const doc = composeExport({
         game,
         customization,
-        options: { ...defaultExportOptions(game), parts, includeGuide },
+        options: {
+          ...defaultExportOptions(game),
+          parts,
+          marginMm: SAMPLE_MARGIN_MM,
+        },
         loadArtwork,
       });
       await write(name, await renderPdf(doc));
     }
 
-    // 실측용 한 벌 — 배율마다 ① 안내 없는 타일본 ② 타일 없이 한 장에 그린
-    // 기준본 ③ 타일 계획. `scripts/print-verify.sh`가 셋을 맞춰 본다.
+    // 실측용 한 벌 — 배율마다 ① 타일본 ② 타일 없이 한 장에 그린 기준본
+    // ③ 타일 계획. `scripts/print-verify.sh`가 셋을 맞춰 본다.
     const field = game.parts.find((p) => p.id === 'field')!;
     const items = partDraws(game, customization, field, loadArtwork);
 
@@ -76,7 +86,7 @@ describe.skipIf(!enabled)('견본 PDF', () => {
         options: {
           ...defaultExportOptions(game),
           parts: [sel('field', scale)],
-          includeGuide: false,
+          marginMm: SAMPLE_MARGIN_MM,
         },
         loadArtwork,
       });

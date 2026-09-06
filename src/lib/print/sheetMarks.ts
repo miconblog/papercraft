@@ -151,7 +151,7 @@ export function tileMarks({
   //
   //    도안이 인쇄 가능 영역을 꽉 채우는 배율에서는 띠가 좁아지거나 아예
   //    없어진다. 그때는 표식을 뺀다 — 도안 위에 덧그리거나 종이를 한 장 더
-  //    쓰는 쪽보다 낫고, 같은 안내는 조립 안내 시트에 남는다.
+  //    쓰는 쪽보다 낫다. 귀퉁이 눈금은 그대로라 붙일 자리는 여전히 보인다.
   if (plan.stampBandMm < STAMP_MIN_BAND_MM) return items;
 
   const bandTop = bottom - plan.stampBandMm;

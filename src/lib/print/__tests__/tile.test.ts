@@ -4,6 +4,12 @@ import { A4, DEFAULT_OVERLAP_MM, STAMP_BAND_MM } from '../geometry';
 
 const BOARD = { widthMm: 297, heightMm: 210 };
 
+/**
+ * print-spec §5 장수 표가 가정하는 여백. 기본값은 2026-09-06에 0mm로 내려갔지만
+ * (§4) 표 자체는 "여백 6mm 프린터" 기준이라 여기서는 명시적으로 넣는다.
+ */
+const SPEC_MARGIN_MM = 6;
+
 describe('planTiles', () => {
   it('파트가 인쇄 가능 영역에 들어가면 한 장이고 겹침이 없다', () => {
     const plan = planTiles({ partWidthMm: 100, partHeightMm: 140 });
@@ -17,6 +23,7 @@ describe('planTiles', () => {
     const plan = planTiles({
       partWidthMm: BOARD.widthMm,
       partHeightMm: BOARD.heightMm,
+      marginMm: SPEC_MARGIN_MM,
     });
     expect(plan.total).toBe(2);
     expect(plan.orientation).toBe('portrait');
@@ -25,7 +32,11 @@ describe('planTiles', () => {
   });
 
   it('배율 100% 세로 보드는 A4 가로 2장이다 (print-spec §5)', () => {
-    const plan = planTiles({ partWidthMm: 210, partHeightMm: 297 });
+    const plan = planTiles({
+      partWidthMm: 210,
+      partHeightMm: 297,
+      marginMm: SPEC_MARGIN_MM,
+    });
     expect(plan.total).toBe(2);
     expect(plan.orientation).toBe('landscape');
     expect(plan.cols).toBe(1);
@@ -47,18 +58,28 @@ describe('planTiles', () => {
     ];
     for (const [scale, portraitPages, landscapePages] of expected) {
       expect(
-        planTiles({ partWidthMm: 210 * scale, partHeightMm: 297 * scale })
-          .total,
+        planTiles({
+          partWidthMm: 210 * scale,
+          partHeightMm: 297 * scale,
+          marginMm: SPEC_MARGIN_MM,
+        }).total,
       ).toBe(portraitPages);
       expect(
-        planTiles({ partWidthMm: 297 * scale, partHeightMm: 210 * scale })
-          .total,
+        planTiles({
+          partWidthMm: 297 * scale,
+          partHeightMm: 210 * scale,
+          marginMm: SPEC_MARGIN_MM,
+        }).total,
       ).toBe(landscapePages);
     }
   });
 
   it('겹침을 뺀 나머지를 균등 분배한다 — 장마다 겹침이 같다', () => {
-    const plan = planTiles({ partWidthMm: 594, partHeightMm: 420 });
+    const plan = planTiles({
+      partWidthMm: 594,
+      partHeightMm: 420,
+      marginMm: SPEC_MARGIN_MM,
+    });
     const gaps = new Set<number>();
     for (const tile of plan.tiles) {
       if (tile.col < plan.cols) {
@@ -134,11 +155,13 @@ describe('planTiles', () => {
     expect(roomy.liveHeightMm).toBe(roomy.pageHeightMm - 2 * roomy.marginMm);
     expect(roomy.stampBandMm).toBe(STAMP_BAND_MM);
 
-    // 도안이 인쇄 가능 영역을 꽉 채우면 띠가 0이 된다. 장수는 그대로 1장이다.
+    // 도안이 인쇄 가능 영역을 꽉 채우면 띠가 0이 된다. 장수는 그대로 1장이다
+    // (198×285는 여백 6mm일 때의 인쇄 가능 영역이다).
     const tight = planTiles({
       partWidthMm: 198,
       partHeightMm: 285,
       orientation: 'portrait',
+      marginMm: SPEC_MARGIN_MM,
     });
     expect(tight.total).toBe(1);
     expect(tight.stampBandMm).toBeCloseTo(0, 9);

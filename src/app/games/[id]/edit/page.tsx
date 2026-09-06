@@ -37,7 +37,7 @@ export default async function EditGamePage({ params }: Props) {
     <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6">
       <Link
         href={`/games/${game.id}`}
-        className="text-sm text-zinc-500 hover:underline dark:text-zinc-400"
+        className="text-sm text-muted-foreground hover:underline"
       >
         ← {game.title}
         {roParticle(game.title)} 돌아가기

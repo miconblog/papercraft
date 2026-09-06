@@ -23,10 +23,13 @@ export const mmToCssPx = (mm: number): number =>
 export const A4 = Object.freeze({ widthMm: 210, heightMm: 297 });
 
 /**
- * 가정용 프린터의 인쇄 불가 여백. 기종마다 다르므로 사용자가 낮출 수 있게 둔다.
- * 6mm는 잉크젯·레이저 공통으로 안전한 쪽에 잡은 기본값이다(§4).
+ * 가정용 프린터의 인쇄 불가 여백. 기종마다 다르므로 사용자가 올릴 수 있게 둔다.
+ *
+ * 기본은 0이다 — 배율 100%에서 운동장이 A4 그대로라(§2), 여백을 미리 잡아 두면
+ * 기본 설정에서조차 한 장에 담기지 않는다. 자기 프린터가 가장자리를 먹는 만큼은
+ * 탐침 시트로 재서 사용자가 올린다(2026-09-06 사용자 요청).
  */
-export const DEFAULT_PRINTER_MARGIN_MM = 6;
+export const DEFAULT_PRINTER_MARGIN_MM = 0;
 /** 사용자가 자기 프린터 값을 재서 넣을 수 있는 범위. */
 export const MIN_PRINTER_MARGIN_MM = 0;
 export const MAX_PRINTER_MARGIN_MM = 20;

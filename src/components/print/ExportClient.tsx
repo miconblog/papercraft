@@ -9,7 +9,7 @@ import {
 } from '@/lib/schema';
 import { useHydrated } from '@/lib/customization/useHydrated';
 import { useStoredCustomization } from '@/lib/customization/useStoredCustomization';
-import { PRINT_SETTINGS } from '@/lib/print/assembly';
+import { PRINT_SETTINGS } from '@/lib/print/settings';
 import {
   DEFAULT_PRINTER_MARGIN_MM,
   MAX_PRINTER_MARGIN_MM,
@@ -59,13 +59,12 @@ export function ExportClient({
   );
   const [marginMm, setMarginMm] = useState(DEFAULT_PRINTER_MARGIN_MM);
   const [previewPartId, setPreviewPartId] = useState<string | null>(null);
-  const [includeGuide, setIncludeGuide] = useState(true);
   const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
 
   const options: ExportOptions = useMemo(
-    () => ({ parts: selections, marginMm, overlapMm: 10, includeGuide }),
-    [selections, marginMm, includeGuide],
+    () => ({ parts: selections, marginMm, overlapMm: 10 }),
+    [selections, marginMm],
   );
 
   const plans = useMemo(() => {
@@ -197,7 +196,7 @@ export function ExportClient({
                   key={kind}
                   type="button"
                   onClick={() => selectGroup(kind)}
-                  className="rounded-full border border-black/15 px-3 py-1 text-xs font-medium outline-none transition-colors hover:border-black/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current dark:border-white/20 dark:hover:border-white/40"
+                  className="rounded-full border border-border px-3 py-1 text-xs font-medium outline-none transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
                 >
                   {label}
                 </button>
@@ -254,16 +253,14 @@ export function ExportClient({
                       setMarginMm(next);
                     }
                   }}
-                  className="w-20 rounded-md border border-black/15 px-2 py-1 text-sm tabular-nums dark:border-white/20 dark:bg-transparent"
+                  className="w-20 rounded-md border border-border px-2 py-1 text-sm tabular-nums"
                 />
-                <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                  mm
-                </span>
+                <span className="text-xs text-muted-foreground">mm</span>
               </div>
             </div>
-            <p className="max-w-sm text-xs text-zinc-500 dark:text-zinc-400">
-              가정용 프린터는 용지 가장자리에 인쇄하지 못한다. 기본값 6mm는
-              잉크젯· 레이저 공통으로 안전한 값이다.{' '}
+            <p className="max-w-sm text-xs text-muted-foreground">
+              가정용 프린터는 용지 가장자리에 인쇄하지 못한다. 기본값 0mm는
+              가장자리까지 쓴다는 뜻이라, 내 프린터가 먹는 만큼 재서 올린다.{' '}
               <a
                 href={`/api/print/probe?margin=${marginMm}`}
                 className="underline underline-offset-2"
@@ -272,21 +269,6 @@ export function ExportClient({
               </a>
             </p>
           </div>
-
-          <label className="mt-4 flex items-start gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={includeGuide}
-              onChange={(e) => setIncludeGuide(e.target.checked)}
-              className="mt-0.5 size-4 accent-current"
-            />
-            <span>
-              조립 안내 시트를 첫 장에 넣는다
-              <span className="block text-xs text-zinc-500 dark:text-zinc-400">
-                몇 장을 어떤 순서로 붙이는지, 오림선·접는선이 무엇을 뜻하는지
-              </span>
-            </span>
-          </label>
         </section>
       </div>
 
@@ -294,7 +276,7 @@ export function ExportClient({
         <h2 className="text-lg font-semibold">미리보기</h2>
         {previewPart && previewSelection && previewPlan ? (
           <>
-            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="mt-1 text-xs text-muted-foreground">
               빨간 점선이 A4 한 장의 경계다
             </p>
             {previewable.length > 1 && (
@@ -312,8 +294,8 @@ export function ExportClient({
                     className={
                       'rounded-full px-3 py-1 text-xs font-medium outline-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current ' +
                       (part.id === previewPart.id
-                        ? 'bg-foreground text-background'
-                        : 'border border-black/15 hover:border-black/30 dark:border-white/20 dark:hover:border-white/40')
+                        ? 'bg-primary text-primary-foreground'
+                        : 'border border-border hover:border-primary')
                     }
                   >
                     {part.title}
@@ -333,31 +315,25 @@ export function ExportClient({
             </div>
           </>
         ) : (
-          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mt-2 text-sm text-muted-foreground">
             뽑을 파트를 하나 이상 고른다.
           </p>
         )}
 
-        <div className="mt-5 rounded-lg border border-black/10 p-4 dark:border-white/15">
+        <div className="mt-5 rounded-lg border border-border p-4">
           <p className="text-sm">
             <span className="font-semibold">모두 A4 {totalPages}장</span>
-            {includeGuide && totalPages > 0 && (
-              <span className="text-zinc-500 dark:text-zinc-400">
-                {' '}
-                + 조립 안내
-              </span>
-            )}
           </p>
           <button
             type="button"
             onClick={download}
             disabled={busy || selections.length === 0 || blocked.length > 0}
-            className="mt-3 w-full rounded-full bg-foreground px-6 py-3 font-medium text-background transition-colors hover:bg-[#383838] disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-[#ccc]"
+            className="mt-3 w-full rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/85 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {busy ? 'PDF를 만드는 중…' : 'PDF 내려받기'}
           </button>
           {blocked.length > 0 && (
-            <ul className="mt-3 space-y-1 text-sm text-red-600 dark:text-red-400">
+            <ul className="mt-3 space-y-1 text-sm text-destructive">
               {blocked
                 .filter((i) => i.partId === null)
                 .map((issue) => (
@@ -369,7 +345,7 @@ export function ExportClient({
             </ul>
           )}
           {errors.length > 0 && (
-            <ul className="mt-3 space-y-1 text-sm text-red-600 dark:text-red-400">
+            <ul className="mt-3 space-y-1 text-sm text-destructive">
               {errors.map((message) => (
                 <li key={message}>{message}</li>
               ))}
@@ -379,13 +355,13 @@ export function ExportClient({
 
         {/* 프린터의 자동 맞춤이 치수를 말없이 바꾼다(IDE-002 §8.2). 화면과
             인쇄물 양쪽에 같은 문구를 둔다. */}
-        <div className="mt-4 rounded-lg border border-amber-500/40 bg-amber-50/60 p-4 text-sm dark:bg-amber-500/10">
+        <div className="mt-4 rounded-lg border border-warning/45 bg-warning-surface/60 p-4 text-sm">
           <p className="font-semibold">배율 100%로 인쇄한다</p>
-          <p className="mt-1 text-zinc-600 dark:text-zinc-300">
+          <p className="mt-1 text-muted-foreground">
             PDF 뷰어의 인쇄 대화상자에서 아래를 확인한다. 하나라도 놓치면 치수가
             어긋난다.
           </p>
-          <ul className="mt-2 list-disc space-y-0.5 pl-5 text-zinc-600 dark:text-zinc-300">
+          <ul className="mt-2 list-disc space-y-0.5 pl-5 text-muted-foreground">
             {PRINT_SETTINGS.map((line) => (
               <li key={line}>{line}</li>
             ))}
@@ -394,7 +370,7 @@ export function ExportClient({
 
         {/* 모달에서는 값의 출처를 말할 필요가 없다 — 뒤에 보이는 판 그대로다. */}
         {!embedded && (
-          <p className="mt-4 text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="mt-4 text-xs text-muted-foreground">
             {hydrated && stored
               ? '에디터에서 만든 값으로 뽑는다.'
               : '아직 만든 값이 없어 도안 기본값으로 뽑는다.'}{' '}
