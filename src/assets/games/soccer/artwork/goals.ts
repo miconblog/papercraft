@@ -35,7 +35,6 @@
  * 표시선 굵기를 다시 입힐 때 변환까지 따라가야 해서 손해다.
  */
 import { GOAL, GOAL_NET_SIZE, SHEETS } from '../dimensions.ts';
-import { GOAL_ASSEMBLY_STEPS } from '../rules.ts';
 import {
   ART_LAYER_ID,
   INK_COLOR,
@@ -50,7 +49,6 @@ import {
   rect,
   svgDocument,
   text,
-  wrapText,
 } from './svg.ts';
 
 const {
@@ -397,17 +395,20 @@ export const goalNetFaces = (
 };
 
 /**
- * 시트 위 전개도의 좌상단. **한 장에 한 벌**이다(2026-09-08).
+ * 시트 위 두 벌의 좌상단. **한 장에 두 벌**이다.
  *
- * 뚜껑이 붙어 한 벌이 134×108mm가 되면서 두 벌을 한 장에 앉힐 수 없게 됐다.
- * 골대 두 개는 이 장을 두 번 뽑아 만든다(`defaultCopies` 2).
+ * 뚜껑이 붙어 한 벌이 134×108mm가 됐을 때는 접는 법 글이 오른쪽 단을 통째로
+ * 쓰고 있어 한 벌밖에 못 앉혔다. 그 글을 소개 페이지로 옮기면서(2026-09-08
+ * 사용자 요청) 폭이 비어 두 벌이 나란히 들어간다 — 268mm에 좌우 3mm·사이
+ * 6mm다. 골대 둘에 종이 한 장이면 된다.
  */
 export const GOAL_NET_ORIGINS: ReadonlyArray<readonly [number, number]> = [
-  [10, 26],
+  [3, 26],
+  [143, 26],
 ];
 
 /**
- * 조립 도해 — 접는 법 옆에 붙는 넉 장.
+ * 조립 도해 — 전개도 아래에 한 줄로 붙는 넉 장.
  *
  * 글로만 적힌 "겹으로 문다"는 어느 것이 무엇을 무는지 알려 주지 않는다. 옆에서
  * 본 그림 한 컷이면 그게 끝난다. ④는 골대와 운동장 눈금의 관계를 보여 준다 —
@@ -415,8 +416,7 @@ export const GOAL_NET_ORIGINS: ReadonlyArray<readonly [number, number]> = [
  */
 const ASSEMBLY_DIAGRAM_WIDTH_MM = 56;
 const ASSEMBLY_DIAGRAM_HEIGHT_MM = 26;
-const ASSEMBLY_DIAGRAM_GAP_MM = 6;
-const ASSEMBLY_DIAGRAM_ROW_MM = 34;
+const ASSEMBLY_DIAGRAM_GAP_MM = 8;
 
 const assemblyDiagrams = (leftMm: number, topMm: number): string[] => {
   const thin = { fill: 'none', stroke: RULE_COLOR, 'stroke-width': 0.3 };
@@ -429,17 +429,16 @@ const assemblyDiagrams = (leftMm: number, topMm: number): string[] => {
     });
 
   const colXMm = (i: number) =>
-    leftMm + (i % 2) * (ASSEMBLY_DIAGRAM_WIDTH_MM + ASSEMBLY_DIAGRAM_GAP_MM);
-  const rowYMm = (i: number) =>
-    topMm + Math.floor(i / 2) * ASSEMBLY_DIAGRAM_ROW_MM;
+    leftMm + i * (ASSEMBLY_DIAGRAM_WIDTH_MM + ASSEMBLY_DIAGRAM_GAP_MM);
+  const rowYMm = () => topMm;
   const centerXMm = (i: number) => colXMm(i) + ASSEMBLY_DIAGRAM_WIDTH_MM / 2;
-  const baseOf = (i: number) => rowYMm(i) + ASSEMBLY_DIAGRAM_HEIGHT_MM - 4;
+  const baseOf = () => rowYMm() + ASSEMBLY_DIAGRAM_HEIGHT_MM - 4;
   const caption = (value: string, i: number) =>
-    label(value, centerXMm(i), rowYMm(i) + ASSEMBLY_DIAGRAM_HEIGHT_MM + 4, 3);
+    label(value, centerXMm(i), rowYMm() + ASSEMBLY_DIAGRAM_HEIGHT_MM + 4, 3);
 
   // ① 벽 셋을 세운다 — 앞에서 본 쟁반. 아직 위가 열려 있고, 그 자리를 뚜껑이
   // 덮는다는 것이 이 컷의 요점이다.
-  const base0 = baseOf(0);
+  const base0 = baseOf();
   const w = 30;
   const h = 11;
   const a = centerXMm(0) - w / 2;
@@ -468,7 +467,7 @@ const assemblyDiagrams = (leftMm: number, topMm: number): string[] => {
    * 벽 위의 겹이 접혀 내려와 탭의 윗머리를 덮는다. 풀도 칼도 쓰지 않는 이유가
    * 이 한 컷에 다 들어 있다.
    */
-  const base1 = baseOf(1);
+  const base1 = baseOf();
   const wallWMm = 30;
   const wallHMm = 15;
   const hemHMm = 5;
@@ -507,7 +506,7 @@ const assemblyDiagrams = (leftMm: number, topMm: number): string[] => {
    * ③ 뚜껑 — 앞에서 본 단면. 뚜껑이 벽 위에 얹히고 양옆 귀가 **바깥으로** 내려와
    * 벽을 감싼다. 이 도안에서 유일하게 반대로 접는 자리라 그림이 필요하다.
    */
-  const base2 = baseOf(2);
+  const base2 = baseOf();
   const lw = 30;
   const lh = 11;
   const c = centerXMm(2) - lw / 2;
@@ -544,7 +543,7 @@ const assemblyDiagrams = (leftMm: number, topMm: number): string[] => {
   ];
 
   // ④ 위에서 본 놓는 자리 — 골라인 눈금에 입술 좌우 끝을 맞춘다.
-  const base3 = baseOf(3);
+  const base3 = baseOf();
   const d = centerXMm(3) + 4;
   const halfMm = 8;
   const topEdgeYMm = base3 - 18;
@@ -576,20 +575,10 @@ const assemblyDiagrams = (leftMm: number, topMm: number): string[] => {
 
 export const renderGoals = (): string => {
   const grids = GOAL_NET_ORIGINS.map(([x, y]) => gridOf(x, y));
-  // 시트를 두 단으로 쓴다 — 왼쪽에 전개도, 오른쪽에 접는 법과 도해.
-  const assemblyLeftMm = 152;
-  const assemblyTopMm = 32;
-  const assemblyColumnMm = 120;
-  const assemblyLineMm = 5.4;
-  const assemblyFontMm = 3.2;
-  const assemblyIndentMm = 5.4;
-  // 번호를 왼쪽에 세우고 본문만 접는다 — 둘째 줄이 번호 아래로 흘러내리면
-  // 항목 경계가 흐려진다.
-  const assemblyLines = GOAL_ASSEMBLY_STEPS.flatMap((step, i) =>
-    wrapText(step, assemblyFontMm, assemblyColumnMm - assemblyIndentMm).map(
-      (value, line) => ({ index: i + 1, value, first: line === 0 }),
-    ),
-  );
+  const centerXMm = SHEETS.goals.widthMm / 2;
+  // 도해 넉 장이 한 줄로 242mm — 전개도 두 벌 아래 빈 띠에 가운데로 앉힌다.
+  const diagramsWidthMm =
+    ASSEMBLY_DIAGRAM_WIDTH_MM * 4 + ASSEMBLY_DIAGRAM_GAP_MM * 3;
 
   return svgDocument({
     widthMm: SHEETS.goals.widthMm,
@@ -604,10 +593,14 @@ export const renderGoals = (): string => {
       markLayer('fold-mountain', grids.flatMap(mountainFolds)),
 
       group({ id: ART_LAYER_ID, fill: INK_COLOR, stroke: 'none' }, [
-        text('골대 전개도 · 1개', 77, 12, 5, { 'text-anchor': 'middle' }),
+        text('골대 전개도 · 2개', centerXMm, 12, 5, {
+          'text-anchor': 'middle',
+        }),
+        // 접는 순서는 소개 페이지에 있다(2026-09-08). 시트에 남는 것은 도해
+        // 넉 장뿐이라, 어디서 읽는지 한 줄로 알려 준다.
         text(
-          `골문 ${num(mouthWidthMm)}×${num(wallHeightMm)}mm · 풀도 칼도 쓰지 않는다 · 두 장 뽑는다`,
-          77,
+          `골문 ${num(mouthWidthMm)}×${num(wallHeightMm)}mm · 풀도 칼도 쓰지 않는다 · 접는 순서는 소개 페이지의 "골대 접는 법"에서`,
+          centerXMm,
           19,
           3,
           { fill: RULE_COLOR, 'text-anchor': 'middle' },
@@ -617,32 +610,7 @@ export const renderGoals = (): string => {
         ...grids.flatMap(goalLineOnLip),
         ...grids.flatMap(faceLabels),
 
-        text('접는 법', assemblyLeftMm, assemblyTopMm, 4, {
-          'text-anchor': 'start',
-        }),
-        ...assemblyLines.flatMap(({ index, value, first }, i) => {
-          const yMm = assemblyTopMm + assemblyLineMm * (i + 1.5);
-          const body = text(
-            value,
-            assemblyLeftMm + assemblyIndentMm,
-            yMm,
-            assemblyFontMm,
-            { 'text-anchor': 'start' },
-          );
-          return first
-            ? [
-                text(`${index}.`, assemblyLeftMm, yMm, assemblyFontMm, {
-                  'text-anchor': 'start',
-                }),
-                body,
-              ]
-            : [body];
-        }),
-
-        ...assemblyDiagrams(
-          assemblyLeftMm,
-          assemblyTopMm + assemblyLineMm * (assemblyLines.length + 3),
-        ),
+        ...assemblyDiagrams(centerXMm - diagramsWidthMm / 2, 146),
       ]),
     ],
   });

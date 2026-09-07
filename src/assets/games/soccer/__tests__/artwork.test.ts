@@ -25,7 +25,7 @@ import {
   GOAL_NET_SIZE,
   SHEETS,
 } from '../dimensions';
-import { PAPER_NOTE, RULES } from '../rules';
+import { GOAL_ASSEMBLY_STEPS, PAPER_NOTE, RULES } from '../rules';
 
 const game = getGame('soccer')!;
 const partOf = (id: string) => findPart(game, id)!;
@@ -175,9 +175,9 @@ describe('골대 전개도', () => {
     // 않은 설명이 따라 나온다.
     const doc = svgOf('goals');
     expect(doc.getElementById(MARK_STYLES.glue.layerId)).toBeNull();
-    // 오림선은 전개도 바깥 윤곽 하나뿐이다 — 뚫을 곳이 하나도 없다.
+    // 오림선은 전개도 2벌의 바깥 윤곽뿐이다 — 뚫을 곳이 하나도 없다.
     expect(doc.getElementById(MARK_STYLES.cut.layerId)!.children.length).toBe(
-      1,
+      2,
     );
   });
 
@@ -235,35 +235,53 @@ describe('골대 전개도', () => {
   });
 
   /**
-   * 뚜껑이 붙어 한 벌이 134×108mm가 되면서 두 벌을 한 장에 앉힐 수 없게 됐다
-   * (2026-09-08). 한 장에 한 벌을 놓고 `defaultCopies`를 2로 올렸다.
+   * 접는 법 글을 소개 페이지로 옮기면서(2026-09-08 사용자 요청) 시트 폭이 비어
+   * 두 벌이 나란히 들어간다. 골대 둘에 종이 한 장이 이 시트의 목표다.
    */
-  it('한 장에 한 벌이 들어가고 안내 자리가 남는다', () => {
-    expect(GOAL_NET_ORIGINS).toHaveLength(1);
-    const [[x, y]] = GOAL_NET_ORIGINS;
-    expect(x).toBeGreaterThanOrEqual(0);
-    expect(y).toBeGreaterThanOrEqual(0);
-    expect(x + GOAL_NET_SIZE.widthMm).toBeLessThanOrEqual(SHEETS.goals.widthMm);
-    expect(y + GOAL_NET_SIZE.heightMm).toBeLessThanOrEqual(
-      SHEETS.goals.heightMm,
-    );
-    // 오른쪽 단이 접는 법과 도해 몫이다 — 전개도가 시트 폭의 절반을 넘으면
-    // 글을 넣을 자리가 없어 시트를 다시 짜야 한다.
-    expect(x + GOAL_NET_SIZE.widthMm).toBeLessThan(
-      SHEETS.goals.widthMm / 2 + 10,
-    );
+  it('두 벌이 한 장에 나란히 들어가고 사이가 벌어져 있다', () => {
+    expect(GOAL_NET_ORIGINS).toHaveLength(2);
+    const boxes = GOAL_NET_ORIGINS.map(([x, y]) => ({
+      left: x,
+      top: y,
+      right: x + GOAL_NET_SIZE.widthMm,
+      bottom: y + GOAL_NET_SIZE.heightMm,
+    }));
+    for (const box of boxes) {
+      expect(box.left).toBeGreaterThanOrEqual(0);
+      expect(box.top).toBeGreaterThanOrEqual(0);
+      expect(box.right).toBeLessThanOrEqual(SHEETS.goals.widthMm);
+      expect(box.bottom).toBeLessThanOrEqual(SHEETS.goals.heightMm);
+    }
+    // 나란히 놓는다. 사이가 붙어 있으면 가위가 들어갈 자리가 없다.
+    expect(boxes[1].left - boxes[0].right).toBeGreaterThanOrEqual(4);
+    // 아래에는 그림 도해가 들어갈 띠가 남아야 한다.
+    expect(boxes[0].bottom).toBeLessThan(SHEETS.goals.heightMm - 30);
   });
 
   it('오림선과 접는선이 모두 있다', () => {
     const doc = svgOf('goals');
-    // 골접기 여덟 — 뚜껑·뒷벽·옆벽 둘·겹 둘·모서리 탭 둘.
+    // 골접기 벌마다 여덟 — 뚜껑·뒷벽·옆벽 둘·겹 둘·모서리 탭 둘.
     expect(
       doc.getElementById(MARK_STYLES['fold-valley'].layerId)!.children.length,
-    ).toBe(8);
-    // 산접기 둘 — 뚜껑 귀뿐이다. 옆벽을 바깥에서 감싸야 뚜껑이 들리지 않는다.
+    ).toBe(16);
+    // 산접기 벌마다 둘 — 뚜껑 귀뿐이다. 옆벽을 바깥에서 감싸야 들리지 않는다.
     expect(
       doc.getElementById(MARK_STYLES['fold-mountain'].layerId)!.children.length,
-    ).toBe(2);
+    ).toBe(4);
+  });
+
+  /**
+   * 접는 순서가 시트에서 빠졌으므로(2026-09-08) 소개 페이지가 그 자리를
+   * 대신해야 한다. 둘이 어긋나면 시트만 보고도, 페이지만 보고도 접을 수 없다.
+   */
+  it('접는 순서는 소개 페이지의 규칙에 들어 있다', () => {
+    const headings = game.rules.filter((b) => b.kind === 'heading');
+    expect(headings.map((h) => h.text)).toContain('골대 접는 법');
+    // 시트가 페이지로 안내하는 문구도 실제 절 이름과 같아야 한다.
+    expect(ARTWORK.goals()).toContain('골대 접는 법');
+    for (const step of GOAL_ASSEMBLY_STEPS) {
+      expect(game.rules).toContainEqual({ kind: 'step', text: step });
+    }
   });
 
   it('골라인 밖에 놓이고 필드는 입술만 쓴다', () => {

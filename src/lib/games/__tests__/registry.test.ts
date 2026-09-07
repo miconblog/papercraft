@@ -53,9 +53,9 @@ describe('축구 게임판 — 파트', () => {
       expect(part.defaultScale).toBeLessThanOrEqual(part.maxScale);
       expect(part.defaultCopies).toBeGreaterThanOrEqual(1);
     }
-    // 골대는 양쪽에 하나씩 필요하고, 뚜껑이 붙으면서 전개도 한 장에 한 벌만
-    // 들어간다(2026-09-08) — 그래서 기본 벌 수가 2다.
-    expect(soccer.parts.find((p) => p.id === 'goals')!.defaultCopies).toBe(2);
+    // 골대는 양쪽에 하나씩 필요하지만 전개도 한 장에 두 벌이 들어 있다 —
+    // 그래서 기본 벌 수가 1이다.
+    expect(soccer.parts.find((p) => p.id === 'goals')!.defaultCopies).toBe(1);
   });
 
   it('조립물에는 오림선과 접는선이, 오림용 부속에는 오림선이 선언돼 있다', () => {
