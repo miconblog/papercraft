@@ -93,14 +93,19 @@ describe('축구 게임판 — 슬롯', () => {
     expect(soccer.slots.find((s) => s.id.endsWith('-name'))).toBeUndefined();
   });
 
-  it('팀 색은 마커 테두리와 점수 기록칸 막대에 쓰인다', () => {
+  /**
+   * 점수 기록칸의 색 막대가 이 슬롯의 유일한 배치였는데 그 막대를 뺐다
+   * (2026-09-08 사용자 요청 — 표를 판/이름 빈칸으로). 값은 그대로 살아 운동장
+   * 마커를 칠한다 — 마커 색은 배치가 아니라 그룹의 `colorSlotId`를 통해
+   * 읽히기 때문이다(마커는 파트 레이어가 아니라 슬롯마다 따로 그려진다).
+   */
+  it('팀 색은 배치 없이 그룹을 통해 마커만 칠한다', () => {
     const color = soccer.slots.find((s) => s.id === 'home-color')!;
     expect(color.kind).toBe('color');
-    // 점수 기록칸에는 `paint` 배치로 간다. 마커 색은 배치가 아니라 그룹의
-    // `colorSlotId`를 통해 렌더러가 읽어 간다 — 마커는 파트 레이어가 아니라
-    // 슬롯마다 따로 그려지기 때문이다.
-    expect(color.placements.every((p) => p.mode === 'paint')).toBe(true);
-    expect(color.placements.map((p) => p.partId)).toEqual(['score-sheet']);
+    expect(color.placements).toEqual([]);
+    // 그룹이 가리키고 있어야 마커에 닿는다 — 이게 끊기면 값이 갈 곳이 없다.
+    const home = soccer.groups.find((g) => g.id === 'home')!;
+    expect(home.colorSlotId).toBe('home-color');
   });
 
   it('속을 비우는 변형만 채우지 않는다고 선언한다 — 등번호 색이 여기서 갈린다', () => {

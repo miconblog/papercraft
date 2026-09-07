@@ -3,11 +3,17 @@
  *
  * 사용자가 만든 판은 종이 네 변에 손글씨로 점수를 이어 적었다. 그 자리를 보드에서
  * 떼어내 별지로 옮긴 것이 이 파트다 — 운동장에는 공이 지나갈 면만 남긴다.
+ *
+ * **표는 판 · 이름 · 이름 세 칸이고 안은 전부 비어 있다**(2026-09-08 사용자 요청).
+ * 예전에는 팀 칸 위에 파랑·빨강 색 막대를 얹어 "파랑 팀 = 파란 마커"를 맞물리게
+ * 했는데, 그 막대를 뺐다 — 팀 이름을 아이가 직접 쓰는 자리라 색이 미리 정해져
+ * 있으면 오히려 걸린다. 팀 색 슬롯은 남아 운동장 마커를 칠하지만, 이 시트에는
+ * 더 이상 나타나지 않는다.
  */
 import {
+  SCORE_HEADER_Y_MM,
   SCORE_TABLE,
   SCORE_TABLE_WIDTH_MM,
-  SCORE_TEAM_NAME_Y_MM,
   SHEETS,
 } from '../dimensions.ts';
 import {
@@ -30,7 +36,6 @@ const {
   rowHeightMm,
   rows,
   indexColumnMm,
-  colorBarHeightMm,
 } = SCORE_TABLE;
 
 const tableRightMm = xMm + SCORE_TABLE_WIDTH_MM;
@@ -43,20 +48,6 @@ const columnEdgesMm = [
   xMm + indexColumnMm + SCORE_TABLE.teamColumnMm,
   tableRightMm,
 ];
-
-/**
- * 팀 색 막대. 슬롯 값으로 채워진다 — 마커 테두리와 같은 색이라, 종이에서
- * "파랑 팀 = 파란 테두리 마커"가 한눈에 맞물린다.
- */
-const teamColorBar = (index: 0 | 1, layerId: string, fill: string): string =>
-  group({ id: layerId, fill, stroke: 'none' }, [
-    rect(
-      columnEdgesMm[index + 1],
-      headerYMm,
-      SCORE_TABLE.teamColumnMm,
-      colorBarHeightMm,
-    ),
-  ]);
 
 export const renderScoreSheet = (): string =>
   svgDocument({
@@ -72,9 +63,6 @@ export const renderScoreSheet = (): string =>
           SHEETS.scoreSheet.heightMm - cutInsetMm * 2,
         ),
       ]),
-
-      teamColorBar(0, 'pc-team-home', '#1d4ed8'),
-      teamColorBar(1, 'pc-team-away', '#dc2626'),
 
       group({ id: ART_LAYER_ID, fill: INK_COLOR, stroke: 'none' }, [
         text('점수 기록', SHEETS.scoreSheet.widthMm / 2, 18, 5.5, {
@@ -95,9 +83,20 @@ export const renderScoreSheet = (): string =>
           }),
         ]),
 
-        text('판', xMm + indexColumnMm / 2, SCORE_TEAM_NAME_Y_MM, 4, {
+        // 머리글 셋: 판 · 이름 · 이름. 팀 칸 아래는 비워 두고 아이가 이름을
+        // 쓴다 — 어느 칸이 어느 팀인지도 그 손글씨가 정한다.
+        text('판', xMm + indexColumnMm / 2, SCORE_HEADER_Y_MM, 4, {
           'text-anchor': 'middle',
         }),
+        ...([0, 1] as const).map((i) =>
+          text(
+            '이름',
+            (columnEdgesMm[i + 1] + columnEdgesMm[i + 2]) / 2,
+            SCORE_HEADER_Y_MM,
+            4,
+            { 'text-anchor': 'middle' },
+          ),
+        ),
         ...Array.from({ length: rows }, (_, i) =>
           text(
             String(i + 1),
@@ -117,8 +116,8 @@ export const renderScoreSheet = (): string =>
         ),
       ]),
 
-      // 팀 칸(색 막대 아래)은 비워 둔다 — 팀 이름 슬롯을 뺐고(2026-09-06)
-      // 아이가 직접 쓰는 자리다. 등번호와 같은 이유다.
+      // 표 안은 비워 둔다 — 팀 이름 슬롯을 뺐고(2026-09-06) 아이가 직접 쓰는
+      // 자리다. 등번호와 같은 이유다.
       '<g id="pc-slot" />',
     ],
   });

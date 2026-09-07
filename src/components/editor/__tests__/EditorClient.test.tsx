@@ -52,8 +52,11 @@ describe('EditorClient (IDE-006 수용 기준)', () => {
    * 지금 보는 종이가 무엇으로 바뀌는지가 옵션 줄의 전부다. 고르지도 못할 값이
    * 남아 있으면 그게 흐려진다(2026-09-08 사용자 요청 — "점수 기록칸이나 골대
    * 전개도를 선택하면 운동장에 필요한 옵션 선택들은 모두 숨겨줘").
+   *
+   * 점수 기록칸은 그 뒤 판/이름 빈칸이 되면서 팀 색 막대까지 잃었다(같은 날
+   * 사용자 요청) — 이제 이 파트에는 고칠 값이 하나도 없다.
    */
-  it('점수 기록칸을 고르면 운동장 옵션이 사라지고 팀 색만 남는다', async () => {
+  it('점수 기록칸을 고르면 옵션이 하나도 남지 않는다', async () => {
     const user = userEvent.setup();
     render(<EditorClient game={game} />);
 
@@ -64,12 +67,11 @@ describe('EditorClient (IDE-006 수용 기준)', () => {
 
     await user.click(screen.getByRole('button', { name: '점수 기록칸' }));
 
-    // 마커 모양과 대형은 운동장에만 쓰인다.
     expect(screen.queryByLabelText('선수 마커 모양')).toBeNull();
     expect(screen.queryAllByLabelText(/대형$/)).toHaveLength(0);
-    // 팀 색은 점수 기록칸의 색 막대를 칠하므로 남아야 한다.
-    expect(screen.getByLabelText('홈 팀 색')).toBeInTheDocument();
-    expect(screen.getByLabelText('원정 팀 색')).toBeInTheDocument();
+    // 팀 색은 이제 운동장 마커만 칠한다 — 점수 기록칸에는 나타나지 않는다.
+    expect(screen.queryByLabelText('홈 팀 색')).toBeNull();
+    expect(screen.queryByLabelText('원정 팀 색')).toBeNull();
   });
 
   it('골대 전개도를 고르면 옵션이 하나도 남지 않는다', async () => {

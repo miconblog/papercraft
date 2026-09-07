@@ -136,9 +136,23 @@ export const gameDefinition = z
       }
     }
 
+    // 배치가 없어도 되는 슬롯 — 그룹의 색 슬롯뿐이다. 그 값은 배치가 아니라
+    // 그룹을 통해 마커를 칠한다(`lib/customization/render.ts`의 `groupColorOf`).
+    const groupColorSlotIds = new Set(
+      g.groups.flatMap((group) =>
+        group.colorSlotId ? [group.colorSlotId] : [],
+      ),
+    );
+
     for (const [i, s] of g.slots.entries()) {
       if (s.groupId && !groupIds.has(s.groupId)) {
         push(['slots', i, 'groupId'], `없는 그룹을 가리킨다: ${s.groupId}`);
+      }
+      if (s.placements.length === 0 && !groupColorSlotIds.has(s.id)) {
+        push(
+          ['slots', i, 'placements'],
+          '배치가 없다 — 그룹의 색 슬롯이 아니면 도안에 나타날 자리가 있어야 한다',
+        );
       }
 
       for (const [j, pl] of s.placements.entries()) {
@@ -462,9 +476,10 @@ export const slotsOfPart = (game: GameDefinition, partId: string): Slot[] =>
  *
  * `slotsOfPart`는 배치(placement)만 본다. 그런데 **그룹의 색 슬롯은 배치가 없는
  * 파트에도 영향을 준다** — 그 그룹의 마커가 그 색으로 칠해지기 때문이다
- * (`lib/customization/render.ts`의 `groupColorOf`). 축구 게임판의 팀 색은 배치로는
- * 점수 기록칸(색 막대)에만 있지만, 운동장 선수 마커의 색도 같은 값이 정한다.
- * 배치만 보고 걸렀다가는 운동장을 편집하는 동안 팀 색이 사라진다.
+ * (`lib/customization/render.ts`의 `groupColorOf`). 축구 게임판의 팀 색은
+ * 2026-09-08에 점수 기록칸의 색 막대를 잃어 **배치가 하나도 없는데도** 운동장
+ * 선수 마커를 칠한다. 배치만 보고 걸렀다면 운동장을 편집하는 동안 팀 색이
+ * 사라졌을 것이다.
  *
  * 에디터가 "지금 보는 파트에 쓰이는 옵션만" 보여줄 때 쓴다(2026-09-08 사용자
  * 요청 — 점수 기록칸이나 골대를 고르면 운동장 옵션은 숨긴다).

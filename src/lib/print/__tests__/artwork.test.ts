@@ -87,9 +87,20 @@ describe('parseArtwork', () => {
     }
   });
 
+  /**
+   * `paint` 배치를 쓰는 도안이 지금은 하나도 없다 — 축구 게임판의 유일한 색
+   * 레이어였던 점수 기록칸 팀 색 막대를 뺐다(2026-09-08 사용자 요청). 기능은
+   * 스키마에 남아 다른 도안이 쓸 수 있으므로, 작은 SVG를 지어 검사한다.
+   */
   it('색 레이어를 커스터마이즈 값으로 갈아 끼운다', () => {
-    // 팀 색 레이어는 점수 기록칸에 있다 — 운동장에서는 뺐다(IDE-010).
-    const art = parseArtwork(read('score-sheet.svg'), {
+    const svg = [
+      '<svg xmlns="http://www.w3.org/2000/svg" width="10mm" height="10mm" viewBox="0 0 10 10">',
+      '<g id="pc-team-home" fill="#1d4ed8" stroke="none">',
+      '<rect x="1" y="1" width="8" height="2" />',
+      '</g>',
+      '</svg>',
+    ].join('');
+    const art = parseArtwork(svg, {
       paint: { 'pc-team-home': { fill: '#123456' } },
     });
     expect(paths(art.items).some((p) => p.fill === '#123456')).toBe(true);

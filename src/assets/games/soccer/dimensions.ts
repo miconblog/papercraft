@@ -389,23 +389,20 @@ export const SCORE_TABLE = {
   /** 판 번호 열 너비. 나머지를 두 팀이 반씩 나눈다. */
   indexColumnMm: 30,
   teamColumnMm: 75,
-  /** 헤더 위쪽에 얹는 팀 색 막대의 높이. */
-  colorBarHeightMm: 2.5,
 } as const;
 
 export const SCORE_TABLE_WIDTH_MM =
   SCORE_TABLE.indexColumnMm + SCORE_TABLE.teamColumnMm * 2; // 180
 
 /**
- * 헤더 행 글자의 세로 중심. 색 막대 아래 남는 칸의 가운데다.
+ * 헤더 행 글자의 세로 중심.
  *
- * 팀 칸에는 글자를 찍지 않는다 — 팀 이름 슬롯을 뺐고(2026-09-06) 그 자리는
- * 아이가 직접 쓴다. 지금 이 y를 쓰는 글자는 왼쪽 "판" 머리글뿐이다.
+ * 예전에는 헤더 위에 팀 색 막대(2.5mm)를 얹고 그 아래 남는 칸의 가운데였다.
+ * **막대를 뺐다**(2026-09-08 사용자 요청 — "점수 기록도 파랑 빨강 필요없이,
+ * 판/이름으로 빈칸으로") — 이제 헤더 칸 전체의 가운데다.
  */
-export const SCORE_TEAM_NAME_Y_MM =
-  SCORE_TABLE.headerYMm +
-  SCORE_TABLE.colorBarHeightMm +
-  (SCORE_TABLE.headerHeightMm - SCORE_TABLE.colorBarHeightMm) / 2;
+export const SCORE_HEADER_Y_MM =
+  SCORE_TABLE.headerYMm + SCORE_TABLE.headerHeightMm / 2;
 
 /**
  * 파트 id에 대응하는 정적 자산 경로.
