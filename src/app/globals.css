@@ -2,10 +2,16 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 
-/* shadcn 컴포넌트(Select 등)가 쓰는 색·반경 토큰. 사이트 전체가 시스템의
- * prefers-color-scheme을 따르므로(아래), shadcn init이 기본으로 넣는
- * `.dark` 클래스 방식은 쓰지 않는다 — `@custom-variant dark`를 다시
- * 선언하지 않으면 Tailwind v4 기본값(미디어 쿼리 기반 `dark:`)이 유지된다. */
+/* 테마는 `html`의 `.dark` 클래스로 정한다. 헤더에 밝게·어둡게 스위치가
+ * 생기면서(2026-09-07) 미디어 쿼리만으로는 사용자의 선택을 담을 수 없게 됐다
+ * — 첫 페인트 전에 도는 인라인 스크립트(`src/lib/theme.ts`)가 저장된 선택을,
+ * 없으면 시스템 설정을 읽어 이 클래스를 붙인다.
+ *
+ * Tailwind v4의 기본 `dark:`는 미디어 쿼리라 여기서 클래스 기준으로 다시
+ * 선언한다. 이 한 줄이 빠지면 모든 `dark:` 유틸리티가 스위치를 무시한다. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* shadcn 컴포넌트(Select 등)가 쓰는 색·반경 토큰. */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -14,6 +20,7 @@
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-destructive: var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
@@ -47,6 +54,8 @@
 /* 빛바랜 인쇄물 색감 — 크림 종이 바탕에 잉크 갈색 글자, 벽돌빛 주황과
  * 겨자·청록 강조. 채도를 낮게 유지해야 '레트로'로 읽힌다. */
 :root {
+  /* 폼 컨트롤·스크롤바까지 테마를 따라오게 한다. */
+  color-scheme: light;
   --background: oklch(0.954 0.022 85);
   --foreground: oklch(0.285 0.035 48);
   --paper: #ffffff;
@@ -58,12 +67,16 @@
   --secondary: oklch(0.895 0.042 82);
   --secondary-foreground: oklch(0.3 0.04 48);
   --muted: oklch(0.915 0.032 83);
-  --muted-foreground: oklch(0.495 0.036 58);
+  --muted-foreground: oklch(0.45 0.038 58);
   --accent: oklch(0.885 0.055 78);
   --accent-foreground: oklch(0.3 0.04 48);
   --destructive: oklch(0.5 0.17 28);
-  --border: oklch(0.805 0.04 74);
-  --input: oklch(0.805 0.04 74);
+  --border: oklch(0.745 0.045 72);
+  --input: oklch(0.745 0.045 72);
+  /* 카드처럼 배경 위에 **떠 있어야 하는** 요소의 테두리. 크림·모래 배경에서
+   * 3:1(WCAG 1.4.11 비텍스트 대비)을 넘기려면 `--border`보다 훨씬 진해야 한다
+   * — 크림 바탕에 크림 테두리는 눈에 잡히지 않는다(2026-09-07). */
+  --border-strong: oklch(0.55 0.055 58);
   --ring: oklch(0.66 0.13 62);
   --radius: 0.5rem;
 
@@ -75,34 +88,39 @@
   --paper-grain: oklch(0.285 0.035 48 / 0.04);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: oklch(0.235 0.021 56);
-    --foreground: oklch(0.925 0.026 85);
-    --paper: #ffffff;
-    --paper-foreground: oklch(0.44 0.03 55);
-    --popover: oklch(0.275 0.024 56);
-    --popover-foreground: oklch(0.925 0.026 85);
-    --primary: oklch(0.68 0.128 48);
-    --primary-foreground: oklch(0.22 0.03 48);
-    --secondary: oklch(0.325 0.03 60);
-    --secondary-foreground: oklch(0.925 0.026 85);
-    --muted: oklch(0.325 0.03 60);
-    --muted-foreground: oklch(0.76 0.032 80);
-    --accent: oklch(0.345 0.038 62);
-    --accent-foreground: oklch(0.925 0.026 85);
-    --destructive: oklch(0.66 0.17 30);
-    --border: oklch(0.93 0.026 85 / 18%);
-    --input: oklch(0.93 0.026 85 / 22%);
-    --ring: oklch(0.62 0.11 64);
+.dark {
+  color-scheme: dark;
+  --background: oklch(0.235 0.021 56);
+  --foreground: oklch(0.925 0.026 85);
+  --paper: #ffffff;
+  --paper-foreground: oklch(0.44 0.03 55);
+  --popover: oklch(0.275 0.024 56);
+  --popover-foreground: oklch(0.925 0.026 85);
+  --primary: oklch(0.68 0.128 48);
+  --primary-foreground: oklch(0.22 0.03 48);
+  --secondary: oklch(0.325 0.03 60);
+  --secondary-foreground: oklch(0.925 0.026 85);
+  --muted: oklch(0.325 0.03 60);
+  --muted-foreground: oklch(0.795 0.032 80);
+  --accent: oklch(0.345 0.038 62);
+  --accent-foreground: oklch(0.925 0.026 85);
+  --destructive: oklch(0.66 0.17 30);
+  --border: oklch(0.93 0.026 85 / 26%);
+  --input: oklch(0.93 0.026 85 / 30%);
+  --border-strong: oklch(0.66 0.035 78);
+  --ring: oklch(0.62 0.11 64);
 
-    --retro-brick: oklch(0.68 0.128 48);
-    --retro-mustard: oklch(0.78 0.115 80);
-    --retro-teal: oklch(0.7 0.075 197);
-    --warning: oklch(0.82 0.11 82);
-    --warning-surface: oklch(0.36 0.05 74);
-    --paper-grain: oklch(0.93 0.026 85 / 0.035);
-  }
+  --retro-brick: oklch(0.68 0.128 48);
+  --retro-mustard: oklch(0.78 0.115 80);
+  --retro-teal: oklch(0.7 0.075 197);
+  --warning: oklch(0.82 0.11 82);
+  --warning-surface: oklch(0.36 0.05 74);
+  --paper-grain: oklch(0.93 0.026 85 / 0.035);
+}
+
+/* 상단 고정 헤더(`SiteHeader`)가 가리지 않게 앵커 이동에 여유를 준다. */
+html {
+  scroll-padding-top: 4.5rem;
 }
 
 body {

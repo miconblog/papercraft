@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
+import { THEME_INIT_SCRIPT } from '@/lib/theme';
 import './globals.css';
 
 const geistSans = Geist({
@@ -16,7 +17,7 @@ const geistMono = Geist_Mono({
 
 // 헤더에 걸리는 이름과 같은 문구다 — 탭 제목·공유 카드·검색 결과가 사이트에서
 // 보이는 이름과 어긋나지 않게 한 곳에서 정한다.
-const SITE_TITLE = '아이와 함께 만드는 종이 보드게임';
+const SITE_TITLE = '아빠 뭐해?, 아빠 공방';
 const SITE_DESCRIPTION =
   '추억의 종이 보드게임을 아이와 함께 만든다. 팀 색과 배치를 원하는 대로 바꿔 집 프린터로 정확한 크기에 맞춰 뽑는다.';
 const SITE_AUTHOR = "Daddy's Craft";
@@ -76,9 +77,15 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html
       lang="ko"
+      // 테마 스크립트가 첫 페인트 전에 `class`를 바꾼다 — 서버가 그린 값과
+      // 다른 것이 정상이라 이 노드의 불일치 경고만 끈다.
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        {/* 리액트가 붙기 전에 동기로 돌아야 해서 next/script가 아니라 raw
+            script다. 우리가 만든 고정 문자열이라 외부 입력이 섞이지 않는다. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <SiteHeader />
         <main className="flex flex-1 flex-col">{children}</main>
         <SiteFooter />
