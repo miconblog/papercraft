@@ -3,8 +3,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="280mm" height="190mm" viewBox="0 0 280 190" font-family="Noto Sans KR">
 <title>축구 게임판 · 골대 전개도</title>
 <g id="pc-cut" fill="none" stroke="#000000" stroke-width="0.25" stroke-linecap="butt">
-<path d="M 27 26 H 113 V 58 H 117 V 82 H 137 V 114 H 105 V 134 H 35 V 114 H 3 V 82 H 23 V 58 H 27 Z" />
-<path d="M 167 26 H 253 V 58 H 257 V 82 H 277 V 114 H 245 V 134 H 175 V 114 H 143 V 82 H 163 V 58 H 167 Z" />
+<path d="M 27 26 H 113 V 52 H 105 V 58 H 117 V 76 H 105 V 82 H 137 V 114 H 105 V 134 H 35 V 114 H 3 V 82 H 35 V 76 H 23 V 58 H 35 V 52 H 27 Z" />
+<path d="M 167 26 H 253 V 52 H 245 V 58 H 257 V 76 H 245 V 82 H 277 V 114 H 245 V 134 H 175 V 114 H 143 V 82 H 175 V 76 H 163 V 58 H 175 V 52 H 167 Z" />
 </g>
 <g id="pc-fold-valley" fill="none" stroke="#000000" stroke-width="0.2" stroke-dasharray="3 1.5" stroke-linecap="butt">
 <line x1="35" y1="58" x2="105" y2="58" />
@@ -13,22 +13,22 @@
 <line x1="105" y1="82" x2="105" y2="114" />
 <line x1="11" y1="82" x2="11" y2="114" />
 <line x1="129" y1="82" x2="129" y2="114" />
-<line x1="35" y1="58" x2="35" y2="82" />
-<line x1="105" y1="58" x2="105" y2="82" />
+<line x1="35" y1="58" x2="35" y2="76" />
+<line x1="105" y1="58" x2="105" y2="76" />
 <line x1="175" y1="58" x2="245" y2="58" />
 <line x1="175" y1="82" x2="245" y2="82" />
 <line x1="175" y1="82" x2="175" y2="114" />
 <line x1="245" y1="82" x2="245" y2="114" />
 <line x1="151" y1="82" x2="151" y2="114" />
 <line x1="269" y1="82" x2="269" y2="114" />
-<line x1="175" y1="58" x2="175" y2="82" />
-<line x1="245" y1="58" x2="245" y2="82" />
+<line x1="175" y1="58" x2="175" y2="76" />
+<line x1="245" y1="58" x2="245" y2="76" />
 </g>
 <g id="pc-fold-mountain" fill="none" stroke="#000000" stroke-width="0.2" stroke-dasharray="4 1.2 0.6 1.2" stroke-linecap="butt">
-<line x1="35" y1="26" x2="35" y2="58" />
-<line x1="105" y1="26" x2="105" y2="58" />
-<line x1="175" y1="26" x2="175" y2="58" />
-<line x1="245" y1="26" x2="245" y2="58" />
+<line x1="35" y1="26" x2="35" y2="52" />
+<line x1="105" y1="26" x2="105" y2="52" />
+<line x1="175" y1="26" x2="175" y2="52" />
+<line x1="245" y1="26" x2="245" y2="52" />
 </g>
 <g id="pc-art" fill="#1a1a1a" stroke="none">
 <text x="140" y="12" font-size="5" dominant-baseline="central" text-anchor="middle">골대 전개도 · 2개</text>
@@ -255,16 +255,16 @@
 <text x="7" y="98" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle" transform="rotate(-90 7 98)">겹</text>
 <rect x="131.1" y="96.05" width="3.8" height="3.9" fill="#ffffff" stroke="none" transform="rotate(-90 133 98)" />
 <text x="133" y="98" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle" transform="rotate(-90 133 98)">겹</text>
-<rect x="27.1" y="68.05" width="3.8" height="3.9" fill="#ffffff" stroke="none" />
-<text x="29" y="70" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">탭</text>
-<rect x="109.1" y="68.05" width="3.8" height="3.9" fill="#ffffff" stroke="none" />
-<text x="111" y="70" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">탭</text>
+<rect x="27.1" y="65.05" width="3.8" height="3.9" fill="#ffffff" stroke="none" />
+<text x="29" y="67" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">탭</text>
+<rect x="109.1" y="65.05" width="3.8" height="3.9" fill="#ffffff" stroke="none" />
+<text x="111" y="67" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">탭</text>
 <rect x="53.54" y="40.05" width="32.92" height="3.9" fill="#ffffff" stroke="none" />
 <text x="70" y="42" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">뚜껑 — 덮으면 위가 막힌다</text>
-<rect x="29.1" y="40.05" width="3.8" height="3.9" fill="#ffffff" stroke="none" transform="rotate(-90 31 42)" />
-<text x="31" y="42" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle" transform="rotate(-90 31 42)">귀</text>
-<rect x="107.1" y="40.05" width="3.8" height="3.9" fill="#ffffff" stroke="none" transform="rotate(-90 109 42)" />
-<text x="109" y="42" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle" transform="rotate(-90 109 42)">귀</text>
+<rect x="29.1" y="37.05" width="3.8" height="3.9" fill="#ffffff" stroke="none" transform="rotate(-90 31 39)" />
+<text x="31" y="39" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle" transform="rotate(-90 31 39)">귀</text>
+<rect x="107.1" y="37.05" width="3.8" height="3.9" fill="#ffffff" stroke="none" transform="rotate(-90 109 39)" />
+<text x="109" y="39" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle" transform="rotate(-90 109 39)">귀</text>
 <rect x="63.81" y="96.05" width="12.38" height="3.9" fill="#ffffff" stroke="none" />
 <text x="70" y="98" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">골대 바닥</text>
 <rect x="54.125" y="117.05" width="31.75" height="3.9" fill="#ffffff" stroke="none" />
@@ -281,71 +281,81 @@
 <text x="147" y="98" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle" transform="rotate(-90 147 98)">겹</text>
 <rect x="271.1" y="96.05" width="3.8" height="3.9" fill="#ffffff" stroke="none" transform="rotate(-90 273 98)" />
 <text x="273" y="98" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle" transform="rotate(-90 273 98)">겹</text>
-<rect x="167.1" y="68.05" width="3.8" height="3.9" fill="#ffffff" stroke="none" />
-<text x="169" y="70" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">탭</text>
-<rect x="249.1" y="68.05" width="3.8" height="3.9" fill="#ffffff" stroke="none" />
-<text x="251" y="70" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">탭</text>
+<rect x="167.1" y="65.05" width="3.8" height="3.9" fill="#ffffff" stroke="none" />
+<text x="169" y="67" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">탭</text>
+<rect x="249.1" y="65.05" width="3.8" height="3.9" fill="#ffffff" stroke="none" />
+<text x="251" y="67" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">탭</text>
 <rect x="193.54" y="40.05" width="32.92" height="3.9" fill="#ffffff" stroke="none" />
 <text x="210" y="42" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">뚜껑 — 덮으면 위가 막힌다</text>
-<rect x="169.1" y="40.05" width="3.8" height="3.9" fill="#ffffff" stroke="none" transform="rotate(-90 171 42)" />
-<text x="171" y="42" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle" transform="rotate(-90 171 42)">귀</text>
-<rect x="247.1" y="40.05" width="3.8" height="3.9" fill="#ffffff" stroke="none" transform="rotate(-90 249 42)" />
-<text x="249" y="42" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle" transform="rotate(-90 249 42)">귀</text>
+<rect x="169.1" y="37.05" width="3.8" height="3.9" fill="#ffffff" stroke="none" transform="rotate(-90 171 39)" />
+<text x="171" y="39" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle" transform="rotate(-90 171 39)">귀</text>
+<rect x="247.1" y="37.05" width="3.8" height="3.9" fill="#ffffff" stroke="none" transform="rotate(-90 249 39)" />
+<text x="249" y="39" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle" transform="rotate(-90 249 39)">귀</text>
 <rect x="203.81" y="96.05" width="12.38" height="3.9" fill="#ffffff" stroke="none" />
 <text x="210" y="98" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">골대 바닥</text>
 <rect x="194.125" y="117.05" width="31.75" height="3.9" fill="#ffffff" stroke="none" />
 <text x="210" y="119" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">↑ 이 선을 골라인에 맞춘다</text>
 <rect x="193.54" y="128.05" width="32.92" height="3.9" fill="#ffffff" stroke="none" />
 <text x="210" y="130" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">입술 — 운동장 위에 얹는다</text>
-<path d="M 29 157 V 168 H 59 V 157" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<path d="M 39 148 H 26 V 158 H 39" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<path d="M 39 148 V 158" fill="none" stroke="#6b7280" stroke-width="0.3" stroke-dasharray="2 1 0.5 1" />
+<path d="M 39 162 H 19 V 170" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<path d="M 15 156 L 22 160" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<path d="M 19.4 159.6 L 22.4 160.4 L 21.4 157.6" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<text x="13" y="155" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">홈</text>
+<text x="32.5" y="153.5" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">탭</text>
+<text x="44" y="153" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">뒷벽</text>
+<text x="29" y="168.5" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">옆벽</text>
+<text x="32" y="176" font-size="3" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">① 모서리 홈까지 오린다</text>
+<path d="M 71 157 V 168 H 101 V 157" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
 <g stroke="#6b7280" stroke-width="0.12" fill="none">
-<line x1="29.8" y1="162.043" x2="34.043" y2="157.8" />
-<line x1="29.8" y1="166.285" x2="38.285" y2="157.8" />
-<line x1="33.128" y1="167.2" x2="42.528" y2="157.8" />
-<line x1="37.371" y1="167.2" x2="46.771" y2="157.8" />
-<line x1="41.613" y1="167.2" x2="51.013" y2="157.8" />
-<line x1="45.856" y1="167.2" x2="55.256" y2="157.8" />
-<line x1="50.098" y1="167.2" x2="58.2" y2="159.098" />
-<line x1="54.341" y1="167.2" x2="58.2" y2="163.341" />
-<line x1="29.8" y1="162.957" x2="34.043" y2="167.2" />
-<line x1="29.8" y1="158.715" x2="38.285" y2="167.2" />
-<line x1="33.128" y1="157.8" x2="42.528" y2="167.2" />
-<line x1="37.371" y1="157.8" x2="46.771" y2="167.2" />
-<line x1="41.613" y1="157.8" x2="51.013" y2="167.2" />
-<line x1="45.856" y1="157.8" x2="55.256" y2="167.2" />
-<line x1="50.098" y1="157.8" x2="58.2" y2="165.902" />
-<line x1="54.341" y1="157.8" x2="58.2" y2="161.659" />
+<line x1="71.8" y1="162.043" x2="76.043" y2="157.8" />
+<line x1="71.8" y1="166.285" x2="80.285" y2="157.8" />
+<line x1="75.128" y1="167.2" x2="84.528" y2="157.8" />
+<line x1="79.371" y1="167.2" x2="88.771" y2="157.8" />
+<line x1="83.613" y1="167.2" x2="93.013" y2="157.8" />
+<line x1="87.856" y1="167.2" x2="97.256" y2="157.8" />
+<line x1="92.098" y1="167.2" x2="100.2" y2="159.098" />
+<line x1="96.341" y1="167.2" x2="100.2" y2="163.341" />
+<line x1="71.8" y1="162.957" x2="76.043" y2="167.2" />
+<line x1="71.8" y1="158.715" x2="80.285" y2="167.2" />
+<line x1="75.128" y1="157.8" x2="84.528" y2="167.2" />
+<line x1="79.371" y1="157.8" x2="88.771" y2="167.2" />
+<line x1="83.613" y1="157.8" x2="93.013" y2="167.2" />
+<line x1="87.856" y1="157.8" x2="97.256" y2="167.2" />
+<line x1="92.098" y1="157.8" x2="100.2" y2="165.902" />
+<line x1="96.341" y1="157.8" x2="100.2" y2="161.659" />
 </g>
-<path d="M 29 157 H 59" fill="none" stroke="#6b7280" stroke-width="0.3" stroke-dasharray="1.5 1.5" />
-<text x="44" y="154.6" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">여기를 뚜껑이 덮는다</text>
-<text x="44" y="176" font-size="3" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">① 벽 셋을 세운다</text>
-<rect x="93" y="153" width="30" height="15" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
-<rect x="93" y="153" width="9" height="15" fill="none" stroke="#1a1a1a" stroke-width="0.3" stroke-dasharray="1.4 1.2" />
-<rect x="93" y="153" width="30" height="5" fill="#ffffff" stroke="none" />
-<rect x="93" y="153" width="30" height="5" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
-<path d="M 105 146.5 A 5 5 0 0 1 110 151" fill="none" stroke="#6b7280" stroke-width="0.3" />
-<path d="M 108.2 149.4 L 110.2 151.4 L 112 149.2" fill="none" stroke="#6b7280" stroke-width="0.3" />
-<text x="117" y="156.6" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">겹</text>
-<text x="97.5" y="165" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">탭</text>
-<text x="115" y="165" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">옆벽</text>
-<text x="108" y="176" font-size="3" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">② 겹으로 탭을 문다</text>
-<path d="M 157 157 V 168 H 187 V 157" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
-<path d="M 155 156 H 189" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
-<path d="M 155 156 V 162" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
-<path d="M 189 156 V 162" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
-<path d="M 169 150 A 5 5 0 0 1 174 154.5" fill="none" stroke="#6b7280" stroke-width="0.3" />
-<path d="M 172.2 152.9 L 174.2 154.9 L 176 152.7" fill="none" stroke="#6b7280" stroke-width="0.3" />
-<text x="151.5" y="161" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">귀</text>
-<text x="192.5" y="161" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">귀</text>
-<text x="172" y="176" font-size="3" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">③ 뚜껑을 덮고 귀를 씌운다</text>
-<path d="M 240 149 V 169" fill="none" stroke="#6b7280" stroke-width="0.3" />
-<path d="M 237.5 151 H 241.5" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
-<path d="M 237.5 167 H 241.5" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
-<path d="M 240 159 H 241.5" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
-<rect x="231" y="151" width="9" height="16" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
-<rect x="240" y="151" width="4" height="16" fill="none" stroke="#6b7280" stroke-width="0.3" stroke-dasharray="1 1" />
-<text x="235.5" y="151" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">골대</text>
-<text x="248.5" y="155.5" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">입술</text>
-<text x="236" y="176" font-size="3" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">④ 눈금에 맞춘다</text>
+<path d="M 71 157 H 101" fill="none" stroke="#6b7280" stroke-width="0.3" stroke-dasharray="1.5 1.5" />
+<text x="86" y="154.6" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">여기를 뚜껑이 덮는다</text>
+<text x="86" y="176" font-size="3" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">② 벽 셋을 세운다</text>
+<rect x="125" y="153" width="30" height="15" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<rect x="125" y="153" width="9" height="15" fill="none" stroke="#1a1a1a" stroke-width="0.3" stroke-dasharray="1.4 1.2" />
+<rect x="125" y="153" width="30" height="5" fill="#ffffff" stroke="none" />
+<rect x="125" y="153" width="30" height="5" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<path d="M 137 146.5 A 5 5 0 0 1 142 151" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<path d="M 140.2 149.4 L 142.2 151.4 L 144 149.2" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<text x="149" y="156.6" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">겹</text>
+<text x="129.5" y="165" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">탭</text>
+<text x="147" y="165" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">옆벽</text>
+<text x="140" y="176" font-size="3" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">③ 겹으로 탭을 문다</text>
+<path d="M 179 157 V 168 H 209 V 157" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<path d="M 177 156 H 211" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<path d="M 177 156 V 162" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<path d="M 211 156 V 162" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<path d="M 191 150 A 5 5 0 0 1 196 154.5" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<path d="M 194.2 152.9 L 196.2 154.9 L 198 152.7" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<text x="173.5" y="161" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">귀</text>
+<text x="214.5" y="161" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">귀</text>
+<text x="194" y="176" font-size="3" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">④ 뚜껑을 덮고 귀를 씌운다</text>
+<path d="M 252 149 V 169" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<path d="M 249.5 151 H 253.5" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<path d="M 249.5 167 H 253.5" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<path d="M 252 159 H 253.5" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<rect x="243" y="151" width="9" height="16" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<rect x="252" y="151" width="4" height="16" fill="none" stroke="#6b7280" stroke-width="0.3" stroke-dasharray="1 1" />
+<text x="247.5" y="151" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">골대</text>
+<text x="260.5" y="155.5" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">입술</text>
+<text x="248" y="176" font-size="3" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">⑤ 눈금에 맞춘다</text>
 </g>
 </svg>

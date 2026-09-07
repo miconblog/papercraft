@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
 import { getGame } from '@/lib/games/registry';
 import { MARK_STYLES, findPart, slotMarker } from '@/lib/schema';
 import { ARTWORK } from '../artwork';
-import { GOAL_NET_ORIGINS, goalNetFaces } from '../artwork/goals';
+import { GOAL_NET_ORIGINS, goalNetFaces, type Face } from '../artwork/goals';
 import {
   BALL,
   BOARD,
@@ -141,9 +141,10 @@ describe('골대 전개도', () => {
     expect(lid.widthMm).toBe(floor.widthMm);
     // 뒷벽 위에 붙어 있어야 경첩이 된다 — 사이에 다른 면이 끼면 접는선이 는다.
     expect(lid.yMm + lid.heightMm).toBe(face('wall-back').yMm);
-    // 귀는 뚜껑과 같은 깊이라야 옆벽 전체를 감싼다.
+    // 귀는 뚜껑 깊이에서 모서리 홈만큼만 짧다 — 홈이 없으면 아래 모서리 탭에
+    // 붙어 버려 뚜껑을 덮을 때 탭이 딸려 온다.
     for (const id of ['lid-flap-left', 'lid-flap-right']) {
-      expect(face(id).heightMm).toBe(lid.heightMm);
+      expect(face(id).heightMm).toBe(lid.heightMm - GOAL.cornerNotchMm);
       // 귀가 옆벽보다 깊게 내려오면 바닥에 닿아 뚜껑이 뜬다.
       expect(face(id).widthMm).toBeLessThan(GOAL.wallHeightMm);
     }
@@ -160,8 +161,11 @@ describe('골대 전개도', () => {
   it('풀도 칼도 없이 뒷모서리가 닫힌다 — 겹이 탭을 문다', () => {
     const tab = face('corner-tab-left');
     const hem = face('hem-left');
-    // 탭은 뒷벽과 같은 높이라야 모서리를 위아래로 온전히 막는다.
-    expect(tab.heightMm).toBe(face('wall-back').heightMm);
+    // 탭은 뒷벽 높이에서 모서리 홈만큼만 짧다 — 홈이 없으면 아래 옆벽에 붙어
+    // 버려 뒷벽과 옆벽을 동시에 세울 수 없다.
+    expect(tab.heightMm).toBe(face('wall-back').heightMm - GOAL.cornerNotchMm);
+    // 그래도 겹이 무는 윗머리는 덮어야 한다.
+    expect(tab.heightMm).toBeGreaterThan(hem.widthMm);
     // 겹이 탭보다 짧아도 되지만, 물리려면 겹 너비만큼은 겹쳐야 한다.
     expect(tab.widthMm).toBeGreaterThan(hem.widthMm);
     // 겹은 옆벽 전체 길이를 덮어야 벽 윗머리가 고르게 두 겹이 된다.
@@ -218,6 +222,64 @@ describe('골대 전개도', () => {
     expect(GOAL.mouthWidthMm).toBeGreaterThanOrEqual(BALL.diameterMm * 4);
     // 바닥이 깊어야 들어온 공이 뒷벽에 맞고 도로 튀어 나오지 않는다.
     expect(GOAL.trayDepthMm).toBeGreaterThan(BALL.diameterMm * 2);
+  });
+
+  /**
+   * **이 전개도에서 가장 조용히 틀리기 쉬운 곳이다.**
+   *
+   * 상자 모서리는 종이가 붙어 있는 채로는 접히지 않는다. 뚜껑 귀·모서리 탭·옆벽은
+   * 전개도에서 위아래로 맞닿아 있는데 접히는 방향이 제각각이라, 이어져 있으면
+   * 하나를 접을 때 나머지가 딸려 온다 — 처음 그렸을 때 실제로 그랬고 사용자가
+   * "뒷벽과 옆벽을 동시에 세우려면 어딘가 오려야 하는 것 아니냐"고 짚었다
+   * (2026-09-08).
+   *
+   * 그래서 **맞닿은 변은 접는선이거나 아예 떨어져 있거나 둘 중 하나**여야 한다.
+   * 면을 하나 더할 때 이 규칙을 어기면 도안은 멀쩡해 보이는데 접히지 않는다.
+   */
+  it('맞닿은 변은 모두 접는선이다 — 붙어 있는 모서리가 없다', () => {
+    // 접어야 하는 이음매. 이 밖의 접촉은 전부 잘못이다.
+    const hinges = new Set([
+      'lid|lid-flap-left',
+      'lid|lid-flap-right',
+      'lid|wall-back',
+      'corner-tab-left|wall-back',
+      'corner-tab-right|wall-back',
+      'hem-left|wall-left',
+      'hem-right|wall-right',
+      'floor|wall-left',
+      'floor|wall-right',
+      'floor|wall-back',
+      // 바닥과 입술은 접는선 없이 이어진 한 면이다.
+      'floor|lip',
+    ]);
+    const sharedEdgeMm = (a: Face, b: Face): number => {
+      const [ax1, ay1] = [a.xMm + a.widthMm, a.yMm + a.heightMm];
+      const [bx1, by1] = [b.xMm + b.widthMm, b.yMm + b.heightMm];
+      if (ay1 === b.yMm || by1 === a.yMm) {
+        return Math.min(ax1, bx1) - Math.max(a.xMm, b.xMm);
+      }
+      if (ax1 === b.xMm || bx1 === a.xMm) {
+        return Math.min(ay1, by1) - Math.max(a.yMm, b.yMm);
+      }
+      return 0;
+    };
+    for (let i = 0; i < faces.length; i += 1) {
+      for (let j = i + 1; j < faces.length; j += 1) {
+        const [a, b] = [faces[i], faces[j]];
+        const key = [a.id, b.id].sort().join('|');
+        const shared = sharedEdgeMm(a, b);
+        if (hinges.has(key)) {
+          expect(shared, `${key}는 접는선이라 맞닿아야 한다`).toBeGreaterThan(
+            0,
+          );
+        } else {
+          expect(
+            shared,
+            `${key}가 붙어 있어 접히지 않는다`,
+          ).toBeLessThanOrEqual(0);
+        }
+      }
+    }
   });
 
   it('면끼리 겹치지 않는다', () => {
