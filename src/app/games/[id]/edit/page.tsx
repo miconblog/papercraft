@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { gameIds, getGame } from '@/lib/games';
+import { movableSlots } from '@/lib/schema';
 import { roParticle } from '@/lib/korean';
 import { EditorClient } from '@/components/editor/EditorClient';
 
@@ -42,12 +43,22 @@ export default async function EditGamePage({ params }: Props) {
         ← {game.title}
         {roParticle(game.title)} 돌아가기
       </Link>
-      {/* 설명 문단은 두지 않는다(2026-09-06 사용자 요청 — "최대한 간결하고
-          직관적으로"). 미리보기가 곧 설명이다: 바꾸면 바로 보이고, 마커는 끌면
-          움직인다. */}
-      <h1 className="mt-2 text-2xl font-bold tracking-tight">
-        {game.title} 만들기
-      </h1>
+      {/* 설명 문단은 여전히 두지 않는다(2026-09-06 사용자 요청 — "최대한
+          간결하고 직관적으로"). 다만 끌어서 옮길 수 있다는 것만은 보지 않으면
+          모르므로, 제목 옆에 한 줄로 붙인다(2026-09-08 사용자 요청).
+
+          끌 수 있는 슬롯이 없는 게임에서는 거짓말이 되므로 그때는 감춘다 —
+          이 페이지는 게임을 모르는 채로 서야 한다. */}
+      <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <h1 className="text-2xl font-bold tracking-tight">
+          {game.title} 만들기
+        </h1>
+        {movableSlots(game).length > 0 && (
+          <p className="text-sm text-muted-foreground">
+            선수를 드래그해서 위치를 직접 바꿔보세요.
+          </p>
+        )}
+      </div>
       <EditorClient game={game} />
     </div>
   );
