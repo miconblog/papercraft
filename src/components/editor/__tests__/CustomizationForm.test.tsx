@@ -78,6 +78,25 @@ describe('CustomizationForm (IDE-006 — 스키마를 읽어 폼을 자동 생�
     expect(screen.getByLabelText(/대형$/)).toHaveTextContent('직접 배치');
   });
 
+  /**
+   * `partId`를 주면 그 파트에 쓰이는 옵션만 남는다(2026-09-08). 픽스처의 제목
+   * 슬롯과 대형은 `board`에만 있고, 팀 색은 배치가 없어도 마커를 칠하므로 남는다.
+   */
+  it('partId를 주면 그 파트에 쓰이는 옵션만 남는다', () => {
+    renderForm({ partId: 'board' });
+    expect(screen.getByLabelText('제목')).toBeInTheDocument();
+    expect(screen.getByLabelText('팀 색')).toBeInTheDocument();
+  });
+
+  it('마커도 배치도 없는 파트에서는 아무 옵션도 그리지 않는다', () => {
+    const { container } = renderForm({ partId: '없는-파트' });
+    expect(screen.queryByLabelText('제목')).toBeNull();
+    expect(screen.queryByLabelText('팀 이름')).toBeNull();
+    expect(screen.queryByLabelText('팀 색')).toBeNull();
+    // 제목만 남은 빈 그룹 상자도 그리지 않는다.
+    expect(container.querySelectorAll('section')).toHaveLength(0);
+  });
+
   it('대형을 고르면 그룹 id와 프리셋 id로 onApplyPreset을 부른다', async () => {
     const user = userEvent.setup();
     const onApplyPreset = vi.fn();

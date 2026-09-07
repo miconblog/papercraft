@@ -457,6 +457,42 @@ export const findSlot = (
 export const slotsOfPart = (game: GameDefinition, partId: string): Slot[] =>
   game.slots.filter((s) => s.placements.some((p) => p.partId === partId));
 
+/**
+ * 파트 하나의 **인쇄물을 실제로 바꾸는** 슬롯들.
+ *
+ * `slotsOfPart`는 배치(placement)만 본다. 그런데 **그룹의 색 슬롯은 배치가 없는
+ * 파트에도 영향을 준다** — 그 그룹의 마커가 그 색으로 칠해지기 때문이다
+ * (`lib/customization/render.ts`의 `groupColorOf`). 축구 게임판의 팀 색은 배치로는
+ * 점수 기록칸(색 막대)에만 있지만, 운동장 선수 마커의 색도 같은 값이 정한다.
+ * 배치만 보고 걸렀다가는 운동장을 편집하는 동안 팀 색이 사라진다.
+ *
+ * 에디터가 "지금 보는 파트에 쓰이는 옵션만" 보여줄 때 쓴다(2026-09-08 사용자
+ * 요청 — 점수 기록칸이나 골대를 고르면 운동장 옵션은 숨긴다).
+ */
+export const slotsAffectingPart = (
+  game: GameDefinition,
+  partId: string,
+): Slot[] => {
+  const groupsWithMarkersHere = new Set(
+    game.slots
+      .filter(
+        (s) =>
+          s.groupId !== undefined &&
+          s.placements.some((p) => p.mode === 'marker' && p.partId === partId),
+      )
+      .map((s) => s.groupId as string),
+  );
+  const tintSlotIds = new Set(
+    game.groups
+      .filter((g) => g.colorSlotId && groupsWithMarkersHere.has(g.id))
+      .map((g) => g.colorSlotId as string),
+  );
+  return game.slots.filter(
+    (s) =>
+      s.placements.some((p) => p.partId === partId) || tintSlotIds.has(s.id),
+  );
+};
+
 /** 같은 대형의 팀별 프리셋을 묶는다. UI는 이 단위로 대형을 보여준다. */
 export function presetsByFormation(
   game: GameDefinition,
