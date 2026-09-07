@@ -8,7 +8,17 @@ const textSlot: Slot = {
   id: 'team-name',
   label: '팀 이름',
   tags: [],
-  placements: [{ partId: 'board', mode: 'text', xMm: 0, yMm: 0, align: 'center', fontSizeMm: 5, rotationDeg: 0 }],
+  placements: [
+    {
+      partId: 'board',
+      mode: 'text',
+      xMm: 0,
+      yMm: 0,
+      align: 'center',
+      fontSizeMm: 5,
+      rotationDeg: 0,
+    },
+  ],
   kind: 'text',
   maxLength: 10,
   default: '파랑 팀',
@@ -39,7 +49,9 @@ const colorSlot: Slot = {
   id: 'team-color',
   label: '팀 색',
   tags: [],
-  placements: [{ partId: 'board', mode: 'paint', layerId: 'pc-team', property: 'fill' }],
+  placements: [
+    { partId: 'board', mode: 'paint', layerId: 'pc-team', property: 'fill' },
+  ],
   kind: 'color',
   default: '#1d4ed8',
 };
@@ -61,7 +73,12 @@ describe('SlotField (IDE-006 — 슬롯 kind별 입력 컴포넌트)', () => {
   it('text 슬롯은 텍스트 입력이고 변경을 알린다', () => {
     const onChange = vi.fn();
     render(
-      <SlotField slot={textSlot} value="파랑 팀" error={null} onChange={onChange} />,
+      <SlotField
+        slot={textSlot}
+        value="파랑 팀"
+        error={null}
+        onChange={onChange}
+      />,
     );
     const input = screen.getByLabelText('팀 이름');
     fireEvent.change(input, { target: { value: '새 이름' } });
@@ -71,7 +88,12 @@ describe('SlotField (IDE-006 — 슬롯 kind별 입력 컴포넌트)', () => {
   it('number 슬롯은 숫자 입력이고 정수로 바꿔 알린다', () => {
     const onChange = vi.fn();
     render(
-      <SlotField slot={numberSlot} value={1} error={null} onChange={onChange} />,
+      <SlotField
+        slot={numberSlot}
+        value={1}
+        error={null}
+        onChange={onChange}
+      />,
     );
     const input = screen.getByLabelText('1번');
     expect(input).toHaveAttribute('type', 'number');
@@ -81,7 +103,12 @@ describe('SlotField (IDE-006 — 슬롯 kind별 입력 컴포넌트)', () => {
 
   it('color 슬롯은 색상 입력과 팔레트 없이도 동작한다', () => {
     render(
-      <SlotField slot={colorSlot} value="#1d4ed8" error={null} onChange={vi.fn()} />,
+      <SlotField
+        slot={colorSlot}
+        value="#1d4ed8"
+        error={null}
+        onChange={vi.fn()}
+      />,
     );
     expect(screen.getByLabelText('팀 색')).toBeInTheDocument();
   });
@@ -89,21 +116,35 @@ describe('SlotField (IDE-006 — 슬롯 kind별 입력 컴포넌트)', () => {
   it('choice 슬롯은 고른 값을 보여주고, 열면 선택지를 모두 보여준다', async () => {
     const user = userEvent.setup();
     render(
-      <SlotField slot={choiceSlot} value="circle" error={null} onChange={vi.fn()} />,
+      <SlotField
+        slot={choiceSlot}
+        value="circle"
+        error={null}
+        onChange={vi.fn()}
+      />,
     );
     const trigger = screen.getByLabelText('마커 모양');
     expect(trigger).toHaveTextContent('원');
 
     await user.click(trigger);
-    expect(await screen.findByRole('option', { name: '원' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: '일러스트' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('option', { name: '원' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('option', { name: '일러스트' }),
+    ).toBeInTheDocument();
   });
 
   it('choice 슬롯에서 다른 선택지를 고르면 그 값으로 onChange를 부른다', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(
-      <SlotField slot={choiceSlot} value="circle" error={null} onChange={onChange} />,
+      <SlotField
+        slot={choiceSlot}
+        value="circle"
+        error={null}
+        onChange={onChange}
+      />,
     );
     await user.click(screen.getByLabelText('마커 모양'));
     // 팝업이 열리는 애니메이션 상태(`data-closed`)가 걷힐 때까지 기다린다 —
@@ -123,6 +164,9 @@ describe('SlotField (IDE-006 — 슬롯 kind별 입력 컴포넌트)', () => {
       />,
     );
     expect(screen.getByRole('alert')).toHaveTextContent('10자 이내로 입력한다');
-    expect(screen.getByLabelText('팀 이름')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByLabelText('팀 이름')).toHaveAttribute(
+      'aria-invalid',
+      'true',
+    );
   });
 });

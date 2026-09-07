@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
+import { PageViews } from '@/components/analytics/PageViews';
 import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
 import { THEME_INIT_SCRIPT } from '@/lib/theme';
@@ -86,6 +87,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         {/* 리액트가 붙기 전에 동기로 돌아야 해서 next/script가 아니라 raw
             script다. 우리가 만든 고정 문자열이라 외부 입력이 섞이지 않는다. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <PageViews />
         <SiteHeader />
         <main className="flex flex-1 flex-col">{children}</main>
         <SiteFooter />
