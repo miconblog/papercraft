@@ -2,7 +2,7 @@
 
 > 규칙은 [README.md](README.md) · 이슈 1건 = 파일 1개
 
-**프로젝트** — 아이와 함께 만드는 종이 보드게임 · 추억의 종이 보드게임을 만들고 원하는 크기로 인쇄하는 사이트
+**프로젝트** — 아빠 뭐해?, 아빠 공방 · 추억의 종이 보드게임을 만들고 원하는 크기로 인쇄하는 사이트
 
 > 기준 크기는 원본 그대로 — 배율 100%에서 운동장이 A4(210×297mm)다. 사용자가 확대·축소해
 > A4 여러 장에 나눠 뽑을 수 있고, 핵심 게임판과 오림용 부속은 따로 뽑는다.
@@ -14,17 +14,20 @@
 | `todo`    | 1    |
 | `doing`   | 0    |
 | `blocked` | 3    |
-| `review`  | 2    |
-| `done`    | 6    |
+| `review`  | 1    |
+| `done`    | 8    |
 
-**지금 할 것** — [IDE-007](IDE-007-print-and-pdf-export.md)(인쇄·PDF 내보내기)이
-`review`다. 구현은 끝났고 **사람이 종이에 뽑아 자로 재는 일**만 남았다. 디지털
-실측은 `npm run print:verify`로 세 배율 모두 통과했다(배율 오차 ≤0.083mm · 타일 이음
-0.000mm). 종이 절차는 [spikes/print-pipeline/README.md](../spikes/print-pipeline/README.md)의
-체크리스트이고, 같은 일을 [IDE-002](IDE-002-print-pipeline-spike.md)와
-[IDE-004](IDE-004-soccer-board-vector-artwork.md)도 기다린다 — **셋을 한 번에 뽑아
-재면 된다.** `IDE-004`는 사용자 답변도 하나 기다린다(아웃·핸들링·파울 처리와 옛
-인쇄본의 출처).
+**지금 할 것** — [IDE-007](IDE-007-print-and-pdf-export.md)(인쇄·PDF 내보내기)은
+2026-09-07 사용자가 종이 실측·Safari·Firefox 확인을 마쳐 `done`이 됐다. 남은 것은
+같은 종이 실측을 기다리는 [IDE-002](IDE-002-print-pipeline-spike.md)와
+[IDE-004](IDE-004-soccer-board-vector-artwork.md)다. `IDE-004`는 사용자 답변도
+하나 기다린다(아웃·핸들링·파울 처리와 옛 인쇄본의 출처).
+
+[IDE-013](IDE-013-self-hosted-web-analytics.md)(자체 웹 분석)은 2026-09-07 `done`이다.
+이제 **어떤 게임이 얼마나 읽히고 뽑히는지 숫자로 보인다** — 그동안 보드의 후보
+목록(URL 공유·보관함·인쇄소 주문)이 전부 "요구가 확인되지 않았다"로 미뤄져 있었고,
+[IDE-011](IDE-011-two-more-games-and-authoring-guide.md)의 "다음 게임"도 감으로
+골라야 했다. `/admin/analytics` 를 얼마간 보고 나서 정하면 된다.
 
 [IDE-009](IDE-009-accessibility-responsive-print-quality.md)(접근성·반응형·출력
 품질)도 `review`다. 포커스 표시·팀 색 흑백 구분 경고·마커 아트워크 캐싱은
@@ -64,7 +67,7 @@
 | ------------------------------------------------------------ | ------------------------------------- | -------- | ---- | ---- | --------- |
 | [IDE-004](IDE-004-soccer-board-vector-artwork.md)            | 축구 게임판 도안 벡터화               | content  | P0   | 5d   | `blocked` |
 | [IDE-006](IDE-006-customization-editor.md)                   | 커스터마이즈 에디터                   | frontend | P0   | 5d   | `done`    |
-| [IDE-007](IDE-007-print-and-pdf-export.md)                   | 인쇄·PDF 내보내기                     | frontend | P0   | 6d   | `review`  |
+| [IDE-007](IDE-007-print-and-pdf-export.md)                   | 인쇄·PDF 내보내기                     | frontend | P0   | 6d   | `done`    |
 | [IDE-005](IDE-005-game-catalog-pages.md)                     | 게임 카탈로그 — 목록·상세 페이지      | frontend | P1   | 2d   | `done`    |
 | [IDE-008](IDE-008-ci-deploy-and-test-foundation.md)          | CI·배포 파이프라인과 테스트 기반      | infra    | P1   | 3d   | `blocked` |
 | [IDE-009](IDE-009-accessibility-responsive-print-quality.md) | 접근성·반응형·출력 품질 마감          | frontend | P1   | 3d   | `review`  |
@@ -76,6 +79,7 @@
 | ID                                                       | 제목                             | 영역    | 우선 | 추정 | 상태   |
 | -------------------------------------------------------- | -------------------------------- | ------- | ---- | ---- | ------ |
 | [IDE-011](IDE-011-two-more-games-and-authoring-guide.md) | 게임 2종 추가와 도안 제작 가이드 | content | P2   | 5d   | `todo` |
+| [IDE-013](IDE-013-self-hosted-web-analytics.md)          | 자체 웹 분석 (Supabase)          | backend | P1   | 3d   | `done` |
 
 ---
 

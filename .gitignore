@@ -44,3 +44,4 @@ next-env.d.ts
 /spikes/print-pipeline/out/
 /spikes/print-pipeline/assets/*.otf
 /spikes/print-pipeline/assets/*.ttf
+!.env.example

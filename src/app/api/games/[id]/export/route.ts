@@ -8,6 +8,8 @@
 import { readFileSync } from 'node:fs';
 import { join, normalize } from 'node:path';
 import { z } from 'zod';
+import { afterResponse } from '@/lib/analytics/after';
+import { recordEvent } from '@/lib/analytics/record';
 import { getGame } from '@/lib/games';
 import { validateCustomization } from '@/lib/schema';
 import { composeExport, outOfRegionSlots } from '@/lib/print/compose';
@@ -92,6 +94,21 @@ export async function POST(
     gameId: game.id,
     selections: options.parts,
     groupLabel: groupLabelFor(game, options.parts),
+  });
+
+  // 다운로드는 **서버가 직접** 센다 (IDE-013). 브라우저 이벤트에 맡기면
+  // 차단기에 막히거나 저장 직후 탭을 닫는 사람만큼이 통째로 빠진다.
+  //
+  // 응답 바이트가 다 나간 뒤에 돈다 — 집계가 느리든 죽어 있든 사용자가 PDF 를
+  // 받는 시간에는 영향이 없다.
+  afterResponse(async () => {
+    await recordEvent({
+      type: 'download',
+      url: `/games/${game.id}/print`,
+      referrer: request.headers.get('referer'),
+      headers: request.headers,
+      gameId: game.id,
+    });
   });
 
   return new Response(pdf as BodyInit, {

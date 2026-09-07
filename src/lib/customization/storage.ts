@@ -56,7 +56,11 @@ export function readStoredCustomizationSnapshot(
 ): GameCustomization | null {
   if (typeof window === 'undefined') return null;
   const raw = window.localStorage.getItem(storageKey(game.id));
-  if (snapshotCache && snapshotCache.raw === raw && snapshotCache.gameId === game.id) {
+  if (
+    snapshotCache &&
+    snapshotCache.raw === raw &&
+    snapshotCache.gameId === game.id
+  ) {
     return snapshotCache.value;
   }
   const value = parseStored(raw, game);

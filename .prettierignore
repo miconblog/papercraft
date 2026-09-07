@@ -3,3 +3,9 @@ node_modules
 public
 spikes/print-pipeline/out
 spikes/print-pipeline/assets
+
+# shadcn 이 생성·재생성하는 파일 (components.json 의 ui · utils 별칭).
+# 우리 스타일로 고쳐 놔도 `shadcn add` 를 다시 돌리면 원래대로 돌아온다 —
+# 그때마다 `npm run format` 이 무관한 diff 를 만든다. 저쪽 스타일 그대로 둔다.
+src/components/ui
+src/lib/utils.ts
