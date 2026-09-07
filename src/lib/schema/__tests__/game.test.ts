@@ -61,7 +61,36 @@ describe('슬롯', () => {
     const game = makeGame();
     expect(
       issuesOf(makeGame({ slots: [{ ...game.slots[0], placements: [] }] })),
-    ).toMatch(/at least 1|Too small/i);
+    ).toMatch(/배치가 없다/);
+  });
+
+  /**
+   * 그룹의 색 슬롯만은 배치 없이 살 수 있다(2026-09-08). 그 값은 배치가 아니라
+   * 그룹을 통해 마커를 칠하기 때문이다 — 축구 게임판의 팀 색이 점수 기록칸의
+   * 색 막대를 잃고 그렇게 됐다.
+   */
+  it('그룹의 색 슬롯은 배치가 없어도 된다 — 그룹을 통해 마커를 칠한다', () => {
+    const base = makeGame();
+    const color = {
+      id: 'team-color',
+      kind: 'color' as const,
+      label: '팀 색',
+      groupId: 'team',
+      default: '#1d4ed8',
+      placements: [],
+    };
+    const withGroup = {
+      slots: [...base.slots, color],
+      groups: [{ id: 'team', label: '팀', colorSlotId: color.id }],
+    };
+    expect(() => parseGame(makeGame(withGroup))).not.toThrow();
+
+    // 그룹이 가리키지 않으면 여전히 걸린다 — 값이 갈 곳이 없다.
+    expect(
+      issuesOf(
+        makeGame({ ...withGroup, groups: [{ id: 'team', label: '팀' }] }),
+      ),
+    ).toMatch(/배치가 없다/);
   });
 
   it('없는 파트를 가리키는 배치는 걸러진다', () => {

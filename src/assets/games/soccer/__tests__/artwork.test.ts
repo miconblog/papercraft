@@ -11,11 +11,7 @@ import { describe, expect, it } from 'vitest';
 import { getGame } from '@/lib/games/registry';
 import { MARK_STYLES, findPart, slotMarker } from '@/lib/schema';
 import { ARTWORK } from '../artwork';
-import {
-  GOAL_NET_ORIGINS,
-  goalNetFaces,
-  goalRoofWindowRect,
-} from '../artwork/goals';
+import { GOAL_NET_ORIGINS, goalNetFaces, type Face } from '../artwork/goals';
 import {
   BALL,
   BOARD,
@@ -27,10 +23,9 @@ import {
   GOAL,
   GOAL_GUIDE,
   GOAL_NET_SIZE,
-  GOAL_ROOF_WINDOW,
   SHEETS,
 } from '../dimensions';
-import { PAPER_NOTE, RULES } from '../rules';
+import { GOAL_ASSEMBLY_STEPS, PAPER_NOTE, RULES } from '../rules';
 
 const game = getGame('soccer')!;
 const partOf = (id: string) => findPart(game, id)!;
@@ -118,83 +113,195 @@ describe('도안 구조', () => {
 describe('골대 전개도', () => {
   const faces = goalNetFaces(0, 0);
   const face = (id: string) => faces.find((f) => f.id === id)!;
-  const window = goalRoofWindowRect(0, 0);
 
-  it('접으면 실제로 세워진다 — 지붕이 옆벽 위에 얹히고 발이 바닥에 닿는다', () => {
-    // 지붕의 깊이가 옆벽 깊이와 같아야 앞뒤로 어긋나지 않고 얹힌다.
-    expect(face('roof').heightMm).toBe(face('wall-left').widthMm);
-    expect(face('roof').heightMm).toBe(face('wall-right').widthMm);
-    // 지붕 폭 = 뒷벽 폭 = 두 옆벽 사이 거리.
-    expect(face('roof').widthMm).toBe(face('wall-back').widthMm);
-    // 세 벽의 높이가 같아야 지붕이 기울지 않는다.
-    const heights = new Set(
-      ['wall-left', 'wall-back', 'wall-right'].map((id) => face(id).heightMm),
+  it('접으면 쟁반이 된다 — 벽 셋의 높이가 같고 바닥을 둘러싼다', () => {
+    // 벽 셋의 높이가 같아야 쟁반 테두리가 기울지 않는다. 전개도에서 뒷벽은
+    // 세로가, 옆벽은 가로가 벽 높이다.
+    expect(face('wall-left').widthMm).toBe(face('wall-back').heightMm);
+    expect(face('wall-right').widthMm).toBe(face('wall-back').heightMm);
+    // 뒷벽 폭 = 바닥 폭 = 두 옆벽 사이 거리 = 골문 폭.
+    expect(face('wall-back').widthMm).toBe(face('floor').widthMm);
+    expect(face('floor').widthMm).toBe(GOAL.mouthWidthMm);
+    // 옆벽 길이 = 바닥 깊이라야 앞뒤로 어긋나지 않는다.
+    expect(face('wall-left').heightMm).toBe(face('floor').heightMm);
+    expect(face('wall-right').heightMm).toBe(face('floor').heightMm);
+  });
+
+  /**
+   * 뚜껑은 2026-09-08에 돌아왔다. 위가 뚫려 있으면 골포스트를 맞고 튄 공이 그대로
+   * 밖으로 나간다는 사용자 지적이었다. 3번 구조의 지붕과 달리 뒷벽 위에 경첩처럼
+   * 달려 앞으로 덮이고, 양옆 귀를 옆벽 바깥에 씌워 닫으므로 붙일 것이 없다.
+   */
+  it('뚜껑이 쟁반 위를 빈틈없이 덮는다', () => {
+    const lid = face('lid');
+    const floor = face('floor');
+    // 뚜껑 깊이 = 바닥 깊이. 짧으면 앞이 열려 공이 나가고, 길면 골문 밖으로
+    // 처마처럼 튀어나와 공이 들어오는 길을 막는다.
+    expect(lid.heightMm).toBe(floor.heightMm);
+    expect(lid.widthMm).toBe(floor.widthMm);
+    // 뒷벽 위에 붙어 있어야 경첩이 된다 — 사이에 다른 면이 끼면 접는선이 는다.
+    expect(lid.yMm + lid.heightMm).toBe(face('wall-back').yMm);
+    // 귀는 뚜껑 깊이에서 모서리 홈만큼만 짧다 — 홈이 없으면 아래 모서리 탭에
+    // 붙어 버려 뚜껑을 덮을 때 탭이 딸려 온다.
+    for (const id of ['lid-flap-left', 'lid-flap-right']) {
+      expect(face(id).heightMm).toBe(lid.heightMm - GOAL.cornerNotchMm);
+      // 귀가 옆벽보다 깊게 내려오면 바닥에 닿아 뚜껑이 뜬다.
+      expect(face(id).widthMm).toBeLessThan(GOAL.wallHeightMm);
+    }
+    // 귀가 모서리 탭보다 좁아야 전개도가 옆으로 넓어지지 않는다.
+    expect(GOAL.lidFlapMm).toBeLessThan(GOAL.cornerTabMm);
+  });
+
+  /**
+   * 이 골대에서 유일하게 "조립"이라 부를 만한 대목이다. 앞선 도안은 지붕을
+   * 붙이려고 풀칠탭을 썼고(2026-09-05), 그 풀칠을 없애려다 옆벽에 칼집을 냈다가
+   * 사용자가 물렀다(2026-09-06) — 칼집은 가위로 낼 수 없고 그럴 바에는 풀이
+   * 낫다는 것이었다. 지금은 **겹이 탭을 무는 것**이 전부다.
+   */
+  it('풀도 칼도 없이 뒷모서리가 닫힌다 — 겹이 탭을 문다', () => {
+    const tab = face('corner-tab-left');
+    const hem = face('hem-left');
+    // 탭은 뒷벽 높이에서 모서리 홈만큼만 짧다 — 홈이 없으면 아래 옆벽에 붙어
+    // 버려 뒷벽과 옆벽을 동시에 세울 수 없다.
+    expect(tab.heightMm).toBe(face('wall-back').heightMm - GOAL.cornerNotchMm);
+    // 그래도 겹이 무는 윗머리는 덮어야 한다.
+    expect(tab.heightMm).toBeGreaterThan(hem.widthMm);
+    // 겹이 탭보다 짧아도 되지만, 물리려면 겹 너비만큼은 겹쳐야 한다.
+    expect(tab.widthMm).toBeGreaterThan(hem.widthMm);
+    // 겹은 옆벽 전체 길이를 덮어야 벽 윗머리가 고르게 두 겹이 된다.
+    expect(hem.heightMm).toBe(face('wall-left').heightMm);
+    // 겹이 벽보다 넓으면 접어 내렸을 때 바닥에 닿아 쟁반 안이 좁아진다.
+    expect(hem.widthMm).toBeLessThan(face('wall-left').widthMm);
+  });
+
+  it('풀칠면도 칼집도 그리지 않는다', () => {
+    // 도안 정의의 `marks`와 실제로 그리는 표시가 어긋나면 조립 안내에 있지도
+    // 않은 설명이 따라 나온다.
+    const doc = svgOf('goals');
+    expect(doc.getElementById(MARK_STYLES.glue.layerId)).toBeNull();
+    // 오림선은 전개도 2벌의 바깥 윤곽뿐이다 — 뚫을 곳이 하나도 없다.
+    expect(doc.getElementById(MARK_STYLES.cut.layerId)!.children.length).toBe(
+      2,
     );
-    expect(heights.size).toBe(1);
-    // 발은 옆벽과 같은 깊이라야 바깥으로 접었을 때 벽 전체를 받친다.
-    expect(face('foot-left').widthMm).toBe(face('wall-left').widthMm);
-    expect(face('foot-right').widthMm).toBe(face('wall-right').widthMm);
-    // 풀칠탭은 옆벽 안쪽에 붙으므로 벽 높이를 넘으면 안 된다.
-    for (const id of ['glue-tab-left', 'glue-tab-right']) {
-      expect(face(id).widthMm).toBeLessThanOrEqual(face('wall-left').heightMm);
+  });
+
+  /**
+   * 입술이 이 구조의 핵심이다. 예전 상자에는 바닥이 없었는데, 바닥을 깔면 종이
+   * 두께만큼 턱이 생겨 미끄러져 오는 공이 골문에서 걸린다는 이유였다. 바닥이
+   * 그대로 앞으로 뻗어 나오면 그 턱이 아예 생기지 않는다.
+   */
+  it('입술이 바닥과 한 장으로 이어져 공이 넘을 턱이 없다', () => {
+    const floor = face('floor');
+    const lip = face('lip');
+    // 좌우가 같은 자리에서 같은 폭으로 이어져야 접는선 없는 한 면이 된다.
+    expect(lip.xMm).toBe(floor.xMm);
+    expect(lip.widthMm).toBe(floor.widthMm);
+    // 바닥 앞 끝에서 곧장 시작한다 — 사이에 다른 면이 끼면 접는선이 생긴다.
+    expect(lip.yMm).toBe(floor.yMm + floor.heightMm);
+    // 운동장 위에 얹혀 눈금까지 닿을 만큼은 길어야 한다.
+    expect(lip.heightMm).toBeGreaterThan(BALL.diameterMm);
+  });
+
+  /**
+   * 크기의 근거는 축척이 아니라 **사진 실측**이다(2026-09-06 사용자 요청).
+   * 아이와 하는 종이 게임이라 실제 골대보다 커야 재미있다는 것이 요청의 요지였다.
+   */
+  it('실제 축척보다 뚜렷이 크다 — 종이 게임용으로 과장한 값이다', () => {
+    // 실제 골문 7.32m를 이 판의 축척(2.85mm/m)으로 줄이면 20.9mm다.
+    const trueScaleWidthMm = (7.32 * FIELD.widthMm) / 100;
+    expect(GOAL.mouthWidthMm).toBeGreaterThan(trueScaleWidthMm * 3);
+    // 그러면서도 골라인(필드 짧은 변)의 절반은 넘지 않아야 골대가 판을 먹지 않는다.
+    expect(GOAL.mouthWidthMm).toBeLessThan(FIELD.heightMm / 2);
+  });
+
+  it('골문이 공 지름을 기준으로 넉넉하다', () => {
+    // 앞이 통째로 열려 있고 그 위를 뚜껑 앞 모서리가 덮으므로, 벽 높이가 곧
+    // 골문 높이이고 그 모서리가 크로스바다.
+    expect(GOAL.wallHeightMm).toBeGreaterThanOrEqual(BALL.diameterMm * 2);
+    // 폭은 공 넷이 나란히 설 만큼. 겨냥이 조금 빗나가도 들어간다.
+    expect(GOAL.mouthWidthMm).toBeGreaterThanOrEqual(BALL.diameterMm * 4);
+    // 바닥이 깊어야 들어온 공이 뒷벽에 맞고 도로 튀어 나오지 않는다.
+    expect(GOAL.trayDepthMm).toBeGreaterThan(BALL.diameterMm * 2);
+  });
+
+  /**
+   * **이 전개도에서 가장 조용히 틀리기 쉬운 곳이다.**
+   *
+   * 상자 모서리는 종이가 붙어 있는 채로는 접히지 않는다. 뚜껑 귀·모서리 탭·옆벽은
+   * 전개도에서 위아래로 맞닿아 있는데 접히는 방향이 제각각이라, 이어져 있으면
+   * 하나를 접을 때 나머지가 딸려 온다 — 처음 그렸을 때 실제로 그랬고 사용자가
+   * "뒷벽과 옆벽을 동시에 세우려면 어딘가 오려야 하는 것 아니냐"고 짚었다
+   * (2026-09-08).
+   *
+   * 그래서 **맞닿은 변은 접는선이거나 아예 떨어져 있거나 둘 중 하나**여야 한다.
+   * 면을 하나 더할 때 이 규칙을 어기면 도안은 멀쩡해 보이는데 접히지 않는다.
+   */
+  it('맞닿은 변은 모두 접는선이다 — 붙어 있는 모서리가 없다', () => {
+    // 접어야 하는 이음매. 이 밖의 접촉은 전부 잘못이다.
+    const hinges = new Set([
+      'lid|lid-flap-left',
+      'lid|lid-flap-right',
+      'lid|wall-back',
+      'corner-tab-left|wall-back',
+      'corner-tab-right|wall-back',
+      'hem-left|wall-left',
+      'hem-right|wall-right',
+      'floor|wall-left',
+      'floor|wall-right',
+      'floor|wall-back',
+      // 바닥과 입술은 접는선 없이 이어진 한 면이다.
+      'floor|lip',
+    ]);
+    const sharedEdgeMm = (a: Face, b: Face): number => {
+      const [ax1, ay1] = [a.xMm + a.widthMm, a.yMm + a.heightMm];
+      const [bx1, by1] = [b.xMm + b.widthMm, b.yMm + b.heightMm];
+      if (ay1 === b.yMm || by1 === a.yMm) {
+        return Math.min(ax1, bx1) - Math.max(a.xMm, b.xMm);
+      }
+      if (ax1 === b.xMm || bx1 === a.xMm) {
+        return Math.min(ay1, by1) - Math.max(a.yMm, b.yMm);
+      }
+      return 0;
+    };
+    for (let i = 0; i < faces.length; i += 1) {
+      for (let j = i + 1; j < faces.length; j += 1) {
+        const [a, b] = [faces[i], faces[j]];
+        const key = [a.id, b.id].sort().join('|');
+        const shared = sharedEdgeMm(a, b);
+        if (hinges.has(key)) {
+          expect(shared, `${key}는 접는선이라 맞닿아야 한다`).toBeGreaterThan(
+            0,
+          );
+        } else {
+          expect(
+            shared,
+            `${key}가 붙어 있어 접히지 않는다`,
+          ).toBeLessThanOrEqual(0);
+        }
+      }
     }
   });
 
-  /**
-   * 예전에는 여기서 실제 골대의 3:1(7.32×2.44m)을 지켰다. 그 비율로 잡은
-   * 39×13mm를 아이와 종이로 뽑아 만들어 보니 크로스바가 지름 12mm 공 바로 1mm
-   * 위에 걸려 골이 안 들어갔다(2026-09-06 사용자 지적). 이 공은 축척보다 19배
-   * 크므로 실제 비율은 뜻이 없다 — 기준을 **공 지름**으로 바꿨다.
-   */
-  it('골문이 공 지름을 기준으로 넉넉하다', () => {
-    // 크로스바 아래로 공 하나가 더 지나갈 여유. 골이 안 들어가던 원인이 여기였다.
-    expect(GOAL.mouthHeightMm).toBeGreaterThanOrEqual(BALL.diameterMm * 2);
-    // 폭은 공 넷이 나란히 설 만큼. 겨냥이 조금 빗나가도 들어간다.
-    expect(GOAL.mouthWidthMm).toBeGreaterThanOrEqual(BALL.diameterMm * 4);
-    // 그래도 정면에서 골대로 읽혀야 한다 — 세로로 선 상자면 골대가 아니다.
-    expect(GOAL.mouthWidthMm / GOAL.mouthHeightMm).toBeGreaterThanOrEqual(1.5);
-  });
-
-  /**
-   * 지붕 창이 이 골대의 존재 이유다 — 평면 프레임은 공이 순식간에 지나가 버려
-   * 골인지 아닌지 보이지 않았다. 상자가 공을 세워 주고, 창이 그 공을 보여 준다.
-   */
-  it('지붕 창이 지붕 안에 있고 공이 보일 만큼 크다', () => {
-    const roof = face('roof');
-    expect(window.xMm).toBeGreaterThan(roof.xMm);
-    expect(window.yMm).toBeGreaterThan(roof.yMm);
-    expect(window.xMm + window.widthMm).toBeLessThan(roof.xMm + roof.widthMm);
-    expect(window.yMm + window.heightMm).toBeLessThan(roof.yMm + roof.heightMm);
-    // 창 짧은 변이 공 반지름보다 커야 위에서 공이 눈에 들어온다.
-    expect(Math.min(window.widthMm, window.heightMm)).toBeGreaterThan(
-      BALL.diameterMm / 2,
-    );
-    // 앞 테두리가 크로스바다 — 다른 변보다 굵어야 골대로 읽힌다.
-    expect(GOAL_ROOF_WINDOW.frontBarMm).toBeGreaterThan(
-      GOAL_ROOF_WINDOW.backBarMm,
-    );
-  });
-
   it('면끼리 겹치지 않는다', () => {
-    const all = [...faces, window];
-    for (let a = 0; a < all.length; a += 1) {
-      for (let b = a + 1; b < all.length; b += 1) {
-        const [p, q] = [all[a], all[b]];
+    for (let a = 0; a < faces.length; a += 1) {
+      for (let b = a + 1; b < faces.length; b += 1) {
+        const [p, q] = [faces[a], faces[b]];
         const overlaps =
           p.xMm < q.xMm + q.widthMm &&
           q.xMm < p.xMm + p.widthMm &&
           p.yMm < q.yMm + q.heightMm &&
           q.yMm < p.yMm + p.heightMm;
-        // 창은 지붕 안에 뚫는 구멍이라 겹치는 게 정상이다.
-        if (p.id === 'roof' || q.id === 'roof') {
-          if (p.id === 'roof-window' || q.id === 'roof-window') continue;
-        }
         expect(overlaps, `${p.id}와 ${q.id}가 겹친다`).toBe(false);
       }
     }
   });
 
-  it('두 벌이 시트 안에 들어가고 서로 겹치지 않는다', () => {
+  /**
+   * 접는 법 글을 소개 페이지로 옮기면서(2026-09-08 사용자 요청) 시트 폭이 비어
+   * 두 벌이 나란히 들어간다. 골대 둘에 종이 한 장이 이 시트의 목표다.
+   */
+  it('두 벌이 한 장에 나란히 들어가고 사이가 벌어져 있다', () => {
+    expect(GOAL_NET_ORIGINS).toHaveLength(2);
     const boxes = GOAL_NET_ORIGINS.map(([x, y]) => ({
       left: x,
       top: y,
@@ -207,28 +314,44 @@ describe('골대 전개도', () => {
       expect(box.right).toBeLessThanOrEqual(SHEETS.goals.widthMm);
       expect(box.bottom).toBeLessThanOrEqual(SHEETS.goals.heightMm);
     }
-    expect(boxes[0].right).toBeLessThan(boxes[1].left);
+    // 나란히 놓는다. 사이가 붙어 있으면 가위가 들어갈 자리가 없다.
+    expect(boxes[1].left - boxes[0].right).toBeGreaterThanOrEqual(4);
+    // 아래에는 그림 도해가 들어갈 띠가 남아야 한다.
+    expect(boxes[0].bottom).toBeLessThan(SHEETS.goals.heightMm - 30);
   });
 
-  it('오림선·접는선·풀칠면이 모두 있다', () => {
+  it('오림선과 접는선이 모두 있다', () => {
     const doc = svgOf('goals');
-    for (const mark of ['cut', 'fold-mountain', 'glue'] as const) {
-      const layer = doc.getElementById(MARK_STYLES[mark].layerId)!;
-      expect(layer.children.length).toBeGreaterThanOrEqual(2);
-    }
-    // 오림선은 전개도 2벌의 바깥 윤곽과 지붕 창 2개.
-    expect(doc.getElementById(MARK_STYLES.cut.layerId)!.children.length).toBe(
-      4,
-    );
+    // 골접기 벌마다 여덟 — 뚜껑·뒷벽·옆벽 둘·겹 둘·모서리 탭 둘.
+    expect(
+      doc.getElementById(MARK_STYLES['fold-valley'].layerId)!.children.length,
+    ).toBe(16);
+    // 산접기 벌마다 둘 — 뚜껑 귀뿐이다. 옆벽을 바깥에서 감싸야 들리지 않는다.
+    expect(
+      doc.getElementById(MARK_STYLES['fold-mountain'].layerId)!.children.length,
+    ).toBe(4);
   });
 
-  it('골라인 바깥에 서고 필드를 한 뼘도 쓰지 않는다', () => {
-    // 깊이가 종이 여백을 넘는 만큼은 책상 위에 놓인다. 종이 → 책상은 **내려가는**
-    // 단차라 공이 걸리지 않는다 — 반대(책상 → 종이)였다면 이 값이 여백 안으로
-    // 들어와야 한다.
-    expect(GOAL.depthMm).toBeGreaterThan(BALL.diameterMm);
+  /**
+   * 접는 순서가 시트에서 빠졌으므로(2026-09-08) 소개 페이지가 그 자리를
+   * 대신해야 한다. 둘이 어긋나면 시트만 보고도, 페이지만 보고도 접을 수 없다.
+   */
+  it('접는 순서는 소개 페이지의 규칙에 들어 있다', () => {
+    const headings = game.rules.filter((b) => b.kind === 'heading');
+    expect(headings.map((h) => h.text)).toContain('골대 접는 법');
+    // 시트가 페이지로 안내하는 문구도 실제 절 이름과 같아야 한다.
+    expect(ARTWORK.goals()).toContain('골대 접는 법');
+    for (const step of GOAL_ASSEMBLY_STEPS) {
+      expect(game.rules).toContainEqual({ kind: 'step', text: step });
+    }
+  });
+
+  it('골라인 밖에 놓이고 필드는 입술만 쓴다', () => {
     // 골문이 골 에어리어 폭 안에 있어야 골대와 선이 맞물려 보인다.
     expect(GOAL.mouthWidthMm).toBeLessThanOrEqual(FIELD_MARKS.goalAreaWidthMm);
+    // 필드 안으로 들어오는 것은 입술뿐이고, 골 에어리어 깊이를 넘지 않아야
+    // 골키퍼가 설 자리를 덮지 않는다.
+    expect(GOAL.lipDepthMm).toBeLessThan(FIELD_MARKS.goalAreaDepthMm);
   });
 });
 
@@ -286,7 +409,7 @@ describe('공', () => {
    */
   it('골문보다 작아 실제로 골대 안으로 들어간다', () => {
     expect(BALL.diameterMm).toBeLessThan(GOAL.mouthWidthMm);
-    expect(BALL.diameterMm).toBeLessThan(GOAL.mouthHeightMm);
+    expect(BALL.diameterMm).toBeLessThan(GOAL.wallHeightMm);
     // '뚜렷이 작게' — 골문 폭의 4분의 1 아래.
     expect(BALL.diameterMm * 4).toBeLessThanOrEqual(GOAL.mouthWidthMm);
   });

@@ -79,8 +79,16 @@ const slotBase = {
   groupId: slug.optional(),
   /** 렌더러가 읽는 자유 표식. 예: 골키퍼를 구분하는 `goalkeeper`. */
   tags: z.array(slug).default([]),
-  /** 최소 1개 — 어느 파트에도 속하지 않는 슬롯은 도안에 나타날 자리가 없다. */
-  placements: z.array(placement).min(1),
+  /**
+   * 이 값이 어느 파트에 어떻게 나타나는가.
+   *
+   * 보통은 하나 이상이다 — 나타날 자리가 없는 슬롯은 도안에 쓸모가 없다. 다만
+   * **그룹의 색 슬롯만은 비워 둘 수 있다**(2026-09-08): 그 값은 배치가 아니라
+   * 그룹을 통해 마커를 칠하기 때문이다(`groupColorOf`). 축구 게임판의 팀 색이
+   * 점수 기록칸의 색 막대를 잃고 그렇게 됐다 — 여전히 운동장 선수 마커를
+   * 칠한다. "배치도 없고 그룹의 색 슬롯도 아닌" 슬롯은 `parseGame`이 막는다.
+   */
+  placements: z.array(placement),
 };
 
 export const textSlot = z.strictObject({

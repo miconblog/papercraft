@@ -60,30 +60,47 @@ describe('parseArtwork', () => {
 
   it('표시 레이어는 도안이 적은 굵기 대신 규약 값을 쓰고 배율을 먹지 않는다', () => {
     const art = parseArtwork(read('goals.svg'));
-    const folds = paths(art.items).filter((p) => p.mark === 'fold-mountain');
+    // 골대는 접는선이 전부 골접기다(2026-09-06) — 인쇄면이 쟁반 안쪽을 향한다.
+    const folds = paths(art.items).filter((p) => p.mark === 'fold-valley');
     expect(folds.length).toBeGreaterThan(0);
     for (const fold of folds) {
-      expect(fold.strokeMm).toBe(MARK_STYLES['fold-mountain'].strokeMm);
-      expect(fold.dashMm).toEqual(MARK_STYLES['fold-mountain'].dashMm);
+      expect(fold.strokeMm).toBe(MARK_STYLES['fold-valley'].strokeMm);
+      expect(fold.dashMm).toEqual(MARK_STYLES['fold-valley'].dashMm);
       expect(fold.fixedStroke).toBe(true);
     }
     // 표시선이 통째로 빠졌던 회귀를 여기서 잡는다 — 전개도 2벌의 바깥 윤곽과
-    // 지붕 창, 접는선(벌마다 다섯), 풀칠면 빗금이 전부 읽혀야 한다.
+    // 골접기 열여섯, 산접기 넷(뚜껑 귀)이 전부 읽혀야 한다.
     const cuts = paths(art.items).filter((p) => p.mark === 'cut');
+    const mountains = paths(art.items).filter(
+      (p) => p.mark === 'fold-mountain',
+    );
+    // 풀칠면도 칼집도 없다(2026-09-06) — 겹으로 탭을 물어 잠근다.
     const glues = paths(art.items).filter((p) => p.mark === 'glue');
-    expect(cuts.length).toBe(4);
-    expect(folds.length).toBe(10);
-    expect(glues.length).toBeGreaterThan(0);
-    for (const mark of [...cuts, ...folds, ...glues]) {
+    expect(cuts.length).toBe(2);
+    expect(folds.length).toBe(16);
+    expect(mountains.length).toBe(4);
+    expect(glues.length).toBe(0);
+    for (const mark of [...cuts, ...folds, ...mountains]) {
       expect(
         mark.commands.some((c) => c.c !== 'Z' && 'x' in c && c.x !== 0),
       ).toBe(true);
     }
   });
 
+  /**
+   * `paint` 배치를 쓰는 도안이 지금은 하나도 없다 — 축구 게임판의 유일한 색
+   * 레이어였던 점수 기록칸 팀 색 막대를 뺐다(2026-09-08 사용자 요청). 기능은
+   * 스키마에 남아 다른 도안이 쓸 수 있으므로, 작은 SVG를 지어 검사한다.
+   */
   it('색 레이어를 커스터마이즈 값으로 갈아 끼운다', () => {
-    // 팀 색 레이어는 점수 기록칸에 있다 — 운동장에서는 뺐다(IDE-010).
-    const art = parseArtwork(read('score-sheet.svg'), {
+    const svg = [
+      '<svg xmlns="http://www.w3.org/2000/svg" width="10mm" height="10mm" viewBox="0 0 10 10">',
+      '<g id="pc-team-home" fill="#1d4ed8" stroke="none">',
+      '<rect x="1" y="1" width="8" height="2" />',
+      '</g>',
+      '</svg>',
+    ].join('');
+    const art = parseArtwork(svg, {
       paint: { 'pc-team-home': { fill: '#123456' } },
     });
     expect(paths(art.items).some((p) => p.fill === '#123456')).toBe(true);

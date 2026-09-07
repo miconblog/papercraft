@@ -62,9 +62,10 @@ describe('축구 게임판 — 파트', () => {
     const goals = soccer.parts.find((p) => p.id === 'goals')!;
     expect(goals.marks).toContain('cut');
     expect(goals.marks.some((m) => m.startsWith('fold-'))).toBe(true);
-    // 지붕 탭을 옆벽에 붙여야 상자 모양이 유지된다. 선언은 실제로 그리는 표시와
-    // 같아야 한다 — 어긋나면 조립 안내에 있지도 않은 표시 설명이 따라 나온다.
-    expect(goals.marks).toContain('glue');
+    // 풀칠면은 없다(2026-09-06) — 지붕 탭을 옆벽 틈에 끼워 잠근다. 선언은 실제로
+    // 그리는 표시와 같아야 한다 — 스키마 검증(`parts.ts`)이 이 선언을 보고
+    // 조립물·오림용 부속의 조건을 따진다.
+    expect(goals.marks).not.toContain('glue');
     for (const part of soccer.parts.filter((p) => p.kind === 'cutout')) {
       expect(part.marks, part.id).toContain('cut');
     }
@@ -92,14 +93,19 @@ describe('축구 게임판 — 슬롯', () => {
     expect(soccer.slots.find((s) => s.id.endsWith('-name'))).toBeUndefined();
   });
 
-  it('팀 색은 마커 테두리와 점수 기록칸 막대에 쓰인다', () => {
+  /**
+   * 점수 기록칸의 색 막대가 이 슬롯의 유일한 배치였는데 그 막대를 뺐다
+   * (2026-09-08 사용자 요청 — 표를 판/이름 빈칸으로). 값은 그대로 살아 운동장
+   * 마커를 칠한다 — 마커 색은 배치가 아니라 그룹의 `colorSlotId`를 통해
+   * 읽히기 때문이다(마커는 파트 레이어가 아니라 슬롯마다 따로 그려진다).
+   */
+  it('팀 색은 배치 없이 그룹을 통해 마커만 칠한다', () => {
     const color = soccer.slots.find((s) => s.id === 'home-color')!;
     expect(color.kind).toBe('color');
-    // 점수 기록칸에는 `paint` 배치로 간다. 마커 색은 배치가 아니라 그룹의
-    // `colorSlotId`를 통해 렌더러가 읽어 간다 — 마커는 파트 레이어가 아니라
-    // 슬롯마다 따로 그려지기 때문이다.
-    expect(color.placements.every((p) => p.mode === 'paint')).toBe(true);
-    expect(color.placements.map((p) => p.partId)).toEqual(['score-sheet']);
+    expect(color.placements).toEqual([]);
+    // 그룹이 가리키고 있어야 마커에 닿는다 — 이게 끊기면 값이 갈 곳이 없다.
+    const home = soccer.groups.find((g) => g.id === 'home')!;
+    expect(home.colorSlotId).toBe('home-color');
   });
 
   it('속을 비우는 변형만 채우지 않는다고 선언한다 — 등번호 색이 여기서 갈린다', () => {

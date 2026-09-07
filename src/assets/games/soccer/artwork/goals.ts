@@ -1,45 +1,50 @@
 /**
- * 조립물 파트 — 골대 전개도 2벌 (IDE-004, 2026-09-05 재재작도)
+ * 조립물 파트 — 골대 전개도 2벌 (IDE-004, 2026-09-06 재재재작도)
  *
- * 구조는 **골라인 바깥에 세우는 바닥 없는 상자**다. 뒷벽 하나, 옆벽 둘, 창을
- * 낸 지붕 하나. 골문을 지난 공이 뒷벽에 막혀 상자 안에 멈추고, 지붕 창으로
- * 내려다보면 그 공이 보인다 — **골이 눈에 남는 것**이 이 구조의 목적이다.
+ * 구조는 **뚜껑 달린 쟁반**이다 — 쓰레받기(사용자 표현으로 "국자") 모양에 뒷벽
+ * 위로 뚜껑이 하나 더 붙는다. 바닥 하나, 벽 셋(뒤·좌·우), 그 위를 덮는 뚜껑,
+ * 앞으로 바닥이 그대로 뻗어 나온 **입술**.
  *
  * 전개도 한 벌:
  *
  * ```
- *        ┌──────────┐          ← 지붕(+ 좌우 풀칠탭). 가운데에 창을 오려낸다
- *   ┌────┼──────────┼────┐     ← 왼벽 · 뒷벽 · 오른벽
- *   └────┘          └────┘     ← 발 둘. 바깥으로 눕힌다
+ *      ┌─┬──────────┬─┐        ← 귀 · 뚜껑 · 귀
+ *      └─┤          ├─┘        ← 홈 (귀를 탭에서 뗀다)
+ *     ┌──┼──────────┼──┐       ← 탭 · 뒷벽 · 탭
+ *     └──┤          ├──┘       ← 홈 (탭을 옆벽에서 뗀다)
+ *  ┌──┬──┼──────────┼──┬──┐    ← 겹 · 옆벽 · 바닥 · 옆벽 · 겹
+ *  └──┴──┤          ├──┴──┘
+ *        │   입술   │           ← 바닥이 그대로 앞으로 뻗는다
+ *        └──────────┘
  * ```
  *
- * 왜 상자로 돌아왔는지, 그리고 2026-09-06에 왜 한 번 더 커졌는지는
- * `../dimensions.ts`의 `GOAL` 주석에 적었다.
- * 한 줄로 줄이면 **평면 프레임은 공을 세워 주지 못해 골인지 아닌지 보이지
- * 않았기 때문**이다. 다만 예전 터널과 달리 골라인 **바깥**에 서므로 필드 안
- * 공간을 쓰지 않고, 골 판정은 여전히 골라인이다.
+ * 왜 이 모양인지는 `../dimensions.ts`의 `GOAL` 주석에 다섯 단계로 적었다. 요지는
+ * 두 가지다 — **지붕을 없애니 창도 풀칠탭도 칼집도 필요 없어졌고**, 그 뒤 **위가
+ * 뚫려 있으면 골포스트를 맞고 튄 공이 밖으로 나가서**(2026-09-08 사용자 지적)
+ * 뚜껑만 경첩식으로 되돌렸다. 붙일 것이 없으므로 풀도 칼도 돌아오지 않았다.
  *
- * 바닥이 없다. 바닥을 깔면 종이 두께만큼 턱이 생겨 미끄러져 오는 공이 골문에서
- * 걸린다. 대신 옆벽 아래 발을 **바깥으로** 눕혀 세운다 — 안쪽으로 접으면 같은
- * 턱이 생긴다.
+ * **풀도 칼도 쓰지 않는다.** 뒷벽 양 끝의 모서리 탭을 옆벽 안쪽에 대고, 그 위로
+ * 옆벽의 겹을 접어 내리면 뒷모서리가 물린다. 뚜껑은 양옆 귀를 옆벽 바깥에
+ * 씌워 닫는다. 가위와 접기만으로 끝난다.
+ *
+ * **모서리 홈 넷이 이 전개도의 급소다.** 귀·탭·옆벽은 전개도에서 위아래로 맞닿아
+ * 있는데 접히는 방향이 제각각이라, 이어져 있으면 하나를 접을 때 나머지가 딸려
+ * 온다 — 처음 그렸을 때 실제로 그랬다(2026-09-08 사용자 지적). 홈은 바깥 윤곽의
+ * 일부라 따로 칼집을 낼 필요가 없다.
+ *
+ * 접는선은 **뚜껑 귀 둘만 산접기, 나머지는 전부 골접기**다. 인쇄면이 쟁반 안쪽을
+ * 향해야 그물이 안에서 보이고, 겹과 모서리 탭도 안으로 접힌다. 귀만 반대인 것은
+ * 상자 뚜껑처럼 벽을 **바깥에서** 감싸야 들리지 않기 때문이다.
  *
  * 좌표는 전부 시트 절대 좌표로 펼친다. 레이어에 transform을 걸면 렌더러가
  * 표시선 굵기를 다시 입힐 때 변환까지 따라가야 해서 손해다.
  */
-import {
-  GOAL,
-  GOAL_NET_SIZE,
-  GOAL_ROOF_WINDOW,
-  GOAL_ROOF_WINDOW_SIZE,
-  SHEETS,
-} from '../dimensions.ts';
-import { GOAL_ASSEMBLY_STEPS } from '../rules.ts';
+import { GOAL, GOAL_NET_SIZE, SHEETS } from '../dimensions.ts';
 import {
   ART_LAYER_ID,
   INK_COLOR,
   RULE_COLOR,
   estimateTextWidthMm,
-  glueHatch,
   group,
   line,
   markLayer,
@@ -49,147 +54,264 @@ import {
   rect,
   svgDocument,
   text,
-  wrapText,
 } from './svg.ts';
 
-const { mouthWidthMm, mouthHeightMm, depthMm, footDepthMm, glueTabMm } = GOAL;
+const {
+  mouthWidthMm,
+  wallHeightMm,
+  trayDepthMm,
+  lipDepthMm,
+  lidDepthMm,
+  lidFlapMm,
+  hemMm,
+  cornerTabMm,
+  cornerNotchMm,
+} = GOAL;
 
-/** 전개도 한 벌의 세로·가로 구획선 위치. 원점은 전개도 좌상단이다. */
+/**
+ * 전개도 한 벌의 구획선. 원점은 전개도 좌상단(= 뚜껑 앞 모서리의 왼쪽 끝)이다.
+ *
+ * 가로는 겹·옆벽·바닥·옆벽·겹 다섯 칸, 세로는 뚜껑·뒷벽·바닥·입술 네 칸이다.
+ * 모서리 탭은 뒷벽 양 끝, 뚜껑 귀는 뚜껑 양 끝에 붙어 옆 칸의 빈자리를 쓴다 —
+ * 둘 다 옆벽 폭(24mm) 안이라 전개도가 옆으로 더 넓어지지 않는다.
+ */
 const gridOf = (originXMm: number, originYMm: number) => ({
   x0: originXMm,
-  x1: originXMm + depthMm,
-  x2: originXMm + depthMm + mouthWidthMm,
-  x3: originXMm + GOAL_NET_SIZE.widthMm,
-  tabLeft: originXMm + depthMm - glueTabMm,
-  tabRight: originXMm + depthMm + mouthWidthMm + glueTabMm,
-  y0: originYMm,
-  y1: originYMm + depthMm,
-  y2: originYMm + depthMm + mouthHeightMm,
+  x1: originXMm + hemMm,
+  x2: originXMm + hemMm + wallHeightMm,
+  x3: originXMm + hemMm + wallHeightMm + mouthWidthMm,
+  x4: originXMm + GOAL_NET_SIZE.widthMm - hemMm,
+  x5: originXMm + GOAL_NET_SIZE.widthMm,
+  /** 왼쪽 모서리 탭의 바깥 끝. 뒷벽 왼쪽 모서리에서 앞으로 뻗는다. */
+  tabLeft: originXMm + hemMm + wallHeightMm - cornerTabMm,
+  tabRight: originXMm + hemMm + wallHeightMm + mouthWidthMm + cornerTabMm,
+  /** 뚜껑 귀의 바깥 끝. 탭보다 좁아 y0 자리에 턱이 하나 생긴다. */
+  flapLeft: originXMm + hemMm + wallHeightMm - lidFlapMm,
+  flapRight: originXMm + hemMm + wallHeightMm + mouthWidthMm + lidFlapMm,
+  /**
+   * 모서리 탭·뚜껑 귀의 **자유로운 아래 끝**.
+   *
+   * 탭은 뒷벽에만, 귀는 뚜껑에만 붙어 있어야 한다. 여기까지만 종이를 남기고
+   * 나머지를 홈으로 파내야 아래 이웃(귀→탭, 탭→옆벽)에서 떨어진다.
+   */
+  earBottom: originYMm + lidDepthMm - cornerNotchMm,
+  tabBottom: originYMm + lidDepthMm + wallHeightMm - cornerNotchMm,
+  /** 뚜껑 앞 모서리 — 덮으면 골문 위를 가로지르는 크로스바가 된다. */
+  yLid: originYMm,
+  y0: originYMm + lidDepthMm,
+  y1: originYMm + lidDepthMm + wallHeightMm,
+  y2: originYMm + lidDepthMm + wallHeightMm + trayDepthMm,
   y3: originYMm + GOAL_NET_SIZE.heightMm,
 });
 
 type Grid = ReturnType<typeof gridOf>;
 
-/** 바깥 윤곽 한 붓. 지붕 탭이 튀어나오고 두 발이 아래로 내려온 모양이다. */
+/**
+ * 바깥 윤곽 한 붓.
+ *
+ * 바닥과 입술 사이에는 접는선이 없다 — **한 장으로 이어진 면**이다. 그래야
+ * 공이 운동장에서 쟁반으로 들어올 때 넘을 턱이 생기지 않는다. 그래서 윤곽도
+ * 옆벽 앞끝(y2)에서 곧장 입술 옆면으로 내려간다.
+ *
+ * 반대로 **모서리 넷은 반드시 떨어져 있어야 한다.** 뚜껑 귀·모서리 탭·옆벽은
+ * 전개도에서 위아래로 맞닿아 있는데, 셋은 접히는 방향이 제각각이라 이어져 있으면
+ * 하나를 접을 때 나머지가 딸려 온다(2026-09-08 사용자 지적). 그래서 귀 아래와
+ * 탭 아래에 `cornerNotchMm` 깊이의 홈을 판다 — 윤곽이 거기서 안으로 들어갔다
+ * 나오므로 **여전히 한 붓이고, 칼집이 아니라 가위로 따라 오리면 된다**.
+ */
 const outline = (g: Grid): string =>
   path(
     [
-      `M ${num(g.tabLeft)} ${num(g.y0)}`,
-      `H ${num(g.tabRight)}`,
-      `V ${num(g.y1)}`,
+      // 뚜껑 앞 모서리(크로스바) — 좌우 귀까지 한 줄로 이어진다
+      `M ${num(g.flapLeft)} ${num(g.yLid)}`,
+      `H ${num(g.flapRight)}`,
+      // 오른쪽 귀 아래 홈 — 귀를 아래 모서리 탭에서 떼어 놓는다
+      `V ${num(g.earBottom)}`,
       `H ${num(g.x3)}`,
+      `V ${num(g.y0)}`,
+      // 오른쪽 모서리 탭 → 그 아래 홈으로 옆벽에서 떼어 놓는다
+      `H ${num(g.tabRight)}`,
+      `V ${num(g.tabBottom)}`,
+      `H ${num(g.x3)}`,
+      `V ${num(g.y1)}`,
+      // 오른벽·겹의 뒷변 → 겹 바깥 → 앞변
+      `H ${num(g.x5)}`,
+      `V ${num(g.y2)}`,
+      `H ${num(g.x3)}`,
+      // 입술
       `V ${num(g.y3)}`,
       `H ${num(g.x2)}`,
       `V ${num(g.y2)}`,
-      `H ${num(g.x1)}`,
-      `V ${num(g.y3)}`,
+      // 왼벽·겹의 앞변 → 겹 바깥 → 뒷변(옆벽 윗변은 홈 덕에 끝까지 트여 있다)
       `H ${num(g.x0)}`,
       `V ${num(g.y1)}`,
+      `H ${num(g.x2)}`,
+      // 왼쪽 모서리 탭 아래 홈 → 탭 → 귀 아래 홈 → 귀
+      `V ${num(g.tabBottom)}`,
       `H ${num(g.tabLeft)}`,
+      `V ${num(g.y0)}`,
+      `H ${num(g.x2)}`,
+      `V ${num(g.earBottom)}`,
+      `H ${num(g.flapLeft)}`,
       'Z',
     ].join(' '),
   );
 
 /**
- * 지붕 창 — 오려서 떼어낸다.
+ * 접는선. **전부 골접기**다 — 인쇄면이 안쪽으로 오게 접는다.
  *
- * 앞 테두리(크로스바 쪽)를 다른 변보다 굵게 남긴다. 세우면 그 띠가 골문 위를
- * 가로지르는 크로스바가 되고, 나머지 테두리가 옆벽 둘을 붙들어 준다.
+ * 벽 셋을 세우는 것도, 겹을 안으로 내리는 것도, 모서리 탭을 옆벽에 대는 것도
+ * 모두 인쇄면끼리 마주 보는 방향이다. 방향이 하나뿐이라 아이에게 설명할 것이
+ * "전부 같은 쪽으로 접는다" 한 줄로 끝난다.
  */
-const roofWindow = (g: Grid): string =>
-  rect(
-    g.x1 + GOAL_ROOF_WINDOW.sideBarMm,
-    // 지붕은 뒷벽 위(y1)를 축으로 앞으로 접힌다 — 전개도에서 **y0 쪽 가장자리가
-    // 골문 위**다. 앞 테두리를 그쪽에 남겨야 크로스바가 제자리에 온다.
-    g.y0 + GOAL_ROOF_WINDOW.frontBarMm,
-    GOAL_ROOF_WINDOW_SIZE.widthMm,
-    GOAL_ROOF_WINDOW_SIZE.depthMm,
-  );
-
-/**
- * 접는선. 전부 산접기다 — 인쇄면이 골대 바깥을 향해야 하고, 지붕 탭도 아래로
- * 접혀 벽 안쪽에 붙으므로 인쇄면이 바깥을 본다.
- */
-const folds = (g: Grid): string[] => [
-  // 지붕/탭과 벽을 가르는 세로선
-  line(g.x1, g.y0, g.x1, g.y2),
-  line(g.x2, g.y0, g.x2, g.y2),
-  // 지붕과 뒷벽
-  line(g.x1, g.y1, g.x2, g.y1),
-  // 옆벽과 발
-  line(g.x0, g.y2, g.x1, g.y2),
-  line(g.x2, g.y2, g.x3, g.y2),
+const valleyFolds = (g: Grid): string[] => [
+  // 뚜껑과 뒷벽 — 여기가 경첩이다
+  line(g.x2, g.y0, g.x3, g.y0),
+  // 뒷벽과 바닥
+  line(g.x2, g.y1, g.x3, g.y1),
+  // 옆벽과 바닥
+  line(g.x2, g.y1, g.x2, g.y2),
+  line(g.x3, g.y1, g.x3, g.y2),
+  // 겹과 옆벽
+  line(g.x1, g.y1, g.x1, g.y2),
+  line(g.x4, g.y1, g.x4, g.y2),
+  // 모서리 탭과 뒷벽 — 홈 위쪽, 실제로 이어진 구간만
+  line(g.x2, g.y0, g.x2, g.tabBottom),
+  line(g.x3, g.y0, g.x3, g.tabBottom),
 ];
 
-const glueTabs = (g: Grid): string[] => [
-  ...glueHatch(g.tabLeft, g.y0, glueTabMm, depthMm),
-  ...glueHatch(g.x2, g.y0, glueTabMm, depthMm),
+/**
+ * 뚜껑 귀 둘만 **산접기**다.
+ *
+ * 상자 뚜껑을 씌우듯 옆벽을 바깥에서 감싸야 뚜껑이 들리지 않는다. 안으로 접으면
+ * 옆벽의 겹과 같은 자리를 다투고, 접지 않고 얹어만 두면 공이 튈 때 열린다.
+ */
+const mountainFolds = (g: Grid): string[] => [
+  line(g.x2, g.yLid, g.x2, g.earBottom),
+  line(g.x3, g.yLid, g.x3, g.earBottom),
 ];
 
 /** 그물 눈 간격. 촘촘하면 면이 통째로 검게 뭉쳐 면 이름까지 묻힌다. */
 const NET_SPACING_MM = 4;
 
 /**
- * 그물 격자.
+ * 그물 격자 — 뚜껑과 벽 셋의 **안쪽 면**에 친다.
  *
- * 인쇄면이 골대 **바깥**을 향하므로 이 격자는 밖에서 볼 때 보인다 — 뒤에서 보면
- * 뒷그물, 옆에서 보면 옆그물이다. 지붕은 창을 낸 테두리라 격자를 넣지 않는다.
- * 좁은 띠에 격자를 치면 검게 뭉쳐 크로스바가 안 보인다.
+ * 인쇄면이 쟁반 안을 향하므로 골문으로 들여다보면 이 격자가 보인다. 뚜껑을
+ * 덮으면 위 그물, 뒤·옆이 각각 뒷그물·옆그물이다 — 골문 네 면이 모두 그물로
+ * 둘러싸여 골대로 읽힌다.
+ *
+ * 바닥과 입술에는 넣지 않는다. 공이 지나가고 멈추는 면이라 비워 두어야 공이
+ * 눈에 띄고, 입술은 운동장 위에 얹히므로 잉크가 있으면 라인과 겹쳐 지저분하다.
  */
 const netArt = (g: Grid): string[] => [
   group({ stroke: RULE_COLOR, 'stroke-width': 0.12, fill: 'none' }, [
+    // 뚜껑 — 앞 모서리는 크로스바 자리로 비운다
+    ...netHatch(
+      g.x2,
+      g.yLid + CROSSBAR_BAND_MM,
+      mouthWidthMm,
+      lidDepthMm - CROSSBAR_BAND_MM,
+      NET_SPACING_MM,
+    ),
     // 뒷벽
-    ...netHatch(g.x1, g.y1, mouthWidthMm, mouthHeightMm, NET_SPACING_MM),
+    ...netHatch(g.x2, g.y0, mouthWidthMm, wallHeightMm, NET_SPACING_MM),
     // 옆벽 둘
-    ...netHatch(g.x0, g.y1, depthMm, mouthHeightMm, NET_SPACING_MM),
-    ...netHatch(g.x2, g.y1, depthMm, mouthHeightMm, NET_SPACING_MM),
+    ...netHatch(g.x1, g.y1, wallHeightMm, trayDepthMm, NET_SPACING_MM),
+    ...netHatch(g.x3, g.y1, wallHeightMm, trayDepthMm, NET_SPACING_MM),
   ]),
 ];
 
+/** 크로스바로 비워 두는 뚜껑 앞 띠의 폭. 격자가 덮으면 굵은 선이 묻힌다. */
+const CROSSBAR_BAND_MM = 4;
+
 /**
- * 크로스바 — 지붕 창의 **앞 테두리**에 얹는 굵은 선.
+ * 크로스바 — 뚜껑 **앞 모서리**에 얹는 굵은 선.
  *
- * 세우면 이 선이 골문 위를 가로지른다. 골대를 정면에서 알아보게 하는 것이
- * 이 한 줄이라, 그물 격자를 넣지 않고 비워 둔 자리에 그린다.
+ * 뚜껑을 덮으면 이 선이 골문 바로 위를 가로지른다. 지붕을 없앴다가 뚜껑으로
+ * 돌아오면서 크로스바가 같이 돌아왔다 — 정면에서 골대로 알아보게 하는 한 줄이다.
  */
 const crossbar = (g: Grid): string =>
   line(
-    g.x1 + GOAL_ROOF_WINDOW.sideBarMm,
-    g.y0 + GOAL_ROOF_WINDOW.frontBarMm / 2,
-    g.x2 - GOAL_ROOF_WINDOW.sideBarMm,
-    g.y0 + GOAL_ROOF_WINDOW.frontBarMm / 2,
+    g.x2,
+    g.yLid + CROSSBAR_BAND_MM / 2,
+    g.x3,
+    g.yLid + CROSSBAR_BAND_MM / 2,
     { stroke: INK_COLOR, 'stroke-width': 1, 'stroke-linecap': 'round' },
   );
+
+/**
+ * 골라인 자리 — 벽이 끝나고 입술이 시작되는 자리에 긋는 한 줄.
+ *
+ * 쟁반은 골라인 **밖**에 놓이고 입술만 안으로 넘어온다. 그러니 맞출 자리는
+ * 벽 앞끝(y2)이다. 이 선을 인쇄된 골라인에 대면 골대가 정확히 골라인 밖에 선다.
+ *
+ * 파선으로 둔다 — 접는선은 일점쇄선이라 헷갈리지 않고, 오림선(실선)도 아니다.
+ */
+const goalLineOnLip = (g: Grid): string[] => [
+  line(g.x2, g.y2, g.x3, g.y2, {
+    stroke: RULE_COLOR,
+    'stroke-width': 0.4,
+    'stroke-dasharray': '2 1.5',
+  }),
+];
 
 /**
  * 면 이름. 접다가 헷갈리지 않게 면 안에 작게 적는다.
  *
  * 글자 뒤에 흰 바탕을 깐다 — 벽에는 그물 격자가 깔려 있어 그냥 얹으면 읽히지
- * 않는다. 지붕에는 이름을 두지 않는다. 창을 오려내고 남는 테두리가 3–4mm뿐이라
- * 글자가 면 밖으로 삐져나간다.
+ * 않는다.
  */
-const faceLabels = (g: Grid, index: number): string[] => {
+const faceLabels = (g: Grid): string[] => {
   const sizeMm = 2.6;
-  const label = (value: string, xMm: number, yMm: number) => [
-    rect(
-      xMm - estimateTextWidthMm(value, sizeMm) / 2 - 0.6,
+  const label = (
+    value: string,
+    xMm: number,
+    yMm: number,
+    rotate = 0,
+  ): string[] => {
+    const widthMm = estimateTextWidthMm(value, sizeMm);
+    const transform =
+      rotate === 0 ? undefined : `rotate(${rotate} ${num(xMm)} ${num(yMm)})`;
+    const box = rect(
+      xMm - widthMm / 2 - 0.6,
       yMm - sizeMm * 0.75,
-      estimateTextWidthMm(value, sizeMm) + 1.2,
+      widthMm + 1.2,
       sizeMm * 1.5,
-      { fill: '#ffffff', stroke: 'none' },
-    ),
-    text(value, xMm, yMm, sizeMm, {
+      transform
+        ? { fill: '#ffffff', stroke: 'none', transform }
+        : { fill: '#ffffff', stroke: 'none' },
+    );
+    const body = text(value, xMm, yMm, sizeMm, {
       fill: RULE_COLOR,
       stroke: 'none',
       'text-anchor': 'middle',
-    }),
-  ];
+      ...(transform ? { transform } : {}),
+    });
+    return [box, body];
+  };
   return [
-    ...label(`골대 ${index + 1}`, (g.x1 + g.x2) / 2, (g.y1 + g.y2) / 2),
-    ...label('옆벽', (g.x0 + g.x1) / 2, (g.y1 + g.y2) / 2),
-    ...label('옆벽', (g.x2 + g.x3) / 2, (g.y1 + g.y2) / 2),
-    ...label('발', (g.x0 + g.x1) / 2, (g.y2 + g.y3) / 2),
-    ...label('발', (g.x2 + g.x3) / 2, (g.y2 + g.y3) / 2),
+    ...label('뒷벽', (g.x2 + g.x3) / 2, (g.y0 + g.y1) / 2),
+    ...label('옆벽', (g.x1 + g.x2) / 2, (g.y1 + g.y2) / 2, -90),
+    ...label('옆벽', (g.x3 + g.x4) / 2, (g.y1 + g.y2) / 2, -90),
+    ...label('겹', (g.x0 + g.x1) / 2, (g.y1 + g.y2) / 2, -90),
+    ...label('겹', (g.x4 + g.x5) / 2, (g.y1 + g.y2) / 2, -90),
+    ...label('탭', (g.tabLeft + g.x2) / 2, (g.y0 + g.tabBottom) / 2),
+    ...label('탭', (g.x3 + g.tabRight) / 2, (g.y0 + g.tabBottom) / 2),
+    ...label(
+      '뚜껑 — 덮으면 위가 막힌다',
+      (g.x2 + g.x3) / 2,
+      (g.yLid + g.y0) / 2,
+    ),
+    ...label('귀', (g.flapLeft + g.x2) / 2, (g.yLid + g.earBottom) / 2, -90),
+    ...label('귀', (g.x3 + g.flapRight) / 2, (g.yLid + g.earBottom) / 2, -90),
+    ...label('골대 바닥', (g.x2 + g.x3) / 2, (g.y1 + g.y2) / 2),
+    ...label('↑ 이 선을 골라인에 맞춘다', (g.x2 + g.x3) / 2, g.y2 + 5),
+    ...label(
+      '입술 — 운동장 위에 얹는다',
+      (g.x2 + g.x3) / 2,
+      g.y2 + lipDepthMm - 4,
+    ),
   ];
 };
 
@@ -202,10 +324,11 @@ export interface Face {
 }
 
 /**
- * 전개도를 이루는 면들. 접었을 때 실제로 서는지(지붕이 옆벽 위에 정확히 얹히는지,
- * 발이 바닥에 닿는지)를 테스트가 이 값으로 확인한다.
+ * 전개도를 이루는 면들. 접었을 때 실제로 쟁반이 되는지(벽 셋의 높이가 같은지,
+ * 모서리 탭이 겹에 물리는지)를 테스트가 이 값으로 확인한다.
  *
- * 지붕 창은 오려서 떼어내는 구멍이라 면이 아니다 — `goalRoofWindowRect`로 준다.
+ * 바닥과 입술은 접는선 없이 이어진 한 면이지만, 역할이 달라 따로 센다 —
+ * 테스트가 "입술이 공이 넘을 턱 없이 이어져 있는가"를 두 면의 경계로 본다.
  */
 export const goalNetFaces = (
   originXMm: number,
@@ -214,100 +337,116 @@ export const goalNetFaces = (
   const g = gridOf(originXMm, originYMm);
   return [
     {
-      id: 'roof',
-      xMm: g.x1,
-      yMm: g.y0,
-      widthMm: mouthWidthMm,
-      heightMm: depthMm,
-    },
-    {
-      id: 'glue-tab-left',
-      xMm: g.tabLeft,
-      yMm: g.y0,
-      widthMm: glueTabMm,
-      heightMm: depthMm,
-    },
-    {
-      id: 'glue-tab-right',
+      id: 'lid',
       xMm: g.x2,
-      yMm: g.y0,
-      widthMm: glueTabMm,
-      heightMm: depthMm,
+      yMm: g.yLid,
+      widthMm: mouthWidthMm,
+      heightMm: lidDepthMm,
     },
     {
-      id: 'wall-left',
-      xMm: g.x0,
-      yMm: g.y1,
-      widthMm: depthMm,
-      heightMm: mouthHeightMm,
+      id: 'lid-flap-left',
+      xMm: g.flapLeft,
+      yMm: g.yLid,
+      widthMm: lidFlapMm,
+      heightMm: lidDepthMm - cornerNotchMm,
+    },
+    {
+      id: 'lid-flap-right',
+      xMm: g.x3,
+      yMm: g.yLid,
+      widthMm: lidFlapMm,
+      heightMm: lidDepthMm - cornerNotchMm,
     },
     {
       id: 'wall-back',
+      xMm: g.x2,
+      yMm: g.y0,
+      widthMm: mouthWidthMm,
+      heightMm: wallHeightMm,
+    },
+    {
+      id: 'corner-tab-left',
+      xMm: g.tabLeft,
+      yMm: g.y0,
+      widthMm: cornerTabMm,
+      heightMm: wallHeightMm - cornerNotchMm,
+    },
+    {
+      id: 'corner-tab-right',
+      xMm: g.x3,
+      yMm: g.y0,
+      widthMm: cornerTabMm,
+      heightMm: wallHeightMm - cornerNotchMm,
+    },
+    {
+      id: 'hem-left',
+      xMm: g.x0,
+      yMm: g.y1,
+      widthMm: hemMm,
+      heightMm: trayDepthMm,
+    },
+    {
+      id: 'wall-left',
       xMm: g.x1,
       yMm: g.y1,
+      widthMm: wallHeightMm,
+      heightMm: trayDepthMm,
+    },
+    {
+      id: 'floor',
+      xMm: g.x2,
+      yMm: g.y1,
       widthMm: mouthWidthMm,
-      heightMm: mouthHeightMm,
+      heightMm: trayDepthMm,
     },
     {
       id: 'wall-right',
-      xMm: g.x2,
+      xMm: g.x3,
       yMm: g.y1,
-      widthMm: depthMm,
-      heightMm: mouthHeightMm,
+      widthMm: wallHeightMm,
+      heightMm: trayDepthMm,
     },
     {
-      id: 'foot-left',
-      xMm: g.x0,
-      yMm: g.y2,
-      widthMm: depthMm,
-      heightMm: footDepthMm,
+      id: 'hem-right',
+      xMm: g.x4,
+      yMm: g.y1,
+      widthMm: hemMm,
+      heightMm: trayDepthMm,
     },
     {
-      id: 'foot-right',
+      id: 'lip',
       xMm: g.x2,
       yMm: g.y2,
-      widthMm: depthMm,
-      heightMm: footDepthMm,
+      widthMm: mouthWidthMm,
+      heightMm: lipDepthMm,
     },
   ];
 };
 
-/** 오려내는 지붕 창. 위에서 상자 안 공을 보는 구멍이다. */
-export const goalRoofWindowRect = (
-  originXMm: number,
-  originYMm: number,
-): Face => {
-  const g = gridOf(originXMm, originYMm);
-  return {
-    id: 'roof-window',
-    xMm: g.x1 + GOAL_ROOF_WINDOW.sideBarMm,
-    yMm: g.y0 + GOAL_ROOF_WINDOW.frontBarMm,
-    widthMm: GOAL_ROOF_WINDOW_SIZE.widthMm,
-    heightMm: GOAL_ROOF_WINDOW_SIZE.depthMm,
-  };
-};
-
 /**
- * 시트 위 두 벌의 좌상단.
+ * 시트 위 두 벌의 좌상단. **한 장에 두 벌**이다.
  *
- * 한 벌이 88×52mm라 A5 가로(210×148.5) 폭에 둘이 나란히 서면 좌우 12mm·사이
- * 10mm가 남는다. 아래 절반은 접는 법과 도해 몫이다.
+ * 뚜껑이 붙어 한 벌이 134×108mm가 됐을 때는 접는 법 글이 오른쪽 단을 통째로
+ * 쓰고 있어 한 벌밖에 못 앉혔다. 그 글을 소개 페이지로 옮기면서(2026-09-08
+ * 사용자 요청) 폭이 비어 두 벌이 나란히 들어간다 — 268mm에 좌우 3mm·사이
+ * 6mm다. 골대 둘에 종이 한 장이면 된다.
  */
 export const GOAL_NET_ORIGINS: ReadonlyArray<readonly [number, number]> = [
-  [12, 22],
-  [110, 22],
+  [3, 26],
+  [143, 26],
 ];
 
 /**
- * 조립 도해 — 접는 법 옆에 붙는 세 컷.
+ * 조립 도해 — 전개도 아래에 한 줄로 붙는 넉 장.
  *
- * 글로만 적힌 순서는 "바깥으로 접는다"가 어느 쪽인지 알려 주지 않는다. 옆에서
- * 본 그림 한 컷이면 그게 끝난다. ③은 골대와 운동장 눈금의 관계를 보여 준다 —
- * 눈금에 무엇을 맞추는지가 이 도안에서 가장 헷갈리는 대목이다.
+ * 글로만 적힌 "겹으로 문다"는 어느 것이 무엇을 무는지 알려 주지 않는다. 옆에서
+ * 본 그림 한 컷이면 그게 끝난다. ④는 골대와 운동장 눈금의 관계를 보여 준다 —
+ * 어디까지 밀어 넣는지가 이 도안에서 가장 헷갈리는 대목이다.
  */
-const ASSEMBLY_DIAGRAM_WIDTH_MM = 40;
-const ASSEMBLY_DIAGRAM_HEIGHT_MM = 20;
-const ASSEMBLY_DIAGRAM_GAP_MM = 12;
+const ASSEMBLY_DIAGRAM_WIDTH_MM = 48;
+const ASSEMBLY_DIAGRAM_HEIGHT_MM = 26;
+const ASSEMBLY_DIAGRAM_GAP_MM = 6;
+const ASSEMBLY_DIAGRAM_COUNT = 5;
 
 const assemblyDiagrams = (leftMm: number, topMm: number): string[] => {
   const thin = { fill: 'none', stroke: RULE_COLOR, 'stroke-width': 0.3 };
@@ -318,160 +457,230 @@ const assemblyDiagrams = (leftMm: number, topMm: number): string[] => {
       stroke: 'none',
       'text-anchor': 'middle',
     });
-  const caption = (value: string, xMm: number) =>
-    label(value, xMm, topMm + ASSEMBLY_DIAGRAM_HEIGHT_MM + 4.5, 3.2);
 
-  const stepXMm = (i: number) =>
+  const colXMm = (i: number) =>
     leftMm + i * (ASSEMBLY_DIAGRAM_WIDTH_MM + ASSEMBLY_DIAGRAM_GAP_MM);
-  const centerXMm = (i: number) => stepXMm(i) + ASSEMBLY_DIAGRAM_WIDTH_MM / 2;
-  const baseYMm = topMm + ASSEMBLY_DIAGRAM_HEIGHT_MM - 3;
+  const rowYMm = () => topMm;
+  const centerXMm = (i: number) => colXMm(i) + ASSEMBLY_DIAGRAM_WIDTH_MM / 2;
+  const baseOf = () => rowYMm() + ASSEMBLY_DIAGRAM_HEIGHT_MM - 4;
+  const caption = (value: string, i: number) =>
+    label(value, centerXMm(i), rowYMm() + ASSEMBLY_DIAGRAM_HEIGHT_MM + 4, 3);
 
-  // ① 정면에서 본 골대 — 골문과 그 위 크로스바. 실제 골문 비율(2:1)로 그린다.
-  const w = 24;
-  const h = 12;
-  const a = centerXMm(0) - w / 2;
-  const one = [
+  /**
+   * ① 모서리 홈 — 사용자가 "뒷벽과 옆벽을 동시에 세우려면 어딘가 오려야 하는 것
+   * 아니냐"고 짚은 자리다(2026-09-08). 전개도를 확대해 **탭이 옆벽에서 떨어져
+   * 있다**는 것을 보여 준다. 홈은 바깥 윤곽의 일부라 따라 오리기만 하면 된다.
+   */
+  const baseN = baseOf();
+  const nx = centerXMm(0) + 7;
+  const notchOne = [
+    // 모서리 탭 — 뒷벽(오른쪽)에만 붙어 있다.
     path(
-      `M ${num(a)} ${num(baseYMm)} V ${num(baseYMm - h)} H ${num(a + w)} V ${num(baseYMm)}`,
+      `M ${num(nx)} ${num(baseN - 20)} H ${num(nx - 13)} V ${num(baseN - 10)} H ${num(nx)}`,
       bold,
     ),
-    // 상자 안 뒷벽 그물.
+    // 뒷벽과 탭 사이의 접는선.
+    path(`M ${num(nx)} ${num(baseN - 20)} V ${num(baseN - 10)}`, {
+      ...thin,
+      'stroke-dasharray': '2 1 0.5 1',
+    }),
+    // 옆벽 — 윗변이 홈 덕에 끝까지 트여 있다.
+    path(
+      `M ${num(nx)} ${num(baseN - 6)} H ${num(nx - 20)} V ${num(baseN + 2)}`,
+      bold,
+    ),
+    // 홈을 가리키는 화살표.
+    path(
+      `M ${num(nx - 24)} ${num(baseN - 12)} L ${num(nx - 17)} ${num(baseN - 8)}`,
+      thin,
+    ),
+    path(
+      `M ${num(nx - 19.6)} ${num(baseN - 8.4)} L ${num(nx - 16.6)} ${num(baseN - 7.6)} L ${num(nx - 17.6)} ${num(baseN - 10.4)}`,
+      thin,
+    ),
+    label('홈', nx - 26, baseN - 13),
+    label('탭', nx - 6.5, baseN - 14.5),
+    label('뒷벽', nx + 5, baseN - 15),
+    label('옆벽', nx - 10, baseN + 0.5),
+    caption('① 모서리 홈까지 오린다', 0),
+  ];
+
+  // ② 벽 셋을 세운다 — 앞에서 본 쟁반. 아직 위가 열려 있고, 그 자리를 뚜껑이
+  // 덮는다는 것이 이 컷의 요점이다.
+  const base0 = baseOf();
+  const w = 30;
+  const h = 11;
+  const a = centerXMm(1) - w / 2;
+  const one = [
+    path(
+      `M ${num(a)} ${num(base0 - h)} V ${num(base0)} H ${num(a + w)} V ${num(base0 - h)}`,
+      bold,
+    ),
     group(
       { stroke: RULE_COLOR, 'stroke-width': 0.12, fill: 'none' },
-      netHatch(a + 1, baseYMm - h + 1, w - 2, h - 2, 3.4),
+      netHatch(a + 0.8, base0 - h + 0.8, w - 1.6, h - 1.6, 3),
     ),
-    caption('① 오린다', centerXMm(0)),
+    // 아직 열려 있는 변. 여기를 뚜껑이 덮는다(③).
+    path(`M ${num(a)} ${num(base0 - h)} H ${num(a + w)}`, {
+      ...thin,
+      'stroke-dasharray': '1.5 1.5',
+    }),
+    label('여기를 뚜껑이 덮는다', centerXMm(1), base0 - h - 2.4),
+    caption('② 벽 셋을 세운다', 1),
   ];
 
-  // ② 옆에서 본 접기 — 벽을 세우고 발을 바깥으로 눕힌다. 지붕 9 : 벽 13으로
-  // 깊이(18)보다 높이(26)가 큰 실제 비례를 따른다.
-  const b = centerXMm(1) - 5;
+  /**
+   * ② 잠금 — 이 도안에서 유일하게 글로 설명하기 어려운 동작이다.
+   *
+   * 옆벽을 안쪽에서 마주 본 그림이다. 뒷벽에서 넘어온 탭(파선)이 벽에 서고,
+   * 벽 위의 겹이 접혀 내려와 탭의 윗머리를 덮는다. 풀도 칼도 쓰지 않는 이유가
+   * 이 한 컷에 다 들어 있다.
+   */
+  const base1 = baseOf();
+  const wallWMm = 30;
+  const wallHMm = 15;
+  const hemHMm = 5;
+  const tabWMm = 9;
+  const wx = centerXMm(2) - wallWMm / 2;
+  const wy = base1 - wallHMm;
   const two = [
-    // 지붕
-    path(`M ${num(b)} ${num(baseYMm - 13)} H ${num(b + 9)}`, bold),
-    // 뒷벽
-    path(`M ${num(b)} ${num(baseYMm - 13)} V ${num(baseYMm)}`, bold),
-    // 발 — 바깥(왼쪽)으로 눕는다.
-    path(`M ${num(b)} ${num(baseYMm)} H ${num(b - 7)}`, bold),
-    // 눕는 방향. 발 선과 겹치지 않게 위쪽에서 돌아 내려온다.
+    // 옆벽.
+    rect(wx, wy, wallWMm, wallHMm, bold),
+    // 탭 — 뒷모서리(왼쪽)에 서 있다. 겹에 덮이는 부분이 있으므로 먼저 그린다.
+    rect(wx, wy, tabWMm, wallHMm, {
+      ...thin,
+      stroke: INK_COLOR,
+      'stroke-dasharray': '1.4 1.2',
+    }),
+    // 겹 — 벽 위에서 접혀 내려와 탭 윗머리를 덮는다. 흰 바탕으로 덮어야
+    // 탭의 파선이 겹 뒤로 사라져 "물렸다"가 보인다.
+    rect(wx, wy, wallWMm, hemHMm, { fill: '#ffffff', stroke: 'none' }),
+    rect(wx, wy, wallWMm, hemHMm, bold),
+    // 겹이 내려오는 방향 — 벽 위에서 안으로 꺾여 내려온다.
     path(
-      `M ${num(b - 1)} ${num(baseYMm - 7)} A 7 7 0 0 0 ${num(b - 6)} ${num(baseYMm - 2.4)}`,
+      `M ${num(wx + wallWMm / 2 - 3)} ${num(wy - 6.5)} A 5 5 0 0 1 ${num(wx + wallWMm / 2 + 2)} ${num(wy - 2)}`,
       thin,
     ),
     path(
-      `M ${num(b - 4.4)} ${num(baseYMm - 3.6)} L ${num(b - 6.4)} ${num(baseYMm - 2)} L ${num(b - 3.8)} ${num(baseYMm - 1.2)}`,
+      `M ${num(wx + wallWMm / 2 + 0.2)} ${num(wy - 3.6)} L ${num(wx + wallWMm / 2 + 2.2)} ${num(wy - 1.6)} L ${num(wx + wallWMm / 2 + 4)} ${num(wy - 3.8)}`,
       thin,
     ),
-    label('발', b - 3.5, baseYMm + 3.2),
-    caption('② 발을 바깥으로', centerXMm(1)),
+    label('겹', wx + wallWMm - 6, wy + 3.6),
+    label('탭', wx + tabWMm / 2, base1 - 3),
+    label('옆벽', wx + wallWMm - 8, base1 - 3),
+    caption('③ 겹으로 탭을 문다', 2),
   ];
 
-  // ③ 위에서 본 놓는 자리 — 골라인 눈금에 골대 앞면 좌우를 맞춘다.
-  const c = centerXMm(2) + 3;
-  const halfMm = 7;
-  const topEdgeYMm = baseYMm - 16;
+  /**
+   * ③ 뚜껑 — 앞에서 본 단면. 뚜껑이 벽 위에 얹히고 양옆 귀가 **바깥으로** 내려와
+   * 벽을 감싼다. 이 도안에서 유일하게 반대로 접는 자리라 그림이 필요하다.
+   */
+  const base2 = baseOf();
+  const lw = 30;
+  const lh = 11;
+  const c = centerXMm(3) - lw / 2;
   const three = [
+    // 쟁반 단면 — 옆벽 둘과 바닥.
+    path(
+      `M ${num(c)} ${num(base2 - lh)} V ${num(base2)} H ${num(c + lw)} V ${num(base2 - lh)}`,
+      bold,
+    ),
+    // 뚜껑 — 벽 위에 얹혀 좌우로 조금 넘어간다. 벽선과 겹치지 않게 살짝 띄워야
+    // 귀가 벽 **바깥**을 감싼다는 것이 보인다.
+    path(`M ${num(c - 2)} ${num(base2 - lh - 1)} H ${num(c + lw + 2)}`, bold),
+    // 귀 둘 — 벽 바깥으로 내려와 감싼다.
+    path(
+      `M ${num(c - 2)} ${num(base2 - lh - 1)} V ${num(base2 - lh + 5)}`,
+      bold,
+    ),
+    path(
+      `M ${num(c + lw + 2)} ${num(base2 - lh - 1)} V ${num(base2 - lh + 5)}`,
+      bold,
+    ),
+    // 뚜껑이 내려오는 방향.
+    path(
+      `M ${num(c + lw / 2 - 3)} ${num(base2 - lh - 7)} A 5 5 0 0 1 ${num(c + lw / 2 + 2)} ${num(base2 - lh - 2.5)}`,
+      thin,
+    ),
+    path(
+      `M ${num(c + lw / 2 + 0.2)} ${num(base2 - lh - 4.1)} L ${num(c + lw / 2 + 2.2)} ${num(base2 - lh - 2.1)} L ${num(c + lw / 2 + 4)} ${num(base2 - lh - 4.3)}`,
+      thin,
+    ),
+    label('귀', c - 5.5, base2 - lh + 4),
+    label('귀', c + lw + 5.5, base2 - lh + 4),
+    caption('④ 뚜껑을 덮고 귀를 씌운다', 3),
+  ];
+
+  // ④ 위에서 본 놓는 자리 — 골라인 눈금에 입술 좌우 끝을 맞춘다.
+  const base3 = baseOf();
+  const d = centerXMm(4) + 4;
+  const halfMm = 8;
+  const topEdgeYMm = base3 - 18;
+  const four = [
     // 골라인.
-    path(`M ${num(c)} ${num(topEdgeYMm - 1)} V ${num(baseYMm + 1)}`, thin),
+    path(`M ${num(d)} ${num(topEdgeYMm - 1)} V ${num(base3 + 1)}`, thin),
     // 운동장 눈금 셋.
     ...[-halfMm, halfMm].map((offsetMm) =>
       path(
-        `M ${num(c - 2.5)} ${num(baseYMm - 8 + offsetMm)} H ${num(c + 1.5)}`,
+        `M ${num(d - 2.5)} ${num(base3 - 9 + offsetMm)} H ${num(d + 1.5)}`,
         bold,
       ),
     ),
-    path(`M ${num(c)} ${num(baseYMm - 8)} H ${num(c + 1.5)}`, bold),
-    // 골대 — 눈금 사이에 맞춰 골라인 바깥(왼쪽)으로 놓인다.
-    rect(c - 5, baseYMm - 8 - halfMm, 5, halfMm * 2, {
+    path(`M ${num(d)} ${num(base3 - 9)} H ${num(d + 1.5)}`, bold),
+    // 골대 — 눈금 사이에 맞춰 골라인 바깥(왼쪽)으로 놓인다. 입술만 안쪽으로
+    // 넘어와 운동장 위에 얹힌다.
+    rect(d - 9, base3 - 9 - halfMm, 9, halfMm * 2, bold),
+    rect(d, base3 - 9 - halfMm, 4, halfMm * 2, {
       ...thin,
       'stroke-dasharray': '1 1',
     }),
-    // 공이 들어오는 방향.
-    path(`M ${num(c + 13)} ${num(baseYMm - 8)} H ${num(c + 3)}`, thin),
-    path(
-      `M ${num(c + 4.6)} ${num(baseYMm - 9.2)} L ${num(c + 2.6)} ${num(baseYMm - 8)} L ${num(c + 4.6)} ${num(baseYMm - 6.8)}`,
-      thin,
-    ),
-    label('골대', c - 4.5, topEdgeYMm - 0.5),
-    label('눈금', c + 6, topEdgeYMm + 5),
-    caption('③ 눈금에 맞춘다', centerXMm(2)),
+    label('골대', d - 4.5, topEdgeYMm + 1),
+    label('입술', d + 8.5, topEdgeYMm + 5.5),
+    caption('⑤ 눈금에 맞춘다', 4),
   ];
 
-  return [...one, ...two, ...three];
+  return [...notchOne, ...one, ...two, ...three, ...four];
 };
 
 export const renderGoals = (): string => {
   const grids = GOAL_NET_ORIGINS.map(([x, y]) => gridOf(x, y));
-  const assemblyLeftMm = 24;
-  // 전개도가 커져 바닥이 y=74까지 내려왔다. 글 블록은 그 아래에서 시작하되
-  // 줄간을 조금 좁혀 도해까지 시트 안에 담는다.
-  const assemblyTopMm = 80;
-  const assemblyLineMm = 5.2;
-  const assemblyFontMm = 3.2;
-  const assemblyIndentMm = 5.4;
-  // 번호를 왼쪽에 세우고 본문만 접는다 — 둘째 줄이 번호 아래로 흘러내리면
-  // 항목 경계가 흐려진다.
-  const assemblyLines = GOAL_ASSEMBLY_STEPS.flatMap((step, i) =>
-    wrapText(
-      step,
-      assemblyFontMm,
-      SHEETS.goals.widthMm - assemblyLeftMm * 2 - assemblyIndentMm,
-    ).map((value, line) => ({ index: i + 1, value, first: line === 0 })),
-  );
+  const centerXMm = SHEETS.goals.widthMm / 2;
+  // 도해 넉 장이 한 줄로 242mm — 전개도 두 벌 아래 빈 띠에 가운데로 앉힌다.
+  const diagramsWidthMm =
+    ASSEMBLY_DIAGRAM_WIDTH_MM * ASSEMBLY_DIAGRAM_COUNT +
+    ASSEMBLY_DIAGRAM_GAP_MM * (ASSEMBLY_DIAGRAM_COUNT - 1);
 
   return svgDocument({
     widthMm: SHEETS.goals.widthMm,
     heightMm: SHEETS.goals.heightMm,
     title: '축구 게임판 · 골대 전개도',
     children: [
-      markLayer('cut', [
-        ...grids.map((g) => outline(g)),
-        ...grids.map((g) => roofWindow(g)),
-      ]),
-      markLayer('fold-mountain', grids.flatMap(folds)),
-      markLayer('glue', grids.flatMap(glueTabs)),
+      markLayer(
+        'cut',
+        grids.map((g) => outline(g)),
+      ),
+      markLayer('fold-valley', grids.flatMap(valleyFolds)),
+      markLayer('fold-mountain', grids.flatMap(mountainFolds)),
 
       group({ id: ART_LAYER_ID, fill: INK_COLOR, stroke: 'none' }, [
-        text('골대 전개도 · 2개', SHEETS.goals.widthMm / 2, 12, 5, {
+        text('골대 전개도 · 2개', centerXMm, 12, 5, {
           'text-anchor': 'middle',
         }),
+        // 접는 순서는 소개 페이지에 있다(2026-09-08). 시트에 남는 것은 도해
+        // 넉 장뿐이라, 어디서 읽는지 한 줄로 알려 준다.
         text(
-          `골문 ${num(mouthWidthMm)}×${num(mouthHeightMm)}mm · 깊이 ${num(depthMm)}mm · 골라인 바깥에 세운다`,
-          SHEETS.goals.widthMm / 2,
+          `골문 ${num(mouthWidthMm)}×${num(wallHeightMm)}mm · 풀도 칼도 쓰지 않는다 · 접는 순서는 소개 페이지의 "골대 접는 법"에서`,
+          centerXMm,
           19,
           3,
           { fill: RULE_COLOR, 'text-anchor': 'middle' },
         ),
         ...grids.flatMap(netArt),
         ...grids.map((g) => crossbar(g)),
-        ...grids.flatMap((g, i) => faceLabels(g, i)),
+        ...grids.flatMap(goalLineOnLip),
+        ...grids.flatMap(faceLabels),
 
-        text('접는 법', assemblyLeftMm, assemblyTopMm, 4, {
-          'text-anchor': 'start',
-        }),
-        ...assemblyLines.flatMap(({ index, value, first }, i) => {
-          const yMm = assemblyTopMm + assemblyLineMm * (i + 1.5);
-          const body = text(
-            value,
-            assemblyLeftMm + assemblyIndentMm,
-            yMm,
-            assemblyFontMm,
-            { 'text-anchor': 'start' },
-          );
-          return first
-            ? [
-                text(`${index}.`, assemblyLeftMm, yMm, assemblyFontMm, {
-                  'text-anchor': 'start',
-                }),
-                body,
-              ]
-            : [body];
-        }),
-
-        ...assemblyDiagrams(
-          assemblyLeftMm,
-          assemblyTopMm + assemblyLineMm * (assemblyLines.length + 2.2),
-        ),
+        ...assemblyDiagrams(centerXMm - diagramsWidthMm / 2, 146),
       ]),
     ],
   });

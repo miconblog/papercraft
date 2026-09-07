@@ -90,8 +90,9 @@ describe('내보내기 화면 (IDE-007)', () => {
     expect(screen.getByText('모두 A4 1장')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: '부속만' }));
-    // 점수 기록칸·골대 전개도 각 1장 = 2장. 게임 방법과 공 마커는 출력물에서
-    // 뺐다(2026-09-05).
+    // 점수 기록칸·골대 전개도 각 1장 = 2장. 골대는 접는 법 글을 소개 페이지로
+    // 옮기면서 한 장에 두 벌이 들어간다(2026-09-08). 게임 방법과 공 마커는
+    // 출력물에서 뺐다(2026-09-05).
     expect(screen.getAllByText('모두 A4 2장').length).toBeGreaterThan(0);
   });
 

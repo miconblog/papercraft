@@ -15,7 +15,11 @@ import { saveCustomization } from '@/lib/customization/storage';
 import { useHydrated } from '@/lib/customization/useHydrated';
 import { useStoredCustomization } from '@/lib/customization/useStoredCustomization';
 import { PrintDialog } from '@/components/print/PrintDialog';
-import { CustomizationForm } from './CustomizationForm';
+import {
+  CustomizationForm,
+  formGroupsFor,
+  hasUngroupedFormSlots,
+} from './CustomizationForm';
 import { BoardPreview } from './BoardPreview';
 
 /**
@@ -135,9 +139,12 @@ function EditorForm({
   const currentPart =
     game.parts.find((p) => p.id === currentPartId) ?? game.parts[0];
 
-  // 그룹에 속하지 않는 슬롯(축구 게임판이라면 마커 모양)이 있는 게임만 미리보기
-  // 위에 그 칸을 낸다. 없는 게임에서 빈 상자가 여백만 남기지 않게 한다.
-  const hasUngroupedSlots = game.slots.some((slot) => !slot.groupId);
+  // 옵션은 **지금 보는 파트에 쓰이는 것만** 낸다(2026-09-08 사용자 요청 —
+  // "점수 기록칸이나 골대 전개도를 선택하면 운동장 옵션은 모두 숨겨줘").
+  // 골대 전개도처럼 고칠 것이 하나도 없는 파트에서는 두 줄이 통째로 사라진다 —
+  // 빈 상자가 여백만 남기지 않게 한다.
+  const hasUngroupedSlots = hasUngroupedFormSlots(game, currentPart.id);
+  const visibleGroups = formGroupsFor(game, currentPart.id);
 
   const formProps = {
     game,
@@ -146,6 +153,7 @@ function EditorForm({
     onChange: handleChange,
     selectedPresetByGroup,
     onApplyPreset: handleApplyPreset,
+    partId: currentPart.id,
   };
 
   return (
@@ -233,16 +241,18 @@ function EditorForm({
       {/* 팀 줄 — 그룹(팀)마다 제목·색·대형이 한 줄이다. 축구 게임판이라면 홈과
           원정이 나란히 서고, 폭이 모자라면 원정이 아랫줄로 내려간다. 게임을
           알아서가 아니라 `game.groups`를 그대로 늘어놓은 결과다. */}
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-x-8 gap-y-2">
-        {game.groups.map((group) => (
-          <CustomizationForm
-            key={group.id}
-            {...formProps}
-            groupIds={[group.id]}
-            includeUngrouped={false}
-          />
-        ))}
-      </div>
+      {visibleGroups.length > 0 && (
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-x-8 gap-y-2">
+          {visibleGroups.map((group) => (
+            <CustomizationForm
+              key={group.id}
+              {...formProps}
+              groupIds={[group.id]}
+              includeUngrouped={false}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
