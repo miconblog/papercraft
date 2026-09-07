@@ -27,9 +27,9 @@
 <line x1="15" y1="134" x2="195" y2="134" />
 <line x1="15" y1="38" x2="195" y2="38" stroke-width="0.5" stroke="#1a1a1a" />
 </g>
-<text x="30" y="32" font-size="4" dominant-baseline="central" text-anchor="middle">판</text>
-<text x="82.5" y="32" font-size="4" dominant-baseline="central" text-anchor="middle">이름</text>
-<text x="157.5" y="32" font-size="4" dominant-baseline="central" text-anchor="middle">이름</text>
+<line x1="15" y1="26" x2="45" y2="38" stroke="#6b7280" stroke-width="0.3" />
+<text x="34.8" y="29.6" font-size="3.6" dominant-baseline="central" text-anchor="middle">이름</text>
+<text x="25.2" y="34.64" font-size="3.6" dominant-baseline="central" text-anchor="middle">판</text>
 <text x="30" y="42" font-size="3.6" dominant-baseline="central" fill="#6b7280" text-anchor="middle">1</text>
 <text x="30" y="50" font-size="3.6" dominant-baseline="central" fill="#6b7280" text-anchor="middle">2</text>
 <text x="30" y="58" font-size="3.6" dominant-baseline="central" fill="#6b7280" text-anchor="middle">3</text>

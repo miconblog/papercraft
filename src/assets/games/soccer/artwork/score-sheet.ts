@@ -4,18 +4,17 @@
  * 사용자가 만든 판은 종이 네 변에 손글씨로 점수를 이어 적었다. 그 자리를 보드에서
  * 떼어내 별지로 옮긴 것이 이 파트다 — 운동장에는 공이 지나갈 면만 남긴다.
  *
- * **표는 판 · 이름 · 이름 세 칸이고 안은 전부 비어 있다**(2026-09-08 사용자 요청).
- * 예전에는 팀 칸 위에 파랑·빨강 색 막대를 얹어 "파랑 팀 = 파란 마커"를 맞물리게
- * 했는데, 그 막대를 뺐다 — 팀 이름을 아이가 직접 쓰는 자리라 색이 미리 정해져
- * 있으면 오히려 걸린다. 팀 색 슬롯은 남아 운동장 마커를 칠하지만, 이 시트에는
- * 더 이상 나타나지 않는다.
+ * **표 안은 전부 비어 있다**(2026-09-08 사용자 요청). 예전에는 팀 칸 위에 파랑·
+ * 빨강 색 막대를 얹어 "파랑 팀 = 파란 마커"를 맞물리게 했는데, 그 막대를 뺐다 —
+ * 팀 이름을 아이가 직접 쓰는 자리라 색이 미리 정해져 있으면 오히려 걸린다.
+ * 팀 색 슬롯은 남아 운동장 마커를 칠하지만, 이 시트에는 더 이상 나타나지 않는다.
+ *
+ * 머리글은 **왼쪽 첫 칸 하나뿐**이다. 사선을 긋고 위에 "이름", 아래에 "판"을
+ * 적는 학교 성적표식 칸이다(같은 날 사용자 요청) — 세로로 읽으면 판 번호,
+ * 가로로 읽으면 그 팀 이름이라는 것을 칸 하나가 말해 준다. 오른쪽 두 칸은
+ * 머리글까지 비어 있어 아이가 팀 이름을 쓴다.
  */
-import {
-  SCORE_HEADER_Y_MM,
-  SCORE_TABLE,
-  SCORE_TABLE_WIDTH_MM,
-  SHEETS,
-} from '../dimensions.ts';
+import { SCORE_TABLE, SCORE_TABLE_WIDTH_MM, SHEETS } from '../dimensions.ts';
 import {
   ART_LAYER_ID,
   INK_COLOR,
@@ -37,6 +36,15 @@ const {
   rows,
   indexColumnMm,
 } = SCORE_TABLE;
+
+/**
+ * 사선 머리글의 글자 크기.
+ *
+ * 사선이 칸을 가르므로 큰 글자를 넣으면 선에 닿는다. 줄 번호(3.6mm)와 같은
+ * 크기로 두면 30×12mm 칸에서 두 글자가 선을 피해 앉는다 — 최소 배율 0.7에서
+ * 2.52mm라 가독성 하한도 지킨다.
+ */
+const HEADER_FONT_MM = 3.6;
 
 const tableRightMm = xMm + SCORE_TABLE_WIDTH_MM;
 const bodyTopMm = headerYMm + headerHeightMm;
@@ -83,19 +91,25 @@ export const renderScoreSheet = (): string =>
           }),
         ]),
 
-        // 머리글 셋: 판 · 이름 · 이름. 팀 칸 아래는 비워 두고 아이가 이름을
-        // 쓴다 — 어느 칸이 어느 팀인지도 그 손글씨가 정한다.
-        text('판', xMm + indexColumnMm / 2, SCORE_HEADER_Y_MM, 4, {
-          'text-anchor': 'middle',
+        // 왼쪽 첫 칸의 사선 머리글 — 위 "이름", 아래 "판". 오른쪽 두 칸은
+        // 머리글까지 비워 두고 아이가 팀 이름을 쓴다.
+        line(xMm, headerYMm, xMm + indexColumnMm, headerYMm + headerHeightMm, {
+          stroke: RULE_COLOR,
+          'stroke-width': 0.3,
         }),
-        ...([0, 1] as const).map((i) =>
-          text(
-            '이름',
-            (columnEdgesMm[i + 1] + columnEdgesMm[i + 2]) / 2,
-            SCORE_HEADER_Y_MM,
-            4,
-            { 'text-anchor': 'middle' },
-          ),
+        text(
+          '이름',
+          xMm + indexColumnMm * 0.66,
+          headerYMm + headerHeightMm * 0.3,
+          HEADER_FONT_MM,
+          { 'text-anchor': 'middle' },
+        ),
+        text(
+          '판',
+          xMm + indexColumnMm * 0.34,
+          headerYMm + headerHeightMm * 0.72,
+          HEADER_FONT_MM,
+          { 'text-anchor': 'middle' },
         ),
         ...Array.from({ length: rows }, (_, i) =>
           text(

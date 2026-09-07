@@ -395,16 +395,6 @@ export const SCORE_TABLE_WIDTH_MM =
   SCORE_TABLE.indexColumnMm + SCORE_TABLE.teamColumnMm * 2; // 180
 
 /**
- * 헤더 행 글자의 세로 중심.
- *
- * 예전에는 헤더 위에 팀 색 막대(2.5mm)를 얹고 그 아래 남는 칸의 가운데였다.
- * **막대를 뺐다**(2026-09-08 사용자 요청 — "점수 기록도 파랑 빨강 필요없이,
- * 판/이름으로 빈칸으로") — 이제 헤더 칸 전체의 가운데다.
- */
-export const SCORE_HEADER_Y_MM =
-  SCORE_TABLE.headerYMm + SCORE_TABLE.headerHeightMm / 2;
-
-/**
  * 파트 id에 대응하는 정적 자산 경로.
  *
  * 도안 정의가 여기서 경로를 받는다 — 아트워크 생성기(`./artwork/`)에서 받아 오면
