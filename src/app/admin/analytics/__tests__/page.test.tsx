@@ -16,6 +16,8 @@ vi.mock('next/headers', () => ({
         ? { name, value: cookieStore.get(name) }
         : undefined,
   }),
+  // 공유 링크의 앞부분을 만들 때 읽는다.
+  headers: async () => new Headers({ host: 'daddyscraft.example' }),
 }));
 
 const { default: AnalyticsPage } = await import('../page');
@@ -54,5 +56,16 @@ describe('AnalyticsPage', () => {
     vi.stubEnv('ANALYTICS_ADMIN_PASSWORD', PASSWORD);
     cookieStore.set('dc_admin', issueSession(PASSWORD));
     await expect(rendering()).resolves.toBeTruthy();
+  });
+
+  it('공유 링크는 NEXT_PUBLIC_SITE_URL 을 쓴다 — 미리보기 주소를 뿌리면 안 된다', async () => {
+    vi.stubEnv('ANALYTICS_ADMIN_PASSWORD', PASSWORD);
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://daddyscraft.kr/');
+    cookieStore.set('dc_admin', issueSession(PASSWORD));
+
+    const tree = JSON.stringify(await rendering());
+    // 지금 보고 있는 호스트(daddyscraft.example)가 아니라 설정값이어야 한다.
+    expect(tree).toContain('https://daddyscraft.kr');
+    expect(tree).not.toContain('daddyscraft.example');
   });
 });
