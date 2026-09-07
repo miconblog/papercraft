@@ -1,30 +1,35 @@
 /**
  * 조립물 파트 — 골대 전개도 2벌 (IDE-004, 2026-09-06 재재재작도)
  *
- * 구조는 **뚜껑 없는 쟁반**이다 — 쓰레받기(사용자 표현으로 "국자") 모양. 바닥
- * 하나, 벽 셋(뒤·좌·우), 위는 뚫려 있고, 앞으로 바닥이 그대로 뻗어 나온
- * **입술**이 있다.
+ * 구조는 **뚜껑 달린 쟁반**이다 — 쓰레받기(사용자 표현으로 "국자") 모양에 뒷벽
+ * 위로 뚜껑이 하나 더 붙는다. 바닥 하나, 벽 셋(뒤·좌·우), 그 위를 덮는 뚜껑,
+ * 앞으로 바닥이 그대로 뻗어 나온 **입술**.
  *
  * 전개도 한 벌:
  *
  * ```
- *      ┌──┬────────────┬──┐      ← 모서리 탭 · 뒷벽 · 모서리 탭
- *   ┌──┼──┼────────────┼──┼──┐   ← 겹 · 옆벽 · 바닥 · 옆벽 · 겹
- *   └──┴──┤            ├──┴──┘
- *         │    입술    │          ← 바닥이 그대로 앞으로 뻗는다
- *         └────────────┘
+ *      ┌─┬────────────┬─┐        ← 귀 · 뚜껑 · 귀
+ *      ├─┼────────────┼─┤
+ *      ┌─┴────────────┴─┐        (뚜껑은 뒷벽 위에 경첩처럼 달린다)
+ *      │      뒷벽      │
+ *   ┌──┼──┬──────────┬──┼──┐     ← 겹 · 옆벽 · 바닥 · 옆벽 · 겹
+ *   └──┴──┤          ├──┴──┘
+ *         │   입술   │            ← 바닥이 그대로 앞으로 뻗는다
+ *         └──────────┘
  * ```
  *
- * 왜 이 모양인지는 `../dimensions.ts`의 `GOAL` 주석에 네 단계로 적었다. 한 줄로
- * 줄이면 **지붕을 없애니 창도 풀칠탭도 칼집도 필요 없어졌기 때문**이다. 위가
- * 뚫려 있어 들어간 공이 그대로 보이고, 바닥이 입술로 이어져 공이 넘을 턱이 없다.
+ * 왜 이 모양인지는 `../dimensions.ts`의 `GOAL` 주석에 다섯 단계로 적었다. 요지는
+ * 두 가지다 — **지붕을 없애니 창도 풀칠탭도 칼집도 필요 없어졌고**, 그 뒤 **위가
+ * 뚫려 있으면 골포스트를 맞고 튄 공이 밖으로 나가서**(2026-09-08 사용자 지적)
+ * 뚜껑만 경첩식으로 되돌렸다. 붙일 것이 없으므로 풀도 칼도 돌아오지 않았다.
  *
  * **풀도 칼도 쓰지 않는다.** 뒷벽 양 끝의 모서리 탭을 옆벽 안쪽에 대고, 그 위로
- * 옆벽의 겹을 접어 내리면 뒷모서리가 물린다. 가위와 접기만으로 끝난다 — 앞선
- * 도안이 요구하던 풀칠(2026-09-05)과 칼집(2026-09-06 오전)이 둘 다 사라졌다.
+ * 옆벽의 겹을 접어 내리면 뒷모서리가 물린다. 뚜껑은 양옆 귀를 옆벽 바깥에
+ * 씌워 닫는다. 가위와 접기만으로 끝난다.
  *
- * 접는선은 **전부 골접기**다. 인쇄면이 쟁반 안쪽을 향해야 위에서 내려다볼 때
- * 그물이 보이고, 겹과 모서리 탭도 안쪽으로 접히므로 방향이 하나로 통일된다.
+ * 접는선은 **뚜껑 귀 둘만 산접기, 나머지는 전부 골접기**다. 인쇄면이 쟁반 안쪽을
+ * 향해야 그물이 안에서 보이고, 겹과 모서리 탭도 안으로 접힌다. 귀만 반대인 것은
+ * 상자 뚜껑처럼 벽을 **바깥에서** 감싸야 들리지 않기 때문이다.
  *
  * 좌표는 전부 시트 절대 좌표로 펼친다. 레이어에 transform을 걸면 렌더러가
  * 표시선 굵기를 다시 입힐 때 변환까지 따라가야 해서 손해다.
@@ -53,15 +58,18 @@ const {
   wallHeightMm,
   trayDepthMm,
   lipDepthMm,
+  lidDepthMm,
+  lidFlapMm,
   hemMm,
   cornerTabMm,
 } = GOAL;
 
 /**
- * 전개도 한 벌의 구획선. 원점은 전개도 좌상단(= 뒷벽 윗변의 왼쪽 끝)이다.
+ * 전개도 한 벌의 구획선. 원점은 전개도 좌상단(= 뚜껑 앞 모서리의 왼쪽 끝)이다.
  *
- * 가로는 겹·옆벽·바닥·옆벽·겹 다섯 칸, 세로는 뒷벽·바닥·입술 세 칸이다.
- * 모서리 탭은 뒷벽 양 끝에 붙어 위쪽 칸의 빈자리를 쓴다.
+ * 가로는 겹·옆벽·바닥·옆벽·겹 다섯 칸, 세로는 뚜껑·뒷벽·바닥·입술 네 칸이다.
+ * 모서리 탭은 뒷벽 양 끝, 뚜껑 귀는 뚜껑 양 끝에 붙어 옆 칸의 빈자리를 쓴다 —
+ * 둘 다 옆벽 폭(24mm) 안이라 전개도가 옆으로 더 넓어지지 않는다.
  */
 const gridOf = (originXMm: number, originYMm: number) => ({
   x0: originXMm,
@@ -73,9 +81,14 @@ const gridOf = (originXMm: number, originYMm: number) => ({
   /** 왼쪽 모서리 탭의 바깥 끝. 뒷벽 왼쪽 모서리에서 앞으로 뻗는다. */
   tabLeft: originXMm + hemMm + wallHeightMm - cornerTabMm,
   tabRight: originXMm + hemMm + wallHeightMm + mouthWidthMm + cornerTabMm,
-  y0: originYMm,
-  y1: originYMm + wallHeightMm,
-  y2: originYMm + wallHeightMm + trayDepthMm,
+  /** 뚜껑 귀의 바깥 끝. 탭보다 좁아 y0 자리에 턱이 하나 생긴다. */
+  flapLeft: originXMm + hemMm + wallHeightMm - lidFlapMm,
+  flapRight: originXMm + hemMm + wallHeightMm + mouthWidthMm + lidFlapMm,
+  /** 뚜껑 앞 모서리 — 덮으면 골문 위를 가로지르는 크로스바가 된다. */
+  yLid: originYMm,
+  y0: originYMm + lidDepthMm,
+  y1: originYMm + lidDepthMm + wallHeightMm,
+  y2: originYMm + lidDepthMm + wallHeightMm + trayDepthMm,
   y3: originYMm + GOAL_NET_SIZE.heightMm,
 });
 
@@ -91,8 +104,11 @@ type Grid = ReturnType<typeof gridOf>;
 const outline = (g: Grid): string =>
   path(
     [
-      // 뒷벽 윗변 — 좌우 모서리 탭까지 한 줄로 이어진다
-      `M ${num(g.tabLeft)} ${num(g.y0)}`,
+      // 뚜껑 앞 모서리(크로스바) — 좌우 귀까지 한 줄로 이어진다
+      `M ${num(g.flapLeft)} ${num(g.yLid)}`,
+      `H ${num(g.flapRight)}`,
+      // 오른쪽 귀 → 귀보다 넓은 모서리 탭으로 한 턱 나간다
+      `V ${num(g.y0)}`,
       `H ${num(g.tabRight)}`,
       `V ${num(g.y1)}`,
       // 오른벽·겹의 뒷변 → 겹 바깥 → 앞변
@@ -106,7 +122,10 @@ const outline = (g: Grid): string =>
       // 왼벽·겹의 앞변 → 겹 바깥 → 뒷변
       `H ${num(g.x0)}`,
       `V ${num(g.y1)}`,
+      // 왼쪽 모서리 탭 → 한 턱 들어와 왼쪽 귀
       `H ${num(g.tabLeft)}`,
+      `V ${num(g.y0)}`,
+      `H ${num(g.flapLeft)}`,
       'Z',
     ].join(' '),
   );
@@ -118,7 +137,9 @@ const outline = (g: Grid): string =>
  * 모두 인쇄면끼리 마주 보는 방향이다. 방향이 하나뿐이라 아이에게 설명할 것이
  * "전부 같은 쪽으로 접는다" 한 줄로 끝난다.
  */
-const folds = (g: Grid): string[] => [
+const valleyFolds = (g: Grid): string[] => [
+  // 뚜껑과 뒷벽 — 여기가 경첩이다
+  line(g.x2, g.y0, g.x3, g.y0),
   // 뒷벽과 바닥
   line(g.x2, g.y1, g.x3, g.y1),
   // 옆벽과 바닥
@@ -132,21 +153,40 @@ const folds = (g: Grid): string[] => [
   line(g.x3, g.y0, g.x3, g.y1),
 ];
 
+/**
+ * 뚜껑 귀 둘만 **산접기**다.
+ *
+ * 상자 뚜껑을 씌우듯 옆벽을 바깥에서 감싸야 뚜껑이 들리지 않는다. 안으로 접으면
+ * 옆벽의 겹과 같은 자리를 다투고, 접지 않고 얹어만 두면 공이 튈 때 열린다.
+ */
+const mountainFolds = (g: Grid): string[] => [
+  line(g.x2, g.yLid, g.x2, g.y0),
+  line(g.x3, g.yLid, g.x3, g.y0),
+];
+
 /** 그물 눈 간격. 촘촘하면 면이 통째로 검게 뭉쳐 면 이름까지 묻힌다. */
 const NET_SPACING_MM = 4;
 
 /**
- * 그물 격자 — 벽 셋의 **안쪽 면**에만 친다.
+ * 그물 격자 — 뚜껑과 벽 셋의 **안쪽 면**에 친다.
  *
- * 인쇄면이 쟁반 안을 향하므로 위에서 내려다보면 이 격자가 보인다. 골대를
- * 골대로 보이게 하는 것이 이 격자다 — 지붕과 크로스바가 없어졌으므로 남은
- * 단서가 그물뿐이다.
+ * 인쇄면이 쟁반 안을 향하므로 골문으로 들여다보면 이 격자가 보인다. 뚜껑을
+ * 덮으면 위 그물, 뒤·옆이 각각 뒷그물·옆그물이다 — 골문 네 면이 모두 그물로
+ * 둘러싸여 골대로 읽힌다.
  *
  * 바닥과 입술에는 넣지 않는다. 공이 지나가고 멈추는 면이라 비워 두어야 공이
  * 눈에 띄고, 입술은 운동장 위에 얹히므로 잉크가 있으면 라인과 겹쳐 지저분하다.
  */
 const netArt = (g: Grid): string[] => [
   group({ stroke: RULE_COLOR, 'stroke-width': 0.12, fill: 'none' }, [
+    // 뚜껑 — 앞 모서리는 크로스바 자리로 비운다
+    ...netHatch(
+      g.x2,
+      g.yLid + CROSSBAR_BAND_MM,
+      mouthWidthMm,
+      lidDepthMm - CROSSBAR_BAND_MM,
+      NET_SPACING_MM,
+    ),
     // 뒷벽
     ...netHatch(g.x2, g.y0, mouthWidthMm, wallHeightMm, NET_SPACING_MM),
     // 옆벽 둘
@@ -154,6 +194,24 @@ const netArt = (g: Grid): string[] => [
     ...netHatch(g.x3, g.y1, wallHeightMm, trayDepthMm, NET_SPACING_MM),
   ]),
 ];
+
+/** 크로스바로 비워 두는 뚜껑 앞 띠의 폭. 격자가 덮으면 굵은 선이 묻힌다. */
+const CROSSBAR_BAND_MM = 4;
+
+/**
+ * 크로스바 — 뚜껑 **앞 모서리**에 얹는 굵은 선.
+ *
+ * 뚜껑을 덮으면 이 선이 골문 바로 위를 가로지른다. 지붕을 없앴다가 뚜껑으로
+ * 돌아오면서 크로스바가 같이 돌아왔다 — 정면에서 골대로 알아보게 하는 한 줄이다.
+ */
+const crossbar = (g: Grid): string =>
+  line(
+    g.x2,
+    g.yLid + CROSSBAR_BAND_MM / 2,
+    g.x3,
+    g.yLid + CROSSBAR_BAND_MM / 2,
+    { stroke: INK_COLOR, 'stroke-width': 1, 'stroke-linecap': 'round' },
+  );
 
 /**
  * 골라인 자리 — 벽이 끝나고 입술이 시작되는 자리에 긋는 한 줄.
@@ -177,7 +235,7 @@ const goalLineOnLip = (g: Grid): string[] => [
  * 글자 뒤에 흰 바탕을 깐다 — 벽에는 그물 격자가 깔려 있어 그냥 얹으면 읽히지
  * 않는다.
  */
-const faceLabels = (g: Grid, index: number): string[] => {
+const faceLabels = (g: Grid): string[] => {
   const sizeMm = 2.6;
   const label = (
     value: string,
@@ -213,7 +271,14 @@ const faceLabels = (g: Grid, index: number): string[] => {
     ...label('겹', (g.x4 + g.x5) / 2, (g.y1 + g.y2) / 2, -90),
     ...label('탭', (g.tabLeft + g.x2) / 2, (g.y0 + g.y1) / 2),
     ...label('탭', (g.x3 + g.tabRight) / 2, (g.y0 + g.y1) / 2),
-    ...label(`골대 ${index + 1} 바닥`, (g.x2 + g.x3) / 2, (g.y1 + g.y2) / 2),
+    ...label(
+      '뚜껑 — 덮으면 위가 막힌다',
+      (g.x2 + g.x3) / 2,
+      (g.yLid + g.y0) / 2,
+    ),
+    ...label('귀', (g.flapLeft + g.x2) / 2, (g.yLid + g.y0) / 2, -90),
+    ...label('귀', (g.x3 + g.flapRight) / 2, (g.yLid + g.y0) / 2, -90),
+    ...label('골대 바닥', (g.x2 + g.x3) / 2, (g.y1 + g.y2) / 2),
     ...label('↑ 이 선을 골라인에 맞춘다', (g.x2 + g.x3) / 2, g.y2 + 5),
     ...label(
       '입술 — 운동장 위에 얹는다',
@@ -244,6 +309,27 @@ export const goalNetFaces = (
 ): readonly Face[] => {
   const g = gridOf(originXMm, originYMm);
   return [
+    {
+      id: 'lid',
+      xMm: g.x2,
+      yMm: g.yLid,
+      widthMm: mouthWidthMm,
+      heightMm: lidDepthMm,
+    },
+    {
+      id: 'lid-flap-left',
+      xMm: g.flapLeft,
+      yMm: g.yLid,
+      widthMm: lidFlapMm,
+      heightMm: lidDepthMm,
+    },
+    {
+      id: 'lid-flap-right',
+      xMm: g.x3,
+      yMm: g.yLid,
+      widthMm: lidFlapMm,
+      heightMm: lidDepthMm,
+    },
     {
       id: 'wall-back',
       xMm: g.x2,
@@ -310,10 +396,14 @@ export const goalNetFaces = (
   ];
 };
 
-/** 시트 위 두 벌의 좌상단. 왼쪽 단에 위아래로 놓고 오른쪽 단은 안내 몫이다. */
+/**
+ * 시트 위 전개도의 좌상단. **한 장에 한 벌**이다(2026-09-08).
+ *
+ * 뚜껑이 붙어 한 벌이 134×108mm가 되면서 두 벌을 한 장에 앉힐 수 없게 됐다.
+ * 골대 두 개는 이 장을 두 번 뽑아 만든다(`defaultCopies` 2).
+ */
 export const GOAL_NET_ORIGINS: ReadonlyArray<readonly [number, number]> = [
-  [8, 26],
-  [8, 108],
+  [10, 26],
 ];
 
 /**
@@ -347,7 +437,8 @@ const assemblyDiagrams = (leftMm: number, topMm: number): string[] => {
   const caption = (value: string, i: number) =>
     label(value, centerXMm(i), rowYMm(i) + ASSEMBLY_DIAGRAM_HEIGHT_MM + 4, 3);
 
-  // ① 벽 셋을 세운다 — 앞에서 본 쟁반. 뚜껑이 없다는 것이 이 컷의 요점이다.
+  // ① 벽 셋을 세운다 — 앞에서 본 쟁반. 아직 위가 열려 있고, 그 자리를 뚜껑이
+  // 덮는다는 것이 이 컷의 요점이다.
   const base0 = baseOf(0);
   const w = 30;
   const h = 11;
@@ -361,12 +452,12 @@ const assemblyDiagrams = (leftMm: number, topMm: number): string[] => {
       { stroke: RULE_COLOR, 'stroke-width': 0.12, fill: 'none' },
       netHatch(a + 0.8, base0 - h + 0.8, w - 1.6, h - 1.6, 3),
     ),
-    // 위가 뚫려 있다는 표시 — 열린 변에만 점선을 얹는다.
+    // 아직 열려 있는 변. 여기를 뚜껑이 덮는다(③).
     path(`M ${num(a)} ${num(base0 - h)} H ${num(a + w)}`, {
       ...thin,
       'stroke-dasharray': '1.5 1.5',
     }),
-    label('위는 뚫려 있다', centerXMm(0), base0 - h - 2.4),
+    label('여기를 뚜껑이 덮는다', centerXMm(0), base0 - h - 2.4),
     caption('① 벽 셋을 세운다', 0),
   ];
 
@@ -412,23 +503,44 @@ const assemblyDiagrams = (leftMm: number, topMm: number): string[] => {
     caption('② 겹으로 탭을 문다', 1),
   ];
 
-  // ③ 옆에서 본 완성 — 입술이 바닥과 한 장으로 이어져 턱이 없다.
+  /**
+   * ③ 뚜껑 — 앞에서 본 단면. 뚜껑이 벽 위에 얹히고 양옆 귀가 **바깥으로** 내려와
+   * 벽을 감싼다. 이 도안에서 유일하게 반대로 접는 자리라 그림이 필요하다.
+   */
   const base2 = baseOf(2);
-  const c = centerXMm(2) - 16;
+  const lw = 30;
+  const lh = 11;
+  const c = centerXMm(2) - lw / 2;
   const three = [
-    // 바닥 + 입술 (한 줄), 뒷벽, 겹.
-    path(`M ${num(c)} ${num(base2)} H ${num(c + 32)}`, bold),
-    path(`M ${num(c)} ${num(base2)} V ${num(base2 - 10)}`, bold),
-    path(`M ${num(c)} ${num(base2 - 10)} H ${num(c + 3)}`, bold),
-    // 공이 입술을 타고 굴러 들어온다.
-    path(`M ${num(c + 30)} ${num(base2 - 2.5)} H ${num(c + 12)}`, thin),
+    // 쟁반 단면 — 옆벽 둘과 바닥.
     path(
-      `M ${num(c + 13.6)} ${num(base2 - 3.7)} L ${num(c + 11.6)} ${num(base2 - 2.5)} L ${num(c + 13.6)} ${num(base2 - 1.3)}`,
+      `M ${num(c)} ${num(base2 - lh)} V ${num(base2)} H ${num(c + lw)} V ${num(base2 - lh)}`,
+      bold,
+    ),
+    // 뚜껑 — 벽 위에 얹혀 좌우로 조금 넘어간다. 벽선과 겹치지 않게 살짝 띄워야
+    // 귀가 벽 **바깥**을 감싼다는 것이 보인다.
+    path(`M ${num(c - 2)} ${num(base2 - lh - 1)} H ${num(c + lw + 2)}`, bold),
+    // 귀 둘 — 벽 바깥으로 내려와 감싼다.
+    path(
+      `M ${num(c - 2)} ${num(base2 - lh - 1)} V ${num(base2 - lh + 5)}`,
+      bold,
+    ),
+    path(
+      `M ${num(c + lw + 2)} ${num(base2 - lh - 1)} V ${num(base2 - lh + 5)}`,
+      bold,
+    ),
+    // 뚜껑이 내려오는 방향.
+    path(
+      `M ${num(c + lw / 2 - 3)} ${num(base2 - lh - 7)} A 5 5 0 0 1 ${num(c + lw / 2 + 2)} ${num(base2 - lh - 2.5)}`,
       thin,
     ),
-    label('입술', c + 26, base2 + 3.4),
-    label('턱이 없다', c + 13, base2 + 3.4),
-    caption('③ 공이 굴러 들어온다', 2),
+    path(
+      `M ${num(c + lw / 2 + 0.2)} ${num(base2 - lh - 4.1)} L ${num(c + lw / 2 + 2.2)} ${num(base2 - lh - 2.1)} L ${num(c + lw / 2 + 4)} ${num(base2 - lh - 4.3)}`,
+      thin,
+    ),
+    label('귀', c - 5.5, base2 - lh + 4),
+    label('귀', c + lw + 5.5, base2 - lh + 4),
+    caption('③ 뚜껑을 덮고 귀를 씌운다', 2),
   ];
 
   // ④ 위에서 본 놓는 자리 — 골라인 눈금에 입술 좌우 끝을 맞춘다.
@@ -464,7 +576,7 @@ const assemblyDiagrams = (leftMm: number, topMm: number): string[] => {
 
 export const renderGoals = (): string => {
   const grids = GOAL_NET_ORIGINS.map(([x, y]) => gridOf(x, y));
-  // 시트를 두 단으로 쓴다 — 왼쪽에 전개도 두 벌, 오른쪽에 접는 법과 도해.
+  // 시트를 두 단으로 쓴다 — 왼쪽에 전개도, 오른쪽에 접는 법과 도해.
   const assemblyLeftMm = 152;
   const assemblyTopMm = 32;
   const assemblyColumnMm = 120;
@@ -488,20 +600,22 @@ export const renderGoals = (): string => {
         'cut',
         grids.map((g) => outline(g)),
       ),
-      markLayer('fold-valley', grids.flatMap(folds)),
+      markLayer('fold-valley', grids.flatMap(valleyFolds)),
+      markLayer('fold-mountain', grids.flatMap(mountainFolds)),
 
       group({ id: ART_LAYER_ID, fill: INK_COLOR, stroke: 'none' }, [
-        text('골대 전개도 · 2개', 76, 12, 5, { 'text-anchor': 'middle' }),
+        text('골대 전개도 · 1개', 77, 12, 5, { 'text-anchor': 'middle' }),
         text(
-          `골문 ${num(mouthWidthMm)}×${num(wallHeightMm)}mm · 풀도 칼도 쓰지 않는다`,
-          76,
+          `골문 ${num(mouthWidthMm)}×${num(wallHeightMm)}mm · 풀도 칼도 쓰지 않는다 · 두 장 뽑는다`,
+          77,
           19,
           3,
           { fill: RULE_COLOR, 'text-anchor': 'middle' },
         ),
         ...grids.flatMap(netArt),
+        ...grids.map((g) => crossbar(g)),
         ...grids.flatMap(goalLineOnLip),
-        ...grids.flatMap((g, i) => faceLabels(g, i)),
+        ...grids.flatMap(faceLabels),
 
         text('접는 법', assemblyLeftMm, assemblyTopMm, 4, {
           'text-anchor': 'start',

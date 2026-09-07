@@ -68,15 +68,19 @@ describe('parseArtwork', () => {
       expect(fold.dashMm).toEqual(MARK_STYLES['fold-valley'].dashMm);
       expect(fold.fixedStroke).toBe(true);
     }
-    // 표시선이 통째로 빠졌던 회귀를 여기서 잡는다 — 전개도 2벌의 바깥 윤곽과
-    // 접는선(벌마다 일곱)이 전부 읽혀야 한다.
+    // 표시선이 통째로 빠졌던 회귀를 여기서 잡는다 — 전개도 한 벌의 바깥 윤곽과
+    // 골접기 여덟, 산접기 둘(뚜껑 귀)이 전부 읽혀야 한다.
     const cuts = paths(art.items).filter((p) => p.mark === 'cut');
+    const mountains = paths(art.items).filter(
+      (p) => p.mark === 'fold-mountain',
+    );
     // 풀칠면도 칼집도 없다(2026-09-06) — 겹으로 탭을 물어 잠근다.
     const glues = paths(art.items).filter((p) => p.mark === 'glue');
-    expect(cuts.length).toBe(2);
-    expect(folds.length).toBe(14);
+    expect(cuts.length).toBe(1);
+    expect(folds.length).toBe(8);
+    expect(mountains.length).toBe(2);
     expect(glues.length).toBe(0);
-    for (const mark of [...cuts, ...folds]) {
+    for (const mark of [...cuts, ...folds, ...mountains]) {
       expect(
         mark.commands.some((c) => c.c !== 'Z' && 'x' in c && c.x !== 0),
       ).toBe(true);

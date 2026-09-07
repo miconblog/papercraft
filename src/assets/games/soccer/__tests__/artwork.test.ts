@@ -114,7 +114,7 @@ describe('골대 전개도', () => {
   const faces = goalNetFaces(0, 0);
   const face = (id: string) => faces.find((f) => f.id === id)!;
 
-  it('접으면 뚜껑 없는 쟁반이 된다 — 벽 셋의 높이가 같고 바닥을 둘러싼다', () => {
+  it('접으면 쟁반이 된다 — 벽 셋의 높이가 같고 바닥을 둘러싼다', () => {
     // 벽 셋의 높이가 같아야 쟁반 테두리가 기울지 않는다. 전개도에서 뒷벽은
     // 세로가, 옆벽은 가로가 벽 높이다.
     expect(face('wall-left').widthMm).toBe(face('wall-back').heightMm);
@@ -125,6 +125,30 @@ describe('골대 전개도', () => {
     // 옆벽 길이 = 바닥 깊이라야 앞뒤로 어긋나지 않는다.
     expect(face('wall-left').heightMm).toBe(face('floor').heightMm);
     expect(face('wall-right').heightMm).toBe(face('floor').heightMm);
+  });
+
+  /**
+   * 뚜껑은 2026-09-08에 돌아왔다. 위가 뚫려 있으면 골포스트를 맞고 튄 공이 그대로
+   * 밖으로 나간다는 사용자 지적이었다. 3번 구조의 지붕과 달리 뒷벽 위에 경첩처럼
+   * 달려 앞으로 덮이고, 양옆 귀를 옆벽 바깥에 씌워 닫으므로 붙일 것이 없다.
+   */
+  it('뚜껑이 쟁반 위를 빈틈없이 덮는다', () => {
+    const lid = face('lid');
+    const floor = face('floor');
+    // 뚜껑 깊이 = 바닥 깊이. 짧으면 앞이 열려 공이 나가고, 길면 골문 밖으로
+    // 처마처럼 튀어나와 공이 들어오는 길을 막는다.
+    expect(lid.heightMm).toBe(floor.heightMm);
+    expect(lid.widthMm).toBe(floor.widthMm);
+    // 뒷벽 위에 붙어 있어야 경첩이 된다 — 사이에 다른 면이 끼면 접는선이 는다.
+    expect(lid.yMm + lid.heightMm).toBe(face('wall-back').yMm);
+    // 귀는 뚜껑과 같은 깊이라야 옆벽 전체를 감싼다.
+    for (const id of ['lid-flap-left', 'lid-flap-right']) {
+      expect(face(id).heightMm).toBe(lid.heightMm);
+      // 귀가 옆벽보다 깊게 내려오면 바닥에 닿아 뚜껑이 뜬다.
+      expect(face(id).widthMm).toBeLessThan(GOAL.wallHeightMm);
+    }
+    // 귀가 모서리 탭보다 좁아야 전개도가 옆으로 넓어지지 않는다.
+    expect(GOAL.lidFlapMm).toBeLessThan(GOAL.cornerTabMm);
   });
 
   /**
@@ -151,9 +175,9 @@ describe('골대 전개도', () => {
     // 않은 설명이 따라 나온다.
     const doc = svgOf('goals');
     expect(doc.getElementById(MARK_STYLES.glue.layerId)).toBeNull();
-    // 오림선은 전개도 2벌의 바깥 윤곽뿐이다 — 뚫을 곳이 하나도 없다.
+    // 오림선은 전개도 바깥 윤곽 하나뿐이다 — 뚫을 곳이 하나도 없다.
     expect(doc.getElementById(MARK_STYLES.cut.layerId)!.children.length).toBe(
-      2,
+      1,
     );
   });
 
@@ -187,7 +211,8 @@ describe('골대 전개도', () => {
   });
 
   it('골문이 공 지름을 기준으로 넉넉하다', () => {
-    // 앞이 통째로 열려 있으므로 벽 높이가 곧 골문 높이다.
+    // 앞이 통째로 열려 있고 그 위를 뚜껑 앞 모서리가 덮으므로, 벽 높이가 곧
+    // 골문 높이이고 그 모서리가 크로스바다.
     expect(GOAL.wallHeightMm).toBeGreaterThanOrEqual(BALL.diameterMm * 2);
     // 폭은 공 넷이 나란히 설 만큼. 겨냥이 조금 빗나가도 들어간다.
     expect(GOAL.mouthWidthMm).toBeGreaterThanOrEqual(BALL.diameterMm * 4);
@@ -209,33 +234,36 @@ describe('골대 전개도', () => {
     }
   });
 
-  it('두 벌이 시트 안에 들어가고 서로 겹치지 않는다', () => {
-    const boxes = GOAL_NET_ORIGINS.map(([x, y]) => ({
-      left: x,
-      top: y,
-      right: x + GOAL_NET_SIZE.widthMm,
-      bottom: y + GOAL_NET_SIZE.heightMm,
-    }));
-    for (const box of boxes) {
-      expect(box.left).toBeGreaterThanOrEqual(0);
-      expect(box.top).toBeGreaterThanOrEqual(0);
-      expect(box.right).toBeLessThanOrEqual(SHEETS.goals.widthMm);
-      expect(box.bottom).toBeLessThanOrEqual(SHEETS.goals.heightMm);
-    }
-    // 두 벌을 위아래로 놓는다 — 오른쪽 단은 접는 법과 도해 몫이다.
-    expect(boxes[0].bottom).toBeLessThan(boxes[1].top);
+  /**
+   * 뚜껑이 붙어 한 벌이 134×108mm가 되면서 두 벌을 한 장에 앉힐 수 없게 됐다
+   * (2026-09-08). 한 장에 한 벌을 놓고 `defaultCopies`를 2로 올렸다.
+   */
+  it('한 장에 한 벌이 들어가고 안내 자리가 남는다', () => {
+    expect(GOAL_NET_ORIGINS).toHaveLength(1);
+    const [[x, y]] = GOAL_NET_ORIGINS;
+    expect(x).toBeGreaterThanOrEqual(0);
+    expect(y).toBeGreaterThanOrEqual(0);
+    expect(x + GOAL_NET_SIZE.widthMm).toBeLessThanOrEqual(SHEETS.goals.widthMm);
+    expect(y + GOAL_NET_SIZE.heightMm).toBeLessThanOrEqual(
+      SHEETS.goals.heightMm,
+    );
+    // 오른쪽 단이 접는 법과 도해 몫이다 — 전개도가 시트 폭의 절반을 넘으면
+    // 글을 넣을 자리가 없어 시트를 다시 짜야 한다.
+    expect(x + GOAL_NET_SIZE.widthMm).toBeLessThan(
+      SHEETS.goals.widthMm / 2 + 10,
+    );
   });
 
   it('오림선과 접는선이 모두 있다', () => {
     const doc = svgOf('goals');
-    for (const mark of ['cut', 'fold-valley'] as const) {
-      const layer = doc.getElementById(MARK_STYLES[mark].layerId)!;
-      expect(layer.children.length).toBeGreaterThanOrEqual(2);
-    }
-    // 접는선은 벌마다 일곱 — 뒷벽·옆벽 둘·겹 둘·모서리 탭 둘.
+    // 골접기 여덟 — 뚜껑·뒷벽·옆벽 둘·겹 둘·모서리 탭 둘.
     expect(
       doc.getElementById(MARK_STYLES['fold-valley'].layerId)!.children.length,
-    ).toBe(14);
+    ).toBe(8);
+    // 산접기 둘 — 뚜껑 귀뿐이다. 옆벽을 바깥에서 감싸야 뚜껑이 들리지 않는다.
+    expect(
+      doc.getElementById(MARK_STYLES['fold-mountain'].layerId)!.children.length,
+    ).toBe(2);
   });
 
   it('골라인 밖에 놓이고 필드는 입술만 쓴다', () => {
