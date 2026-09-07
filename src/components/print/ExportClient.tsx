@@ -272,7 +272,9 @@ export function ExportClient({
         </section>
       </div>
 
-      <div className="lg:sticky lg:top-8 lg:self-start">
+      {/* 미리보기는 위에 붙어 따라온다. 헤더도 상단 고정이라(53px) 그 아래로
+          내려 잡는다 — top-8이면 제목 뒤로 숨는다. */}
+      <div className="lg:sticky lg:top-20 lg:self-start">
         <h2 className="text-lg font-semibold">미리보기</h2>
         {previewPart && previewSelection && previewPlan ? (
           <>

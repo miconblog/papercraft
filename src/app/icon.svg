@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="아이와 함께 만드는 종이 보드게임">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="아빠 뭐해?, 아빠 공방">
   <!-- 공유용 이미지(opengraph-image)와 같은 표식이다 — 크림 바탕에 잉크 테두리
        종이 한 장, 벽돌빛 그림자, 청록 고리. 색은 src/lib/og-theme.ts와 같다. -->
   <rect width="32" height="32" rx="7" fill="#f7efe0"/>

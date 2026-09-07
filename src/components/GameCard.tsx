@@ -10,9 +10,9 @@ export function GameCard({ game }: { game: GameDefinition }) {
     <li>
       <Link
         href={`/games/${game.id}`}
-        className="group block h-full rounded-lg border border-border p-4 transition-colors hover:border-primary"
+        className="group block h-full rounded-lg border border-border-strong bg-popover p-4 shadow-[5px_5px_0_var(--border-strong)] transition-all hover:border-primary hover:shadow-[5px_5px_0_var(--retro-brick)]"
       >
-        <div className="overflow-hidden rounded-md border border-border/60 bg-paper">
+        <div className="overflow-hidden rounded-md border border-border bg-paper">
           <Image
             src={game.thumbnail}
             alt={`${game.title} 미리보기`}

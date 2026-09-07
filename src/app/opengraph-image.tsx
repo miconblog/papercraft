@@ -12,7 +12,7 @@ import { OG_BANDS, OG_COLORS } from '@/lib/og-theme';
  *
  * 색은 사이트와 같은 레트로 팔레트를 쓴다(`OG_COLORS`).
  */
-export const alt = '아이와 함께 만드는 종이 보드게임';
+export const alt = '아빠 뭐해?, 아빠 공방';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
