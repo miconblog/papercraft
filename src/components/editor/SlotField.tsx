@@ -180,6 +180,10 @@ function SlotInput({
         </div>
       );
 
+    case 'list':
+      // 목록 슬롯은 여기서 그리지 않는다 — 판 아래 패널(`ListSlotPanel`)이 맡는다.
+      return null;
+
     case 'choice':
       return (
         <Select

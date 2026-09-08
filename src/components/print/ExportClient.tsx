@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   defaultCustomization,
+  resolveParts,
   type GameCustomization,
   type GameDefinition,
 } from '@/lib/schema';
@@ -54,6 +55,13 @@ export function ExportClient({
   const customization =
     given ?? (hydrated && stored ? stored : defaultCustomization(game));
 
+  // 변형이 있는 파트(세계일주 게임판의 도시 수)는 지금 값의 크기·아트워크로
+  // 본다(IDE-016). 아래의 타일 계산·미리보기·행 표시가 전부 이 목록을 쓴다.
+  const parts = useMemo(
+    () => resolveParts(game, customization),
+    [game, customization],
+  );
+
   const [selections, setSelections] = useState<PartSelection[]>(() =>
     game.parts.map(defaultSelection),
   );
@@ -70,7 +78,7 @@ export function ExportClient({
   const plans = useMemo(() => {
     const result = new Map<string, TilePlan>();
     for (const selection of selections) {
-      const part = game.parts.find((p) => p.id === selection.partId);
+      const part = parts.find((p) => p.id === selection.partId);
       if (!part) continue;
       try {
         result.set(
@@ -86,11 +94,14 @@ export function ExportClient({
       }
     }
     return result;
-  }, [game, selections, marginMm]);
+  }, [parts, selections, marginMm]);
 
   const issues = useMemo(
-    () => (selections.length > 0 ? validateExportOptions(game, options) : []),
-    [game, options, selections.length],
+    () =>
+      selections.length > 0
+        ? validateExportOptions(game, options, customization)
+        : [],
+    [game, options, selections.length, customization],
   );
   const blocked = issues.filter((i) => i.blocking);
   const totalPages = selections.reduce((sum, selection) => {
@@ -129,7 +140,7 @@ export function ExportClient({
     );
 
   // 고른 파트만 미리 볼 수 있다. 고른 것이 사라지면 첫 파트로 되돌아간다.
-  const previewable = game.parts.filter((p) =>
+  const previewable = parts.filter((p) =>
     selections.some((s) => s.partId === p.id),
   );
   const previewPart =
@@ -204,7 +215,7 @@ export function ExportClient({
             </div>
           </div>
           <ul aria-label="뽑을 파트" className="mt-3 space-y-2">
-            {game.parts.map((part) => (
+            {parts.map((part) => (
               <PartOptionsRow
                 key={part.id}
                 part={part}

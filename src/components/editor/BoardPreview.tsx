@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   resolveVariant,
   slotsOfPart,
@@ -19,6 +19,7 @@ import {
 import { extractSvgInner, paintLayer, stripOuterSvgSize } from './svgOverlay';
 import { slotFieldId } from './SlotField';
 import { useMarkerDrag } from './useMarkerDrag';
+import { useMapViewport } from './useMapViewport';
 import { ROTATION_STEP_DEG, rotatedPoint } from '@/lib/customization/movement';
 
 /**
@@ -117,8 +118,51 @@ export function BoardPreview({
     };
   }, [game]);
 
+  // 동적 파트(세계일주 게임판)는 값에서 그때 그린다 — 목록·틀 슬롯이 바뀔 때만
+  // 서버에 다시 청한다. 나머지 값(말 이름·색)은 그림과 무관하므로 키에 넣지
+  // 않고, 요청 본문은 ref로 최신 값을 쓴다.
+  const customizationRef = useRef(customization);
   useEffect(() => {
-    if (!part.artwork) return;
+    customizationRef.current = customization;
+  });
+  const dynamicKey = part.dynamic
+    ? JSON.stringify([
+        customization.values[part.dynamic.listSlotId],
+        part.dynamic.frameSlotId
+          ? customization.values[part.dynamic.frameSlotId]
+          : null,
+      ])
+    : null;
+
+  useEffect(() => {
+    if (!part.dynamic) return;
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/games/${game.id}/artwork`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            partId: part.id,
+            customization: customizationRef.current,
+          }),
+          signal: controller.signal,
+        });
+        if (!res.ok) return;
+        const svg = await res.text();
+        if (!controller.signal.aborted) setBackground(svg);
+      } catch {
+        // 중단됐거나 서버가 없다(테스트) — 배경 없이 오버레이만 남는다.
+      }
+    }, 200);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [game.id, part.id, part.dynamic, dynamicKey]);
+
+  useEffect(() => {
+    if (!part.artwork || part.dynamic) return;
     let cancelled = false;
     // 상대 경로 fetch가 지원되지 않는 환경(테스트의 jsdom 등)도 있어
     // 동기·비동기 실패를 한 번에 잡는다 — 실패하면 "불러오는 중" 표시만
@@ -135,7 +179,7 @@ export function BoardPreview({
     return () => {
       cancelled = true;
     };
-  }, [part.artwork]);
+  }, [part.artwork, part.dynamic]);
 
   const paintedBackground = (() => {
     if (!background) return null;
@@ -175,6 +219,21 @@ export function BoardPreview({
   const rotateSlot = (slotId: string, point: SlotPoint, deltaDeg: number) => {
     onMoveSlot?.(slotId, rotatedPoint(point, deltaDeg));
   };
+
+  // 확대·축소·이동 — 지도 앱과 같은 손맛(IDE-016). 보기 전용 미리보기(인쇄 화면)
+  // 에서는 끈다 — 타일 경계 오버레이가 이 상자 밖에 있어 함께 움직이지 않는다.
+  const {
+    containerRef,
+    viewport,
+    panning,
+    zoomIn,
+    zoomOut,
+    reset: resetZoom,
+    canZoomIn,
+    canZoomOut,
+    containerHandlers,
+    stageStyle,
+  } = useMapViewport({ enabled: interactive });
 
   const { surfaceRef, draggingSlotId, markerHandlers } = useMarkerDrag({
     onMove: (slotId, point) => onMoveSlot?.(slotId, point),
@@ -229,207 +288,282 @@ export function BoardPreview({
     });
   };
 
+  const zoomed = viewport.scale > 1;
+
   return (
     <div
-      className="relative w-full overflow-hidden rounded-lg border border-border bg-paper"
-      style={{ aspectRatio: `${part.widthMm} / ${part.heightMm}` }}
+      ref={containerRef}
+      className={
+        'relative w-full overflow-hidden rounded-lg border border-border bg-paper ' +
+        (interactive
+          ? panning
+            ? 'cursor-grabbing'
+            : zoomed
+              ? 'cursor-grab'
+              : 'cursor-zoom-in'
+          : '')
+      }
+      style={{
+        aspectRatio: `${part.widthMm} / ${part.heightMm}`,
+        // 브라우저의 스크롤·핀치가 우리 제스처를 가로채지 못하게 — 지도 앱과 같다.
+        touchAction: interactive ? 'none' : undefined,
+      }}
+      role={interactive ? 'group' : undefined}
+      aria-label={
+        interactive
+          ? `${part.title} 미리보기 — 휠이나 +·- 키로 확대·축소, 빈 곳을 끌어서 이동, 0 키로 원래 크기`
+          : undefined
+      }
+      tabIndex={interactive ? 0 : undefined}
+      {...containerHandlers}
     >
-      {paintedBackground ? (
-        <div
-          className="absolute inset-0 [&>svg]:block [&>svg]:h-full [&>svg]:w-full"
-          // 도안 SVG는 우리 빌드 파이프라인이 만드는 정적 자산이다 — 사용자
-          // 입력이 아니라 신뢰할 수 있는 마크업이다.
-          dangerouslySetInnerHTML={{ __html: paintedBackground }}
-        />
-      ) : (
-        <div className="absolute inset-0 flex items-center justify-center text-sm text-paper-foreground">
-          미리보기를 불러오는 중이다…
-        </div>
-      )}
+      {/* 배경과 마커 오버레이를 한 무대에 놓고 무대를 통째로 확대·이동한다 —
+          둘이 따로 움직이면 마커가 판에서 미끄러진다. */}
+      <div className="absolute inset-0" style={stageStyle}>
+        {paintedBackground ? (
+          <div
+            className="absolute inset-0 [&>svg]:block [&>svg]:h-full [&>svg]:w-full"
+            // 도안 SVG는 우리 빌드 파이프라인이 만드는 정적 자산이다 — 사용자
+            // 입력이 아니라 신뢰할 수 있는 마크업이다.
+            dangerouslySetInnerHTML={{ __html: paintedBackground }}
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center text-sm text-paper-foreground">
+            미리보기를 불러오는 중이다…
+          </div>
+        )}
 
-      <svg
-        ref={surfaceRef}
-        viewBox={`0 0 ${part.widthMm} ${part.heightMm}`}
-        className="absolute inset-0 h-full w-full"
-      >
-        {slotsOfPart(game, part.id).map((slot) =>
-          slot.placements
-            .filter((pl) => pl.partId === part.id)
-            .map((placement, i) => {
-              const value = customization.values[slot.id];
-              const key = `${slot.id}-${i}`;
+        <svg
+          ref={surfaceRef}
+          viewBox={`0 0 ${part.widthMm} ${part.heightMm}`}
+          className="absolute inset-0 h-full w-full"
+        >
+          {slotsOfPart(game, part.id).map((slot) =>
+            slot.placements
+              .filter((pl) => pl.partId === part.id)
+              .map((placement, i) => {
+                const value = customization.values[slot.id];
+                const key = `${slot.id}-${i}`;
 
-              if (placement.mode === 'text') {
-                return (
-                  <text
-                    key={key}
-                    x={placement.xMm}
-                    y={placement.yMm}
-                    fontSize={placement.fontSizeMm}
-                    textAnchor={textAnchorOf[placement.align]}
-                    dominantBaseline="central"
-                    transform={
-                      placement.rotationDeg
-                        ? `rotate(${placement.rotationDeg} ${placement.xMm} ${placement.yMm})`
-                        : undefined
-                    }
-                    fill="#1a1a1a"
-                    className={interactive ? 'cursor-pointer' : undefined}
-                    onClick={() => focusSlotField(slot.id)}
-                  >
-                    {String(value)}
-                  </text>
-                );
-              }
-
-              if (placement.mode === 'marker') {
-                const point = customization.positions[slot.id] ?? {
-                  xMm: placement.xMm,
-                  yMm: placement.yMm,
-                };
-                const styleSet = game.styleSets.find(
-                  (s) => s.id === placement.styleSetId,
-                );
-                if (!styleSet) return null;
-                const variant = resolveVariant(
-                  game,
-                  styleSet.id,
-                  customization,
-                );
-                const bounds = styleSetBounds(styleSet);
-                const radiusMm = Math.min(bounds.widthMm, bounds.heightMm) / 2;
-                const fill = groupColorOf(game, customization, slot.groupId);
-                const isGoalkeeper = slot.tags.includes('goalkeeper');
-                const rawArtwork = variant.artwork
-                  ? markerArtwork[variant.artwork]
-                  : undefined;
-                const artworkInner = rawArtwork
-                  ? extractSvgInner(
-                      // 채움과 테두리를 둘 다 칠한다 — 빈 원은 테두리로,
-                      // 일러스트는 채움으로 팀 색을 받는다.
-                      paintLayer(
-                        paintLayer(rawArtwork, MARKER_TEAM_LAYER_ID, fill),
-                        MARKER_TEAM_LAYER_ID,
-                        fill,
-                        'stroke',
-                      ),
-                    )
-                  : null;
-
-                // 반대편으로 공격하는 팀은 마커를 뒤집는다 — 화살촉이 공격
-                // 방향을 가리킨다. 인쇄물도 같은 규칙을 쓴다(`compose.ts`).
-                const mirrored = markerMirrored(game, slot.groupId);
-
-                const dragging = draggingSlotId === slot.id;
-
-                return (
-                  <g
-                    key={key}
-                    // 끌어 옮길 수 있으면 그렇게 보여야 한다. 드래그가 꺼진
-                    // 곳(인쇄 미리보기)에서는 아무 커서도 주지 않는다.
-                    className={
-                      draggable
-                        ? dragging
-                          ? 'cursor-grabbing'
-                          : 'cursor-grab'
-                        : interactive
-                          ? 'cursor-pointer'
+                if (placement.mode === 'text') {
+                  return (
+                    <text
+                      key={key}
+                      x={placement.xMm}
+                      y={placement.yMm}
+                      fontSize={placement.fontSizeMm}
+                      textAnchor={textAnchorOf[placement.align]}
+                      dominantBaseline="central"
+                      transform={
+                        placement.rotationDeg
+                          ? `rotate(${placement.rotationDeg} ${placement.xMm} ${placement.yMm})`
                           : undefined
-                    }
-                    // 브라우저 기본 제스처(스크롤·확대)가 드래그를 가로채지
-                    // 못하게 한다. 터치에서 특히 중요하다.
-                    style={draggable ? { touchAction: 'none' } : undefined}
-                    tabIndex={draggable ? 0 : undefined}
-                    role={draggable ? 'button' : undefined}
-                    aria-label={
-                      draggable
-                        ? `${slot.label} 마커 — 가로 ${point.xMm}mm, 세로 ${point.yMm}mm, ${point.rotationDeg ?? 0}° 회전. ` +
-                          '끌거나 화살표 키로 옮기고, 눌러서 또는 r 키로 돌린다'
-                        : undefined
-                    }
-                    onKeyDown={
-                      draggable
-                        ? (event) => nudge(slot.id, point, event)
-                        : undefined
-                    }
-                    {...(draggable ? markerHandlers(slot.id, point) : {})}
-                  >
-                    {/* 끄는 동안 잡은 마커를 도드라지게 — 겹쳐 선 마커 사이에서
+                      }
+                      fill="#1a1a1a"
+                      className={interactive ? 'cursor-pointer' : undefined}
+                      onClick={() => focusSlotField(slot.id)}
+                    >
+                      {String(value)}
+                    </text>
+                  );
+                }
+
+                if (placement.mode === 'marker') {
+                  const point = customization.positions[slot.id] ?? {
+                    xMm: placement.xMm,
+                    yMm: placement.yMm,
+                  };
+                  const styleSet = game.styleSets.find(
+                    (s) => s.id === placement.styleSetId,
+                  );
+                  if (!styleSet) return null;
+                  const variant = resolveVariant(
+                    game,
+                    styleSet.id,
+                    customization,
+                  );
+                  const bounds = styleSetBounds(styleSet);
+                  const radiusMm =
+                    Math.min(bounds.widthMm, bounds.heightMm) / 2;
+                  const fill = groupColorOf(game, customization, slot.groupId);
+                  const isGoalkeeper = slot.tags.includes('goalkeeper');
+                  const rawArtwork = variant.artwork
+                    ? markerArtwork[variant.artwork]
+                    : undefined;
+                  const artworkInner = rawArtwork
+                    ? extractSvgInner(
+                        // 채움과 테두리를 둘 다 칠한다 — 빈 원은 테두리로,
+                        // 일러스트는 채움으로 팀 색을 받는다.
+                        paintLayer(
+                          paintLayer(rawArtwork, MARKER_TEAM_LAYER_ID, fill),
+                          MARKER_TEAM_LAYER_ID,
+                          fill,
+                          'stroke',
+                        ),
+                      )
+                    : null;
+
+                  // 반대편으로 공격하는 팀은 마커를 뒤집는다 — 화살촉이 공격
+                  // 방향을 가리킨다. 인쇄물도 같은 규칙을 쓴다(`compose.ts`).
+                  const mirrored = markerMirrored(game, slot.groupId);
+
+                  const dragging = draggingSlotId === slot.id;
+
+                  return (
+                    <g
+                      key={key}
+                      // 마커 위에서 시작한 포인터는 판 이동이 아니라 마커 끌기다
+                      // (`useMapViewport`가 이 표식을 보고 비켜 준다).
+                      data-marker=""
+                      // 끌어 옮길 수 있으면 그렇게 보여야 한다. 드래그가 꺼진
+                      // 곳(인쇄 미리보기)에서는 아무 커서도 주지 않는다.
+                      className={
+                        draggable
+                          ? dragging
+                            ? 'cursor-grabbing'
+                            : 'cursor-grab'
+                          : interactive
+                            ? 'cursor-pointer'
+                            : undefined
+                      }
+                      // 브라우저 기본 제스처(스크롤·확대)가 드래그를 가로채지
+                      // 못하게 한다. 터치에서 특히 중요하다.
+                      style={draggable ? { touchAction: 'none' } : undefined}
+                      tabIndex={draggable ? 0 : undefined}
+                      role={draggable ? 'button' : undefined}
+                      aria-label={
+                        draggable
+                          ? `${slot.label} 마커 — 가로 ${point.xMm}mm, 세로 ${point.yMm}mm, ${point.rotationDeg ?? 0}° 회전. ` +
+                            '끌거나 화살표 키로 옮기고, 눌러서 또는 r 키로 돌린다'
+                          : undefined
+                      }
+                      onKeyDown={
+                        draggable
+                          ? (event) => nudge(slot.id, point, event)
+                          : undefined
+                      }
+                      {...(draggable ? markerHandlers(slot.id, point) : {})}
+                    >
+                      {/* 끄는 동안 잡은 마커를 도드라지게 — 겹쳐 선 마커 사이에서
                         무엇을 옮기고 있는지 보이게 한다. */}
-                    {dragging && (
-                      <circle
-                        cx={point.xMm}
-                        cy={point.yMm}
-                        r={Math.max(variant.widthMm, variant.heightMm) * 0.72}
-                        fill="none"
-                        stroke="#2563eb"
-                        strokeWidth={0.6}
-                        strokeDasharray="2 1.5"
-                      />
-                    )}
-                    {artworkInner ? (
-                      // 실제 마커 아트워크(원형·일러스트) — 기준점이 중심이므로
-                      // 좌상단으로 옮겨 그린다(`docs/game-authoring.md`).
-                      <g
-                        transform={
-                          `translate(${point.xMm}, ${point.yMm})` +
-                          // 회전은 **뒤집기 앞**에 온다. 뒤에 두면 원정 마커가
-                          // 반대 방향으로 돌아, 같은 각도를 줘도 두 팀이 서로
-                          // 다르게 선다. 인쇄 렌더러도 같은 차례다(`compose.ts`).
-                          (point.rotationDeg
-                            ? ` rotate(${point.rotationDeg})`
-                            : '') +
-                          (mirrored ? ' scale(-1, 1)' : '') +
-                          ` translate(${-variant.widthMm / 2}, ${-variant.heightMm / 2})`
-                        }
-                        dangerouslySetInnerHTML={{ __html: artworkInner }}
-                      />
-                    ) : (
-                      // 아트워크를 아직 못 불러왔거나 없을 때의 대체 표시.
-                      <>
+                      {dragging && (
                         <circle
                           cx={point.xMm}
                           cy={point.yMm}
-                          r={radiusMm}
-                          fill={fill}
-                          stroke="#1a1a1a"
-                          strokeWidth={0.4}
+                          r={Math.max(variant.widthMm, variant.heightMm) * 0.72}
+                          fill="none"
+                          stroke="#2563eb"
+                          strokeWidth={0.6}
+                          strokeDasharray="2 1.5"
                         />
-                        {isGoalkeeper && (
+                      )}
+                      {artworkInner ? (
+                        // 실제 마커 아트워크(원형·일러스트) — 기준점이 중심이므로
+                        // 좌상단으로 옮겨 그린다(`docs/game-authoring.md`).
+                        <g
+                          transform={
+                            `translate(${point.xMm}, ${point.yMm})` +
+                            // 회전은 **뒤집기 앞**에 온다. 뒤에 두면 원정 마커가
+                            // 반대 방향으로 돌아, 같은 각도를 줘도 두 팀이 서로
+                            // 다르게 선다. 인쇄 렌더러도 같은 차례다(`compose.ts`).
+                            (point.rotationDeg
+                              ? ` rotate(${point.rotationDeg})`
+                              : '') +
+                            (mirrored ? ' scale(-1, 1)' : '') +
+                            ` translate(${-variant.widthMm / 2}, ${-variant.heightMm / 2})`
+                          }
+                          dangerouslySetInnerHTML={{ __html: artworkInner }}
+                        />
+                      ) : (
+                        // 아트워크를 아직 못 불러왔거나 없을 때의 대체 표시.
+                        <>
                           <circle
                             cx={point.xMm}
                             cy={point.yMm}
-                            r={radiusMm * 0.6}
-                            fill="none"
+                            r={radiusMm}
+                            fill={fill}
                             stroke="#1a1a1a"
-                            strokeWidth={0.3}
+                            strokeWidth={0.4}
                           />
-                        )}
-                      </>
-                    )}
-                    {/* 빈 값이면 글자를 얹지 않는다 — 인쇄 렌더러와 같은
+                          {isGoalkeeper && (
+                            <circle
+                              cx={point.xMm}
+                              cy={point.yMm}
+                              r={radiusMm * 0.6}
+                              fill="none"
+                              stroke="#1a1a1a"
+                              strokeWidth={0.3}
+                            />
+                          )}
+                        </>
+                      )}
+                      {/* 빈 값이면 글자를 얹지 않는다 — 인쇄 렌더러와 같은
                         규칙이다(`lib/print/compose.ts`). 축구 게임판의 등번호는
                         기본이 비어 있고, 아이가 종이에 직접 쓴다. */}
-                    {String(value ?? '') !== '' && (
-                      <text
-                        x={point.xMm}
-                        y={point.yMm}
-                        fontSize={variant.valueFontSizeMm}
-                        textAnchor="middle"
-                        dominantBaseline="central"
-                        fill={markerValueColor(variant, fill)}
-                      >
-                        {String(value)}
-                      </text>
-                    )}
-                  </g>
-                );
-              }
+                      {String(value ?? '') !== '' && (
+                        <text
+                          x={point.xMm}
+                          y={point.yMm}
+                          fontSize={variant.valueFontSizeMm}
+                          textAnchor="middle"
+                          dominantBaseline="central"
+                          fill={markerValueColor(variant, fill)}
+                        >
+                          {String(value)}
+                        </text>
+                      )}
+                    </g>
+                  );
+                }
 
-              return null;
-            }),
-        )}
-      </svg>
+                return null;
+              }),
+          )}
+        </svg>
+      </div>
+
+      {interactive && (
+        <div
+          className="absolute bottom-2 right-2 flex flex-col overflow-hidden rounded-md border border-border bg-paper/95 shadow-sm"
+          role="group"
+          aria-label="미리보기 확대·축소"
+          // 버튼 위에서 누른 것은 판 이동이 아니다.
+          onPointerDown={(event) => event.stopPropagation()}
+          onDoubleClick={(event) => event.stopPropagation()}
+        >
+          <button
+            type="button"
+            aria-label="확대"
+            title="확대 (+)"
+            disabled={!canZoomIn}
+            onClick={zoomIn}
+            className="size-8 text-base leading-none outline-none hover:bg-muted focus-visible:bg-muted disabled:opacity-40"
+          >
+            +
+          </button>
+          <button
+            type="button"
+            aria-label="축소"
+            title="축소 (−)"
+            disabled={!canZoomOut}
+            onClick={zoomOut}
+            className="size-8 border-t border-border text-base leading-none outline-none hover:bg-muted focus-visible:bg-muted disabled:opacity-40"
+          >
+            −
+          </button>
+          {zoomed && (
+            <button
+              type="button"
+              aria-label="원래 크기"
+              title="원래 크기 (0)"
+              onClick={resetZoom}
+              className="size-8 border-t border-border text-xs leading-none outline-none hover:bg-muted focus-visible:bg-muted"
+            >
+              ⤢
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

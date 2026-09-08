@@ -20,11 +20,12 @@
 가리키면 검증에서 걸린다.
 
 도안 SVG는 **코드로 만드는 것을 권한다.** 슬롯 좌표와 그림이 같은 치수 상수를
-읽어야 어긋나지 않는다. 두 게임이 다 그렇게 되어 있다 —
+읽어야 어긋나지 않는다. 세 게임이 다 그렇게 되어 있다 —
 `src/assets/games/<게임 id>/dimensions.ts`에 치수를 모으고 `artwork/`가 SVG를
 지으며 `npm run artwork [게임 id]`가 `public/`에 쓴다. 자세한 것은
-[docs/soccer-artwork.md](soccer-artwork.md) 1절과
-[docs/baseball-artwork.md](baseball-artwork.md) 1절.
+[docs/soccer-artwork.md](soccer-artwork.md) 1절,
+[docs/baseball-artwork.md](baseball-artwork.md) 1절,
+[docs/world-tour-artwork.md](world-tour-artwork.md) 1절.
 
 게임에 매이지 않는 그리기 도구는 [`src/assets/shared/`](../src/assets/shared)에
 있다. `svg.ts`가 SVG 문자열을 짓고(표시 레이어·빗금·글자 폭 어림), `figure.ts`가
@@ -90,18 +91,86 @@
 - `regions`는 파트 안의 이름 붙은 사각형이다. 마커가 움직일 수 있는 범위를 여기로
   제한한다.
 
+### 동적 파트 — 아트워크를 값에서 그때 그리는 파트
+
+`dynamic`을 두면 아트워크는 정적 파일이 아니라 **값에서 그때 그린 SVG**다
+(`IDE-016` 2단계). 세계일주 게임판이 처음 쓴다 — 목록 슬롯 `cities`가 켠 도시와
+그 차례를 들고, 서버 렌더러가 그 값에서 판을 그린다.
+
+```ts
+dynamic: {
+  listSlotId: 'cities',        // 이 파트에 control 배치를 가진 list 슬롯
+  frameSlotId: 'board-frame',  // (선택) choice 슬롯. 값이 'map'이면 지도만
+  sizeSteps: [                 // 켠 항목 수 → 판 크기. maxItems 오름차순, 마지막은 그 위 전부
+    { maxItems: 50, widthMm: 297, heightMm: 210, mapHeightMm: 150.62 },
+    { maxItems: 70, widthMm: 420, heightMm: 297, mapHeightMm: 213.01 },
+    { maxItems: 100, widthMm: 594, heightMm: 420, mapHeightMm: 301.24 },
+  ],
+}
+```
+
+- **크기는 데이터로, 그림은 코드로.** 도안 정의는 서버에서 클라이언트로 그대로
+  넘어가는 데이터라 함수를 실을 수 없다. 크기(`sizeSteps`)는 스키마가 계산해
+  에디터·인쇄 옵션이 바로 쓰고(`resolvePart` · `dynamicSize`), 그림은 게임 id별
+  렌더러를 [`src/lib/games/dynamic-artwork.ts`](../src/lib/games/dynamic-artwork.ts)에
+  등록한다. **서버에서만 부른다** — 미리보기는 `POST /api/games/<id>/artwork`로
+  받고 내보내기는 같은 함수를 직접 부른다. 두 길이 같은 함수라 화면과 PDF가
+  같은 그림이다.
+- 렌더러가 그린 SVG의 크기는 `sizeSteps`가 계산한 크기와 같아야 한다. API와
+  내보내기가 확인한다.
+- `artwork`는 그대로 둔다 — 기본값으로 그린 정적 파일이고 카탈로그 썸네일이
+  쓴다.
+- 목록 슬롯은 에디터에서 한 줄 입력이 아니라 **판 아래 패널**(`ListSlotPanel`)
+  이다 — 켜고 끄고 차례를 바꾸며, 켜면 전체 목록 차례에서 바로 앞에 켜진 항목
+  뒤에 끼어든다.
+- `custom: true`면 값에 옵션 밖의 항목(`{ id, label, data }`)이 올 수 있다 —
+  세계일주가 검색해서 더한 도시의 이름·경위도를 이렇게 싣는다. `data`의 뜻은
+  게임 렌더러가 안다. `search.providerId`를 두면 패널에 검색 상자가 붙고, 질의는
+  `GET /api/games/<id>/list-search?slot=&q=`로 가서 서버 제공자
+  ([`src/lib/games/list-search.ts`](../src/lib/games/list-search.ts))가 답한다.
+  결과는 옵션 id이거나 값에 실릴 새 항목이다.
+
+### 파트 변형 — 선택에 따라 크기와 아트워크가 바뀌는 파트
+
+`variants`를 두면 **`choice` 슬롯의 값에 따라 파트의 치수·아트워크·제목이 바뀐다**
+(`IDE-016` 1단계). 미리 그려 둔 SVG 몇 벌 사이를 오갈 때 쓴다 — 세계일주
+게임판이 도시 수 프리셋으로 잠깐 썼다가, 개별 도시를 켜고 끄게 되면서 동적
+파트로 옮겨 갔다. 지금 쓰는 게임은 없지만 "판 크기 A4/A3 중 택일" 같은 데
+그대로 쓸 수 있다.
+
+```ts
+variants: {
+  selectorSlotId: 'city-count',        // 이 파트에 control 배치를 가진 choice 슬롯
+  options: [
+    { value: 'cities-50', title: '게임판 · 도시 50개 (A4)', widthMm: 297, heightMm: 210, artwork: '/games/world-tour/board.svg' },
+    { value: 'cities-60', title: '게임판 · 도시 60개 (A3)', widthMm: 420, heightMm: 297, artwork: '/games/world-tour/board-60.svg' },
+    // …
+  ],
+}
+```
+
+- 선택지 값은 선택 슬롯의 `options`와 **정확히 같아야** 한다(마커 스타일 세트의
+  `selectorSlotId`와 같은 규칙).
+- **기본값 변형은 파트 자체와 같아야 한다.** 선택 슬롯을 모르는 곳(카탈로그
+  썸네일·소개 페이지)이 보는 파트가 곧 기본값이다.
+- 변형은 파트의 인쇄 방향을 바꾸지 못한다.
+- 파트를 읽는 코드는 `resolvePart(game, part, customization)`를 거친다 — 렌더러·
+  에디터 미리보기·인쇄 옵션이 전부 그렇다. 원본 파트를 그대로 쓰는 곳이 하나라도
+  있으면 화면과 인쇄물의 크기가 어긋난다.
+
 ## 슬롯
 
 슬롯은 도안 안에 선언된 "사용자가 고칠 수 있는 자리"다. 두 축을 갖는다.
 
 **값의 종류(`kind`)** — 에디터가 이걸 보고 입력 컴포넌트를 고른다.
 
-| `kind`   | 제약                            |
-| -------- | ------------------------------- |
-| `text`   | `maxLength`                     |
-| `number` | `min` · `max` · `integer`       |
-| `color`  | `#RRGGBB`, 선택적으로 `palette` |
-| `choice` | `options` 2개 이상              |
+| `kind`   | 제약                                                                                                                                  |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `text`   | `maxLength`                                                                                                                           |
+| `number` | `min` · `max` · `integer`                                                                                                             |
+| `color`  | `#RRGGBB`, 선택적으로 `palette`                                                                                                       |
+| `choice` | `options` 2개 이상                                                                                                                    |
+| `list`   | `options`의 항목 id를 **차례 있게** 고른 배열. `fixed` · `min` · `presets` · `custom`(옵션 밖 항목 허용) · `search`(서버 검색 제공자) |
 
 기본값(`default`)은 자기 제약을 지켜야 한다. 지키지 않으면 에디터가 첫 화면부터
 오류 상태로 시작하므로 검증에서 막는다.
@@ -115,7 +184,7 @@
 | `text`    | 값을 글자로 그린다                 | `text` · `number` |
 | `marker`  | 값을 마커로 그린다 (좌표를 갖는다) | `text` · `number` |
 | `paint`   | 값을 도안 레이어의 색으로 칠한다   | `color`           |
-| `control` | 그려지지 않고 렌더링을 바꾼다      | `choice`          |
+| `control` | 그려지지 않고 렌더링을 바꾼다      | `choice` · `list` |
 
 `marker` 배치를 가진 슬롯이 **위치를 가진 슬롯**이다. 값뿐 아니라 좌표까지
 사용자 편집 대상이고, 이동 범위는 `regionId`가 가리키는 영역이다. 마커 배치는

@@ -6,6 +6,9 @@
  * 같으므로 저장·복원 코드도 게임을 알 필요가 없다.
  */
 import type { GameDefinition } from './game';
+import { z } from 'zod';
+import { MAP_ONLY_FRAME, type Part } from './parts';
+import { listItem } from './slots';
 import { findSlot } from './game';
 import {
   isMovable,
@@ -152,3 +155,95 @@ export const movableSlots = (game: GameDefinition) =>
 /** 슬롯이 도안에 실제로 존재하는지 — 에디터의 '미리보기에서 슬롯 찾기'에 쓴다. */
 export const hasSlot = (game: GameDefinition, slotId: string): boolean =>
   findSlot(game, slotId) !== undefined;
+
+/**
+ * 지금 값에서 파트가 실제로 어떤 모습인가 — 변형이 있으면 고른 변형의 치수·
+ * 아트워크·제목을 입힌 파트를, 없으면 파트 그대로를 돌려준다.
+ *
+ * 렌더러(`lib/print/compose.ts`)·에디터 미리보기·인쇄 옵션이 모두 이걸 거친다.
+ * 한 곳이라도 원본 파트를 그대로 쓰면 화면과 인쇄물의 크기가 어긋난다.
+ * 값이 어느 변형에도 없으면(옛 저장값 등) 파트 자체, 곧 기본값이다.
+ */
+export function resolvePart(
+  game: GameDefinition,
+  part: Part,
+  customization: GameCustomization,
+): Part {
+  if (part.dynamic) {
+    const size = dynamicSize(part, customization);
+    return { ...part, widthMm: size.widthMm, heightMm: size.heightMm };
+  }
+  if (!part.variants) return part;
+  const chosen = customization.values[part.variants.selectorSlotId];
+  const option = part.variants.options.find((o) => o.value === chosen);
+  if (!option) return part;
+  return {
+    ...part,
+    title: option.title ?? part.title,
+    widthMm: option.widthMm,
+    heightMm: option.heightMm,
+    artwork: option.artwork,
+  };
+}
+
+/** 게임의 파트 전부를 지금 값으로 푼다. 차례는 도안이 선언한 대로다. */
+export const resolveParts = (
+  game: GameDefinition,
+  customization: GameCustomization,
+): Part[] => game.parts.map((part) => resolvePart(game, part, customization));
+
+/**
+ * 동적 파트의 지금 크기 — 목록 슬롯의 항목 수가 정하는 단계와, 틀 슬롯이
+ * `map`이면 지도 높이. 렌더러가 그리는 SVG의 크기와 같아야 하며 내보내기가
+ * 그것을 확인한다.
+ */
+export function dynamicSize(
+  part: Part,
+  customization: GameCustomization,
+): { widthMm: number; heightMm: number; itemCount: number; mapOnly: boolean } {
+  if (!part.dynamic) {
+    return {
+      widthMm: part.widthMm,
+      heightMm: part.heightMm,
+      itemCount: 0,
+      mapOnly: false,
+    };
+  }
+  const items = customization.values[part.dynamic.listSlotId];
+  const itemCount = Array.isArray(items) ? items.length : 0;
+  const steps = part.dynamic.sizeSteps;
+  const step =
+    steps.find((candidate) => itemCount <= candidate.maxItems) ??
+    steps[steps.length - 1];
+  const frame = part.dynamic.frameSlotId
+    ? customization.values[part.dynamic.frameSlotId]
+    : undefined;
+  const mapOnly = frame === MAP_ONLY_FRAME && step.mapHeightMm !== undefined;
+  return {
+    widthMm: step.widthMm,
+    heightMm: mapOnly ? step.mapHeightMm! : step.heightMm,
+    itemCount,
+    mapOnly,
+  };
+}
+
+/**
+ * 요청 본문으로 들어오는 커스터마이즈의 모양. API 경로들이 같은 것을 쓴다 —
+ * 값의 종류가 늘 때(목록 슬롯의 직접 더한 항목) 한 곳만 고치면 된다. 뜻은
+ * `validateCustomization`이 본다.
+ */
+export const customizationBody = z.object({
+  gameId: z.string(),
+  values: z.record(
+    z.string(),
+    z.union([z.string(), z.number(), z.array(z.union([z.string(), listItem]))]),
+  ),
+  positions: z.record(
+    z.string(),
+    z.object({
+      xMm: z.number(),
+      yMm: z.number(),
+      rotationDeg: z.number().optional(),
+    }),
+  ),
+});

@@ -11,7 +11,9 @@ import { z } from 'zod';
 import { afterResponse } from '@/lib/analytics/after';
 import { recordEvent } from '@/lib/analytics/record';
 import { getGame } from '@/lib/games';
+import { renderDynamicArtwork } from '@/lib/games/dynamic-artwork';
 import { validateCustomization } from '@/lib/schema';
+import { customizationBody } from '@/lib/schema';
 import { composeExport, outOfRegionSlots } from '@/lib/print/compose';
 import {
   contentDisposition,
@@ -39,14 +41,7 @@ const loadArtwork = (assetRef: string): string => {
 };
 
 const requestBody = z.object({
-  customization: z.object({
-    gameId: z.string(),
-    values: z.record(z.string(), z.union([z.string(), z.number()])),
-    positions: z.record(
-      z.string(),
-      z.object({ xMm: z.number(), yMm: z.number() }),
-    ),
-  }),
+  customization: customizationBody,
   options: exportOptions,
 });
 
@@ -74,7 +69,9 @@ export async function POST(
       customizationIssues.map((i) => `${i.slotId}: ${i.message}`),
     );
   }
-  const blocked = blockingIssues(validateExportOptions(game, options));
+  const blocked = blockingIssues(
+    validateExportOptions(game, options, customization),
+  );
   if (blocked.length > 0) return badRequest(blocked.map((i) => i.message));
 
   // 여기까지 왔는데 좌표가 영역 밖이면 도안 쪽 규칙이 어긋난 것이다.
@@ -88,6 +85,7 @@ export async function POST(
     customization,
     options,
     loadArtwork,
+    renderArtwork: (part, values) => renderDynamicArtwork(game, part, values),
   });
   const pdf = await renderPdf(document);
   const filename = exportFilename({

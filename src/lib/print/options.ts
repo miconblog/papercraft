@@ -6,7 +6,12 @@
  * (`part.minScale`, IDE-004), 그 아래는 글자가 읽히지 않아 막는다.
  */
 import { z } from 'zod';
-import type { GameDefinition, Part } from '@/lib/schema';
+import {
+  resolvePart,
+  type GameCustomization,
+  type GameDefinition,
+  type Part,
+} from '@/lib/schema';
 import {
   DEFAULT_OVERLAP_MM,
   DEFAULT_PRINTER_MARGIN_MM,
@@ -70,16 +75,25 @@ export const defaultExportOptions = (game: GameDefinition): ExportOptions => ({
  * (IDE-004가 파트마다 잰 값이 `minScale`이다). 상한 위는 알리기만 한다. 크게
  * 뽑는 것 자체는 이 제품이 하려던 일이고, 대가는 장수뿐이다.
  */
+/**
+ * 인쇄 옵션 검증. `customization`을 주면 변형이 있는 파트를 지금 값의 크기로
+ * 본다(IDE-016) — 도시 100개 판은 A2라 장수가 다르다. 주지 않으면 기본값이다.
+ */
 export function validateExportOptions(
   game: GameDefinition,
   options: ExportOptions,
+  customization?: GameCustomization,
 ): OptionIssue[] {
   const issues: OptionIssue[] = [];
   const seen = new Set<string>();
   let pages = 0;
 
   for (const selection of options.parts) {
-    const part = game.parts.find((p) => p.id === selection.partId);
+    const basePart = game.parts.find((p) => p.id === selection.partId);
+    const part =
+      basePart && customization
+        ? resolvePart(game, basePart, customization)
+        : basePart;
     if (!part) {
       issues.push({
         partId: selection.partId,
