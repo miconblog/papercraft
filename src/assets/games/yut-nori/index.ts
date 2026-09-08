@@ -25,6 +25,7 @@ import { defineGame } from '@/lib/schema';
 import { RULES } from './rules';
 import {
   SIDES,
+  STICK_SHEET,
   TOKEN,
   TOKENS_PER_SIDE,
   TOKEN_SHEET,
@@ -38,6 +39,7 @@ import {
 
 const BOARD_PART_ID = 'board';
 const TOKENS_PART_ID = 'tokens';
+const STICKS_PART_ID = 'sticks';
 const RULES_PART_ID = 'rules-sheet';
 
 const sideGroupId = (n: number): string => `side-${n}`;
@@ -128,9 +130,10 @@ export default defineGame({
     '스무 칸인데, 모서리의 큰 밭에 정확히 멈추면 가운데를 가로지르는 지름길이 ' +
     '열려 열한 칸으로 준다 — 그 갈림길에서 판이 갈린다. 같은 편 말이 만나면 ' +
     '업고 다른 편 말을 만나면 잡는다. 말 넷이 먼저 다 나는 편이 이긴다. ' +
-    '편은 넷까지 뽑히고 편마다 이름과 색을 넣을 수 있다.',
+    '편은 넷까지 뽑히고 편마다 이름과 색을 넣을 수 있다. 던지는 윷가락 넉 ' +
+    '장도 종이로 접는다 — 하나에는 백도 표식이 있다.',
   players: { min: 2, max: 4 },
-  supplies: ['가위', '두꺼운 종이(말용)', '윷가락 넷'],
+  supplies: ['가위', '두꺼운 종이(말·윷가락용)'],
   // 카탈로그(IDE-005) 썸네일 — 별도로 그리지 않고 말판 아트워크를 그대로 쓴다.
   // 실제 인쇄될 도안을 보여주는 게 만든 아이콘보다 정직한 미리보기다.
   thumbnail: artworkPath(BOARD_PART_ID),
@@ -173,6 +176,27 @@ export default defineGame({
       maxScale: 2,
       marks: ['cut', 'fold-mountain'],
       artwork: artworkPath(TOKENS_PART_ID),
+    },
+    {
+      id: STICKS_PART_ID,
+      kind: 'buildable',
+      title: '윷가락 · 넉 장',
+      description:
+        '던져서 눈을 내는 윷가락 넷이다. 띠 일곱을 같은 쪽으로 말면 반육각기둥 ' +
+        '관이 되고, 남는 종이가 그대로 안으로 들어가 속대가 된다 — 그 속대가 ' +
+        '이음매를 받치고 무게를 등 쪽에 실어 준다. 양 끝은 마구리로 막고 그 탭을 ' +
+        '속대 밑으로 밀어 넣는다. 풀도 칼도 쓰지 않는다. 평평한 면이 배, 각진 ' +
+        '세 면이 등이고 넉 장 가운데 하나에만 백도 과녁이 있다.',
+      widthMm: STICK_SHEET.widthMm,
+      heightMm: STICK_SHEET.heightMm,
+      orientation: 'portrait',
+      // 던져서 구르는 물건이라 배율이 곧 놀이의 성질이다. 100%가 원칙이고,
+      // 종이가 얇아 자꾸 튀면 조금 키워 무게를 벌라고 위쪽만 조금 열어 둔다.
+      // 줄이면 가벼워져 더 튀므로 아래쪽은 거의 열지 않는다.
+      minScale: 0.9,
+      maxScale: 1.3,
+      marks: ['cut', 'fold-mountain', 'fold-valley'],
+      artwork: artworkPath(STICKS_PART_ID),
     },
     {
       id: RULES_PART_ID,

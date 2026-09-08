@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 자동 생성 파일. 고치려면 src/assets/games/soccer/artwork/ 를 고치고 `npm run artwork` 를 돌린다. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="194mm" height="281mm" viewBox="0 0 194 281" font-family="Noto Sans KR">
+<title>윷놀이 · 윷가락 전개도</title>
+<g id="pc-cut" fill="none" stroke="#000000" stroke-width="0.25" stroke-linecap="butt">
+<path d="M16 22 L126 22 L126 46 L132.528 49.769 L132.528 50.5 L138.528 51.3 L138.528 56.7 L132.528 57.5 L132.528 58.231 L126 62 L126 83 L16 83 L16 62 L9.472 58.231 L9.472 57.5 L3.472 56.7 L3.472 51.3 L9.472 50.5 L9.472 49.769 L16 46 Z" />
+<path d="M16 87 L126 87 L126 111 L132.528 114.769 L132.528 115.5 L138.528 116.3 L138.528 121.7 L132.528 122.5 L132.528 123.231 L126 127 L126 148 L16 148 L16 127 L9.472 123.231 L9.472 122.5 L3.472 121.7 L3.472 116.3 L9.472 115.5 L9.472 114.769 L16 111 Z" />
+<path d="M16 152 L126 152 L126 176 L132.528 179.769 L132.528 180.5 L138.528 181.3 L138.528 186.7 L132.528 187.5 L132.528 188.231 L126 192 L126 213 L16 213 L16 192 L9.472 188.231 L9.472 187.5 L3.472 186.7 L3.472 181.3 L9.472 180.5 L9.472 179.769 L16 176 Z" />
+<path d="M16 217 L126 217 L126 241 L132.528 244.769 L132.528 245.5 L138.528 246.3 L138.528 251.7 L132.528 252.5 L132.528 253.231 L126 257 L126 278 L16 278 L16 257 L9.472 253.231 L9.472 252.5 L3.472 251.7 L3.472 246.3 L9.472 245.5 L9.472 244.769 L16 241 Z" />
+</g>
+<g id="pc-fold-mountain" fill="none" stroke="#000000" stroke-width="0.2" stroke-dasharray="4 1.2 0.6 1.2" stroke-linecap="butt">
+<line x1="16" y1="30" x2="126" y2="30" />
+<line x1="16" y1="38" x2="126" y2="38" />
+<line x1="16" y1="46" x2="126" y2="46" />
+<line x1="16" y1="62" x2="126" y2="62" />
+<line x1="16" y1="70" x2="126" y2="70" />
+<line x1="16" y1="78" x2="126" y2="78" />
+<line x1="16" y1="46" x2="16" y2="62" />
+<line x1="126" y1="46" x2="126" y2="62" />
+<line x1="16" y1="95" x2="126" y2="95" />
+<line x1="16" y1="103" x2="126" y2="103" />
+<line x1="16" y1="111" x2="126" y2="111" />
+<line x1="16" y1="127" x2="126" y2="127" />
+<line x1="16" y1="135" x2="126" y2="135" />
+<line x1="16" y1="143" x2="126" y2="143" />
+<line x1="16" y1="111" x2="16" y2="127" />
+<line x1="126" y1="111" x2="126" y2="127" />
+<line x1="16" y1="160" x2="126" y2="160" />
+<line x1="16" y1="168" x2="126" y2="168" />
+<line x1="16" y1="176" x2="126" y2="176" />
+<line x1="16" y1="192" x2="126" y2="192" />
+<line x1="16" y1="200" x2="126" y2="200" />
+<line x1="16" y1="208" x2="126" y2="208" />
+<line x1="16" y1="176" x2="16" y2="192" />
+<line x1="126" y1="176" x2="126" y2="192" />
+<line x1="16" y1="225" x2="126" y2="225" />
+<line x1="16" y1="233" x2="126" y2="233" />
+<line x1="16" y1="241" x2="126" y2="241" />
+<line x1="16" y1="257" x2="126" y2="257" />
+<line x1="16" y1="265" x2="126" y2="265" />
+<line x1="16" y1="273" x2="126" y2="273" />
+<line x1="16" y1="241" x2="16" y2="257" />
+<line x1="126" y1="241" x2="126" y2="257" />
+</g>
+<g id="pc-fold-valley" fill="none" stroke="#000000" stroke-width="0.2" stroke-dasharray="3 1.5" stroke-linecap="butt">
+<line x1="9.472" y1="50.5" x2="9.472" y2="57.5" />
+<line x1="132.528" y1="50.5" x2="132.528" y2="57.5" />
+<line x1="9.472" y1="115.5" x2="9.472" y2="122.5" />
+<line x1="132.528" y1="115.5" x2="132.528" y2="122.5" />
+<line x1="9.472" y1="180.5" x2="9.472" y2="187.5" />
+<line x1="132.528" y1="180.5" x2="132.528" y2="187.5" />
+<line x1="9.472" y1="245.5" x2="9.472" y2="252.5" />
+<line x1="132.528" y1="245.5" x2="132.528" y2="252.5" />
+</g>
+<g id="pc-art" fill="none" stroke="none">
+<text x="97" y="9" font-size="5" dominant-baseline="central" text-anchor="middle" font-weight="700" fill="#1a1a1a">윷가락 전개도 · 4개</text>
+<text x="97" y="14.5" font-size="2.6" dominant-baseline="central" text-anchor="middle" fill="#6b7280">단면 배 16 · 등 8mm씩 · 길이 110mm — 풀도 칼도 쓰지 않는다</text>
+<text x="97" y="19" font-size="2.6" dominant-baseline="central" text-anchor="middle" fill="#6b7280">숫자는 무는 차례 — 1 속대 · 2 마구리 · 3 탭 · 일점쇄선은 산접기, 파선(탭 밑동 둘)만 골접기</text>
+<g stroke="#6b7280" stroke-width="0.15" fill="none">
+<line x1="25" y1="24" x2="54.44" y2="24" />
+<line x1="59.44" y1="24" x2="117" y2="24" />
+<line x1="25" y1="26" x2="69.16" y2="26" />
+<line x1="78.16" y1="26" x2="117" y2="26" />
+<line x1="25" y1="28" x2="83.88" y2="28" />
+<line x1="88.88" y1="28" x2="117" y2="28" />
+<line x1="25" y1="32" x2="54.44" y2="32" />
+<line x1="59.44" y1="32" x2="117" y2="32" />
+<line x1="25" y1="34" x2="69.16" y2="34" />
+<line x1="78.16" y1="34" x2="117" y2="34" />
+<line x1="25" y1="36" x2="83.88" y2="36" />
+<line x1="88.88" y1="36" x2="117" y2="36" />
+<line x1="25" y1="40" x2="54.44" y2="40" />
+<line x1="59.44" y1="40" x2="117" y2="40" />
+<line x1="25" y1="42" x2="69.16" y2="42" />
+<line x1="78.16" y1="42" x2="117" y2="42" />
+<line x1="25" y1="44" x2="83.88" y2="44" />
+<line x1="88.88" y1="44" x2="117" y2="44" />
+<line x1="25" y1="89" x2="54.44" y2="89" />
+<line x1="59.44" y1="89" x2="117" y2="89" />
+<line x1="25" y1="91" x2="69.16" y2="91" />
+<line x1="78.16" y1="91" x2="117" y2="91" />
+<line x1="25" y1="93" x2="83.88" y2="93" />
+<line x1="88.88" y1="93" x2="117" y2="93" />
+<line x1="25" y1="97" x2="54.44" y2="97" />
+<line x1="59.44" y1="97" x2="117" y2="97" />
+<line x1="25" y1="99" x2="69.16" y2="99" />
+<line x1="78.16" y1="99" x2="117" y2="99" />
+<line x1="25" y1="101" x2="83.88" y2="101" />
+<line x1="88.88" y1="101" x2="117" y2="101" />
+<line x1="25" y1="105" x2="54.44" y2="105" />
+<line x1="59.44" y1="105" x2="117" y2="105" />
+<line x1="25" y1="107" x2="69.16" y2="107" />
+<line x1="78.16" y1="107" x2="117" y2="107" />
+<line x1="25" y1="109" x2="83.88" y2="109" />
+<line x1="88.88" y1="109" x2="117" y2="109" />
+<line x1="25" y1="154" x2="54.44" y2="154" />
+<line x1="59.44" y1="154" x2="117" y2="154" />
+<line x1="25" y1="156" x2="69.16" y2="156" />
+<line x1="78.16" y1="156" x2="117" y2="156" />
+<line x1="25" y1="158" x2="83.88" y2="158" />
+<line x1="88.88" y1="158" x2="117" y2="158" />
+<line x1="25" y1="162" x2="54.44" y2="162" />
+<line x1="59.44" y1="162" x2="117" y2="162" />
+<line x1="25" y1="164" x2="69.16" y2="164" />
+<line x1="78.16" y1="164" x2="117" y2="164" />
+<line x1="25" y1="166" x2="83.88" y2="166" />
+<line x1="88.88" y1="166" x2="117" y2="166" />
+<line x1="25" y1="170" x2="54.44" y2="170" />
+<line x1="59.44" y1="170" x2="117" y2="170" />
+<line x1="25" y1="172" x2="69.16" y2="172" />
+<line x1="78.16" y1="172" x2="117" y2="172" />
+<line x1="25" y1="174" x2="83.88" y2="174" />
+<line x1="88.88" y1="174" x2="117" y2="174" />
+<line x1="25" y1="219" x2="54.44" y2="219" />
+<line x1="59.44" y1="219" x2="117" y2="219" />
+<line x1="25" y1="221" x2="69.16" y2="221" />
+<line x1="78.16" y1="221" x2="117" y2="221" />
+<line x1="25" y1="223" x2="83.88" y2="223" />
+<line x1="88.88" y1="223" x2="117" y2="223" />
+<line x1="25" y1="227" x2="54.44" y2="227" />
+<line x1="59.44" y1="227" x2="117" y2="227" />
+<line x1="25" y1="229" x2="69.16" y2="229" />
+<line x1="78.16" y1="229" x2="117" y2="229" />
+<line x1="25" y1="231" x2="83.88" y2="231" />
+<line x1="88.88" y1="231" x2="117" y2="231" />
+<line x1="25" y1="235" x2="54.44" y2="235" />
+<line x1="59.44" y1="235" x2="117" y2="235" />
+<line x1="25" y1="237" x2="69.16" y2="237" />
+<line x1="78.16" y1="237" x2="117" y2="237" />
+<line x1="25" y1="239" x2="83.88" y2="239" />
+<line x1="88.88" y1="239" x2="117" y2="239" />
+</g>
+<rect x="34.1" y="24.128" width="3.8" height="3.744" fill="#ffffff" stroke="none" />
+<text x="36" y="26" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">등</text>
+<rect x="64.42" y="32.128" width="13.16" height="3.744" fill="#ffffff" stroke="none" />
+<text x="71" y="34" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">등 · 마루</text>
+<rect x="34.1" y="40.128" width="3.8" height="3.744" fill="#ffffff" stroke="none" />
+<text x="36" y="42" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">등</text>
+<rect x="32.1" y="52.128" width="3.8" height="3.744" fill="#ffffff" stroke="none" />
+<text x="34" y="54" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">배</text>
+<rect x="106.1" y="52.128" width="3.8" height="3.744" fill="#ffffff" stroke="none" transform="rotate(180 108 54)" />
+<text x="108" y="54" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle" transform="rotate(180 108 54)">배</text>
+<rect x="23.41" y="63.408" width="3.18" height="5.184" fill="#ffffff" stroke="none" />
+<text x="25" y="66" font-size="3.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">1</text>
+<rect x="42.58" y="64.128" width="56.84" height="3.744" fill="#ffffff" stroke="none" />
+<text x="71" y="66" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">속대 — 안으로 말려 들어가 등 두 면에 포개진다</text>
+<rect x="23.41" y="71.408" width="3.18" height="5.184" fill="#ffffff" stroke="none" />
+<text x="25" y="74" font-size="3.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">1</text>
+<rect x="67.8" y="72.128" width="6.4" height="3.744" fill="#ffffff" stroke="none" />
+<text x="71" y="74" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">속대</text>
+<rect x="50.985" y="78.916" width="40.03" height="3.168" fill="#ffffff" stroke="none" />
+<text x="71" y="80.5" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">1 갈고리 — 모서리 하나를 더 넘겨 문다</text>
+<rect x="11.146" y="51.408" width="3.18" height="5.184" fill="#ffffff" stroke="none" />
+<text x="12.736" y="54" font-size="3.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">2</text>
+<rect x="127.674" y="51.408" width="3.18" height="5.184" fill="#ffffff" stroke="none" />
+<text x="129.264" y="54" font-size="3.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">2</text>
+<rect x="4.882" y="51.408" width="3.18" height="5.184" fill="#ffffff" stroke="none" />
+<text x="6.472" y="54" font-size="3.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">3</text>
+<rect x="133.938" y="51.408" width="3.18" height="5.184" fill="#ffffff" stroke="none" />
+<text x="135.528" y="54" font-size="3.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">3</text>
+<rect x="34.1" y="89.128" width="3.8" height="3.744" fill="#ffffff" stroke="none" />
+<text x="36" y="91" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">등</text>
+<rect x="64.42" y="97.128" width="13.16" height="3.744" fill="#ffffff" stroke="none" />
+<text x="71" y="99" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">등 · 마루</text>
+<rect x="34.1" y="105.128" width="3.8" height="3.744" fill="#ffffff" stroke="none" />
+<text x="36" y="107" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">등</text>
+<rect x="32.1" y="117.128" width="3.8" height="3.744" fill="#ffffff" stroke="none" />
+<text x="34" y="119" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">배</text>
+<rect x="106.1" y="117.128" width="3.8" height="3.744" fill="#ffffff" stroke="none" transform="rotate(180 108 119)" />
+<text x="108" y="119" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle" transform="rotate(180 108 119)">배</text>
+<rect x="23.41" y="128.408" width="3.18" height="5.184" fill="#ffffff" stroke="none" />
+<text x="25" y="131" font-size="3.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">1</text>
+<rect x="42.58" y="129.128" width="56.84" height="3.744" fill="#ffffff" stroke="none" />
+<text x="71" y="131" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">속대 — 안으로 말려 들어가 등 두 면에 포개진다</text>
+<rect x="23.41" y="136.408" width="3.18" height="5.184" fill="#ffffff" stroke="none" />
+<text x="25" y="139" font-size="3.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">1</text>
+<rect x="67.8" y="137.128" width="6.4" height="3.744" fill="#ffffff" stroke="none" />
+<text x="71" y="139" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">속대</text>
+<rect x="50.985" y="143.916" width="40.03" height="3.168" fill="#ffffff" stroke="none" />
+<text x="71" y="145.5" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">1 갈고리 — 모서리 하나를 더 넘겨 문다</text>
+<rect x="11.146" y="116.408" width="3.18" height="5.184" fill="#ffffff" stroke="none" />
+<text x="12.736" y="119" font-size="3.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">2</text>
+<rect x="127.674" y="116.408" width="3.18" height="5.184" fill="#ffffff" stroke="none" />
+<text x="129.264" y="119" font-size="3.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">2</text>
+<rect x="4.882" y="116.408" width="3.18" height="5.184" fill="#ffffff" stroke="none" />
+<text x="6.472" y="119" font-size="3.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">3</text>
+<rect x="133.938" y="116.408" width="3.18" height="5.184" fill="#ffffff" stroke="none" />
+<text x="135.528" y="119" font-size="3.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">3</text>
+<rect x="34.1" y="154.128" width="3.8" height="3.744" fill="#ffffff" stroke="none" />
+<text x="36" y="156" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">등</text>
+<rect x="64.42" y="162.128" width="13.16" height="3.744" fill="#ffffff" stroke="none" />
+<text x="71" y="164" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">등 · 마루</text>
+<rect x="34.1" y="170.128" width="3.8" height="3.744" fill="#ffffff" stroke="none" />
+<text x="36" y="172" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">등</text>
+<rect x="32.1" y="182.128" width="3.8" height="3.744" fill="#ffffff" stroke="none" />
+<text x="34" y="184" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">배</text>
+<rect x="106.1" y="182.128" width="3.8" height="3.744" fill="#ffffff" stroke="none" transform="rotate(180 108 184)" />
+<text x="108" y="184" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle" transform="rotate(180 108 184)">배</text>
+<rect x="23.41" y="193.408" width="3.18" height="5.184" fill="#ffffff" stroke="none" />
+<text x="25" y="196" font-size="3.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">1</text>
+<rect x="42.58" y="194.128" width="56.84" height="3.744" fill="#ffffff" stroke="none" />
+<text x="71" y="196" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">속대 — 안으로 말려 들어가 등 두 면에 포개진다</text>
+<rect x="23.41" y="201.408" width="3.18" height="5.184" fill="#ffffff" stroke="none" />
+<text x="25" y="204" font-size="3.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">1</text>
+<rect x="67.8" y="202.128" width="6.4" height="3.744" fill="#ffffff" stroke="none" />
+<text x="71" y="204" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">속대</text>
+<rect x="50.985" y="208.916" width="40.03" height="3.168" fill="#ffffff" stroke="none" />
+<text x="71" y="210.5" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">1 갈고리 — 모서리 하나를 더 넘겨 문다</text>
+<rect x="11.146" y="181.408" width="3.18" height="5.184" fill="#ffffff" stroke="none" />
+<text x="12.736" y="184" font-size="3.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">2</text>
+<rect x="127.674" y="181.408" width="3.18" height="5.184" fill="#ffffff" stroke="none" />
+<text x="129.264" y="184" font-size="3.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">2</text>
+<rect x="4.882" y="181.408" width="3.18" height="5.184" fill="#ffffff" stroke="none" />
+<text x="6.472" y="184" font-size="3.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">3</text>
+<rect x="133.938" y="181.408" width="3.18" height="5.184" fill="#ffffff" stroke="none" />
+<text x="135.528" y="184" font-size="3.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">3</text>
+<rect x="34.1" y="219.128" width="3.8" height="3.744" fill="#ffffff" stroke="none" />
+<text x="36" y="221" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">등</text>
+<rect x="64.42" y="227.128" width="13.16" height="3.744" fill="#ffffff" stroke="none" />
+<text x="71" y="229" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">등 · 마루</text>
+<rect x="34.1" y="235.128" width="3.8" height="3.744" fill="#ffffff" stroke="none" />
+<text x="36" y="237" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">등</text>
+<rect x="32.1" y="247.128" width="3.8" height="3.744" fill="#ffffff" stroke="none" />
+<text x="34" y="249" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">배</text>
+<rect x="106.1" y="247.128" width="3.8" height="3.744" fill="#ffffff" stroke="none" transform="rotate(180 108 249)" />
+<text x="108" y="249" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle" transform="rotate(180 108 249)">배</text>
+<rect x="23.41" y="258.408" width="3.18" height="5.184" fill="#ffffff" stroke="none" />
+<text x="25" y="261" font-size="3.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">1</text>
+<rect x="42.58" y="259.128" width="56.84" height="3.744" fill="#ffffff" stroke="none" />
+<text x="71" y="261" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">속대 — 안으로 말려 들어가 등 두 면에 포개진다</text>
+<rect x="23.41" y="266.408" width="3.18" height="5.184" fill="#ffffff" stroke="none" />
+<text x="25" y="269" font-size="3.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">1</text>
+<rect x="67.8" y="267.128" width="6.4" height="3.744" fill="#ffffff" stroke="none" />
+<text x="71" y="269" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">속대</text>
+<rect x="50.985" y="273.916" width="40.03" height="3.168" fill="#ffffff" stroke="none" />
+<text x="71" y="275.5" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">1 갈고리 — 모서리 하나를 더 넘겨 문다</text>
+<rect x="11.146" y="246.408" width="3.18" height="5.184" fill="#ffffff" stroke="none" />
+<text x="12.736" y="249" font-size="3.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">2</text>
+<rect x="127.674" y="246.408" width="3.18" height="5.184" fill="#ffffff" stroke="none" />
+<text x="129.264" y="249" font-size="3.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">2</text>
+<rect x="4.882" y="246.408" width="3.18" height="5.184" fill="#ffffff" stroke="none" />
+<text x="6.472" y="249" font-size="3.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">3</text>
+<rect x="133.938" y="246.408" width="3.18" height="5.184" fill="#ffffff" stroke="none" />
+<text x="135.528" y="249" font-size="3.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">3</text>
+<circle cx="71" cy="249" r="5" fill="none" stroke="#1a1a1a" stroke-width="0.9" />
+<circle cx="71" cy="249" r="2.4" fill="#1a1a1a" stroke="none" />
+<rect x="45" y="246.552" width="8" height="4.896" fill="#ffffff" stroke="none" />
+<text x="49" y="249" font-size="3.4" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">백도</text>
+<rect x="89" y="246.552" width="8" height="4.896" fill="#ffffff" stroke="none" transform="rotate(180 93 249)" />
+<text x="93" y="249" font-size="3.4" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle" transform="rotate(180 93 249)">백도</text>
+<path d="M150.4 58 L185.6 58 L176.8 42.758 L159.2 42.758 Z" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<path d="M 150.4 61.5 H 185.6" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<text x="168" y="39.758" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">등 8씩</text>
+<text x="168" y="64.5" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">배 16</text>
+<text x="168" y="68.5" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">높이 6.9 · 길이 110</text>
+<text x="168" y="78" font-size="2.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">① 다 접으면 이 단면이 된다</text>
+<path d="M152.8 120 L183.2 120 L175.6 106.836 L160.4 106.836 Z" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<path d="M 181 119.1 L 174.9 108.036 L 161.1 108.036 L 158.12 111.985" fill="none" stroke="#1a1a1a" stroke-width="0.45" />
+<circle cx="183.2" cy="120" r="1.3" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<path d="M 181.8 121.6 L 175 123.4" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<text x="176.5" y="125.4" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">이음매</text>
+<text x="168" y="111.236" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">1</text>
+<path d="M 159 123.4 L 158.12 112.785" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<text x="159" y="125.4" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">갈고리</text>
+<text x="168" y="142" font-size="2.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">② 같은 쪽으로 말면 속대가 안으로</text>
+<path d="M 151 186 H 185" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<path d="M 151 164 H 185" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<path d="M 152 167.4 H 185" fill="none" stroke="#1a1a1a" stroke-width="0.45" />
+<path d="M 151 186 V 170.8" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<path d="M 151 170.8 H 161" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<path d="M 163 170.8 H 171" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<path d="M 169 169.7 L 171.4 170.8 L 169 171.9" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<text x="180" y="161.6" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">마루</text>
+<text x="180" y="170.4" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">1</text>
+<text x="148.2" y="175" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">2</text>
+<text x="156" y="173.8" font-size="2.6" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">3</text>
+<text x="180" y="183.4" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">배</text>
+<text x="168" y="206" font-size="2.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">③ 마구리를 세우고 탭을 속대 밑으로</text>
+<path d="M145.1 236.993 L165.9 236.993 L160.7 246 L150.3 246 Z" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<path d="M170.1 246 L190.9 246 L185.7 236.993 L175.3 236.993 Z" fill="none" stroke="#1a1a1a" stroke-width="0.55" />
+<path d="M 177.9 238.193 H 183.1" fill="none" stroke="#6b7280" stroke-width="0.2" />
+<path d="M 177.9 239.793 H 183.1" fill="none" stroke="#6b7280" stroke-width="0.2" />
+<text x="155.5" y="250" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">배</text>
+<text x="180.5" y="250" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">등</text>
+<text x="168" y="255" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">배가 몇이냐로 도·개·걸·윷·모</text>
+<text x="168" y="259" font-size="2.2" dominant-baseline="central" fill="#6b7280" stroke="none" text-anchor="middle">넉 장 가운데 하나만 배에 백도 과녁</text>
+<text x="168" y="270" font-size="2.6" dominant-baseline="central" fill="#1a1a1a" stroke="none" text-anchor="middle">④ 배가 위면 배 · 등이 위면 등</text>
+</g>
+</svg>

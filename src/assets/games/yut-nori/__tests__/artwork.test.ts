@@ -19,6 +19,7 @@ import { slotsAffectingPart } from '@/lib/schema';
 import { ARTWORK } from '../artwork';
 import { layoutRulesSheet } from '../artwork/rules-sheet';
 import {
+  BAEKDO_STICK_INDEX,
   BANG_FIELD_ID,
   BOARD,
   CENTER,
@@ -30,6 +31,16 @@ import {
   SHORTCUT_STEPS,
   SIDES,
   START_FIELD_ID,
+  STICK,
+  STICK_CAP_HEIGHT_MM,
+  STICK_CAP_REACH_MM,
+  STICK_CAP_TOP_WIDTH_MM,
+  STICK_COUNT,
+  STICK_HEIGHT_MM,
+  STICK_NET,
+  STICK_ORIGIN,
+  STICK_PANELS,
+  STICK_SHEET,
   TOKEN,
   TOKENS_PER_SIDE,
   TOKEN_CARD_HEIGHT_MM,
@@ -40,9 +51,19 @@ import {
   routeFields,
   shortcutFieldId,
   sideLayerId,
+  stickBalance,
+  stickFolds,
+  stickNetOutline,
+  stickNetTopMm,
+  stickPanelTopMm,
   tokenCardOrigin,
 } from '../dimensions';
-import { RULES, THROW_VALUES } from '../rules';
+import {
+  RULES,
+  STICK_ASSEMBLY_STEPS,
+  STICK_THROW_NOTE,
+  THROW_VALUES,
+} from '../rules';
 
 const game = getGame('yut-nori')!;
 
@@ -52,9 +73,10 @@ const svgOf = (partId: string): Document =>
 const ruleText = RULES.map((block) => block.text).join('\n');
 
 describe('도안 구조', () => {
-  it('스키마 검증을 통과하고 말판·말·게임 방법으로 나뉜다', () => {
+  it('스키마 검증을 통과하고 말판·말·윷가락·게임 방법으로 나뉜다', () => {
     expect(game.parts.map((p) => p.kind)).toEqual([
       'board',
+      'buildable',
       'buildable',
       'cutout',
     ]);
@@ -65,6 +87,7 @@ describe('도안 구조', () => {
     expect(Object.keys(ARTWORK).sort()).toEqual([
       'board',
       'rules-sheet',
+      'sticks',
       'tokens',
     ]);
     for (const part of game.parts) {
@@ -433,5 +456,315 @@ describe('게임 방법 부속', () => {
       expect(ruleText, value.name).toContain(`${value.name}(${value.steps}칸)`);
     }
     expect(THROW_VALUES.map((v) => v.bellies)).toEqual([1, 2, 3, 4, 0]);
+  });
+});
+
+describe('윷가락 — 반육각기둥 넉 장 (IDE-018)', () => {
+  const balance = stickBalance();
+  const outlines = Array.from({ length: STICK_COUNT }, (_, i) =>
+    stickNetOutline(STICK_ORIGIN.xMm, stickNetTopMm(i)),
+  );
+  const bboxOf = (points: ReadonlyArray<readonly [number, number]>) => ({
+    minX: Math.min(...points.map((p) => p[0])),
+    maxX: Math.max(...points.map((p) => p[0])),
+    minY: Math.min(...points.map((p) => p[1])),
+    maxY: Math.max(...points.map((p) => p[1])),
+  });
+
+  /** 광선 쏘기. 다각형 안이면 오른쪽으로 그은 반직선이 변을 홀수 번 지난다. */
+  const inside = (
+    points: ReadonlyArray<readonly [number, number]>,
+    xMm: number,
+    yMm: number,
+  ): boolean => {
+    let hit = false;
+    for (let i = 0, j = points.length - 1; i < points.length; j = i, i += 1) {
+      const [xi, yi] = points[i];
+      const [xj, yj] = points[j];
+      if (
+        yi > yMm !== yj > yMm &&
+        xMm < ((xj - xi) * (yMm - yi)) / (yj - yi) + xi
+      ) {
+        hit = !hit;
+      }
+    }
+    return hit;
+  };
+
+  /**
+   * 실제 윷은 통나무를 반으로 쪼갠 것이다. 배가 등면의 **두 배**여야 정육각형을
+   * 가로로 자른 절반이 되고, 그때 높이가 (√3/4)·배다. 이 관계가 깨지면 도안은
+   * 여전히 그려지지만 더는 "반으로 쪼갠 윷"이 아니다.
+   */
+  it('단면이 정육각형의 아래 절반이다', () => {
+    expect(STICK.bellyMm).toBe(STICK.backFaceMm * 2);
+    expect(STICK_HEIGHT_MM).toBeCloseTo((Math.sqrt(3) / 4) * STICK.bellyMm, 9);
+    // 등 세 면이 모두 같아야 굴러 멈추는 자리가 고르다.
+    const backs = STICK_PANELS.filter((p) => p.outer && p.face !== 'belly');
+    expect(backs).toHaveLength(3);
+    expect(new Set(backs.map((p) => p.widthMm)).size).toBe(1);
+  });
+
+  /**
+   * 띠 일곱이 **한 방향 나선**이다. 바깥 넷이 단면의 둘레를 이루고, 남은 셋이
+   * 그대로 안으로 들어가 등 쪽에 포개진다 — 접는 방향이 여섯 줄 모두 같은 것이
+   * 이 차례를 고른 이유다.
+   */
+  it('바깥 넷이 단면 둘레를 이루고 속대 셋이 등 안쪽으로 들어간다', () => {
+    const outer = STICK_PANELS.filter((p) => p.outer);
+    expect(outer.map((p) => p.id)).toEqual([
+      'back-1',
+      'back-2',
+      'back-3',
+      'belly',
+    ]);
+    expect(outer.reduce((sum, p) => sum + p.widthMm, 0)).toBe(
+      STICK.bellyMm + STICK.backFaceMm * 3,
+    );
+    const liner = STICK_PANELS.filter((p) => !p.outer);
+    expect(liner).toHaveLength(3);
+    // 속대가 배에 한 조각도 놓이지 않아야 무게가 등 쪽으로 간다.
+    expect(liner.every((p) => p.face !== 'belly')).toBe(true);
+    // 갈고리는 모서리를 넘기만 하면 되므로 등면보다 짧다.
+    expect(STICK.linerHookMm).toBeLessThan(STICK.backFaceMm);
+    expect(STICK_NET.heightMm).toBe(
+      STICK_PANELS.reduce((sum, p) => sum + p.widthMm, 0),
+    );
+  });
+
+  /**
+   * **이 도안에서 겹이 하는 일이 골대와 다르다.** 골대의 두 겹은 강성뿐이었지만,
+   * 윷가락은 겹을 어디에 넣느냐가 곧 눈이 나오는 비율이다 — 배에 넣으면 무게중심이
+   * 내려가 배를 깔고 눕기만 한다. 속대를 등 쪽에 넣어 무게중심을 올린 것이
+   * 이 이슈의 핵심 결정이고, 그것이 지켜지는지를 여기서 본다.
+   */
+  it('속대가 무게중심을 등 쪽으로 올린다', () => {
+    expect(balance.centroidYMm).toBeGreaterThan(balance.shellOnlyCentroidYMm);
+    // 껍데기만이면 단면 높이의 절반 아래에 있다 — 배가 가장 넓은 면이라 그렇다.
+    expect(balance.shellOnlyCentroidYMm).toBeLessThan(STICK_HEIGHT_MM / 2);
+    // 속대를 넣으면 절반을 넘어선다.
+    expect(balance.centroidYMm).toBeGreaterThan(STICK_HEIGHT_MM / 2);
+    expect(balance.centroidYMm).toBeLessThan(STICK_HEIGHT_MM);
+  });
+
+  /**
+   * 빗면에 얹히는 것이 "모서리로 서는" 자리인데, 무게중심이 빗면 위에서 마루 쪽
+   * 끝에 바짝 붙어 있어 조금만 흔들려도 마루로 넘어간다. 넘어가면 배가 위다.
+   */
+  it('빗면에 얹혀도 마루 쪽으로 넘어간다 — 모서리로 서지 않는다', () => {
+    expect(balance.slantTipsToCrest).toBe(true);
+    // 마루 쪽 끝에서 1mm도 안 떨어져 있다. 여기가 벌어지면 빗면으로 선다.
+    expect(balance.slantMarginMm).toBeGreaterThan(0);
+    expect(balance.slantMarginMm).toBeLessThan(1.5);
+  });
+
+  /**
+   * **던져 보는 것을 대신하지 않는다.** 여기서 지키는 것은 하나다 — 빗면의 몫이
+   * 어디로 가든 배가 위로 오는 비율이 반반 언저리에 있을 여지가 남는가.
+   * 구간이 0.5를 품지 못하면 그 단면은 던져 보나 마나 한쪽으로 쏠린다.
+   */
+  it('배가 위로 올 몫의 구간이 반반을 품는다', () => {
+    expect(balance.crestOnlyShare).toBeLessThan(0.5);
+    expect(balance.bellyUpShare).toBeGreaterThan(0.5);
+    // 각도 넷을 더하면 한 바퀴다 — 셈이 틀리면 여기가 먼저 깨진다.
+    expect(
+      Object.values(balance.wedgeDeg).reduce((sum, v) => sum + v, 0),
+    ).toBeCloseTo(360, 6);
+  });
+
+  /**
+   * 마구리는 관 안쪽에 세워 단면을 붙든다. 단면보다 크면 안 들어가고, 윗변이
+   * 마루와 같으면 헐거워 관이 찌그러진다 — 마구리 높이에서 자른 단면의 폭이
+   * 곧 윗변이어야 딱 맞는다.
+   */
+  it('마구리가 단면에 맞고 탭이 속대 밑으로 들어간다', () => {
+    expect(STICK_CAP_HEIGHT_MM).toBeLessThan(STICK_HEIGHT_MM);
+    expect(STICK.capClearanceMm).toBeGreaterThan(0);
+    // 마루보다 낮은 자리에서 자른 단면이라 윗변이 마루보다 넓다.
+    expect(STICK_CAP_TOP_WIDTH_MM).toBeGreaterThan(STICK.backFaceMm);
+    expect(STICK_CAP_TOP_WIDTH_MM).toBeLessThan(STICK.bellyMm);
+    // 탭은 마루보다 좁아야 속대와 등 사이로 들어간다.
+    expect(STICK.capTabWidthMm).toBeLessThan(STICK.backFaceMm);
+    expect(STICK.capTabTaperMm * 2).toBeLessThan(STICK.capTabWidthMm);
+  });
+
+  /**
+   * **골대와 달리 홈이 없다.** 마구리는 배 띠의 끝에만 붙어 있고 이웃한 등1·등3의
+   * 끝과는 꼭짓점 하나로만 만난다 — 띠 블록 밖(`x < 원점`)에 있는 윤곽점의 y가
+   * 모두 배 띠 안쪽이면 맞닿은 변이 없다는 뜻이다.
+   */
+  it('마구리가 이웃 띠와 변을 나누지 않는다 — 오릴 홈이 없다', () => {
+    const topMm = stickNetTopMm(0);
+    const bellyTop = topMm + stickPanelTopMm('belly');
+    const bellyBottom = bellyTop + STICK.bellyMm;
+    const outside = outlines[0].filter(
+      ([x]) => x < STICK_ORIGIN.xMm || x > STICK_ORIGIN.xMm + STICK_NET.widthMm,
+    );
+    expect(outside.length).toBeGreaterThan(0);
+    for (const [x, y] of outside) {
+      expect(y, `${x},${y}가 배 띠 밖으로 나갔다`).toBeGreaterThan(bellyTop);
+      expect(y).toBeLessThan(bellyBottom);
+    }
+  });
+
+  /**
+   * 접는선이 오림선 밖에 있으면 접을 종이가 없는 자리를 접으라고 그린 것이다.
+   * 마구리·탭 밑동이 윤곽 사이에 끼어 있어 눈으로는 잘 안 보인다.
+   */
+  it('접는선이 모두 오림선 안에 있다', () => {
+    for (let i = 0; i < STICK_COUNT; i += 1) {
+      const folds = stickFolds(STICK_ORIGIN.xMm, stickNetTopMm(i));
+      for (const fold of folds) {
+        for (const t of [0.15, 0.5, 0.85]) {
+          const x = fold.fromMm[0] + (fold.toMm[0] - fold.fromMm[0]) * t;
+          const y = fold.fromMm[1] + (fold.toMm[1] - fold.fromMm[1]) * t;
+          expect(
+            inside(outlines[i], x, y),
+            `${i}번 가락의 '${fold.label}'이 오림선 밖이다`,
+          ).toBe(true);
+        }
+      }
+    }
+  });
+
+  it('접는선이 열 줄 — 산 여덟에 골 둘이고 골접기는 탭 밑동뿐이다', () => {
+    const folds = stickFolds(0, 0);
+    expect(folds).toHaveLength(10);
+    const valleys = folds.filter((f) => f.kind === 'fold-valley');
+    expect(valleys).toHaveLength(2);
+    expect(valleys.every((f) => f.label.includes('탭 밑동'))).toBe(true);
+    expect(folds.filter((f) => f.kind === 'fold-mountain')).toHaveLength(8);
+
+    const doc = svgOf('sticks');
+    expect(doc.getElementById('pc-fold-mountain')!.children.length).toBe(
+      8 * STICK_COUNT,
+    );
+    expect(doc.getElementById('pc-fold-valley')!.children.length).toBe(
+      2 * STICK_COUNT,
+    );
+    // 오림선은 전개도 넉 장의 바깥 윤곽뿐이다 — 뚫을 곳이 하나도 없다.
+    expect(doc.getElementById('pc-cut')!.children.length).toBe(STICK_COUNT);
+    // 풀칠면이 없다. 도안 정의의 `marks`와 그리는 표시가 어긋나면 조립 안내에
+    // 있지도 않은 설명이 따라 나온다.
+    expect(doc.getElementById('pc-glue')).toBeNull();
+    const part = game.parts.find((p) => p.id === 'sticks')!;
+    expect([...part.marks].sort()).toEqual([
+      'cut',
+      'fold-mountain',
+      'fold-valley',
+    ]);
+  });
+
+  it('넉 장이 서로 겹치지 않고 시트 안에 있다', () => {
+    for (const [i, points] of outlines.entries()) {
+      const box = bboxOf(points);
+      expect(box.minX, `${i}번`).toBeGreaterThan(0);
+      expect(box.minY, `${i}번`).toBeGreaterThanOrEqual(STICK.headerHeightMm);
+      expect(box.maxX, `${i}번`).toBeLessThan(STICK_SHEET.widthMm);
+      expect(box.maxY, `${i}번`).toBeLessThan(STICK_SHEET.heightMm);
+      // 도해 단을 침범하지 않는다.
+      expect(box.maxX, `${i}번이 도해 단을 먹는다`).toBeLessThan(144);
+    }
+    for (let a = 0; a < outlines.length; a += 1) {
+      for (let b = a + 1; b < outlines.length; b += 1) {
+        const [p, q] = [bboxOf(outlines[a]), bboxOf(outlines[b])];
+        const overlaps =
+          p.minX < q.maxX &&
+          q.minX < p.maxX &&
+          p.minY < q.maxY &&
+          q.minY < p.maxY;
+        expect(overlaps, `${a}번과 ${b}번이 겹친다`).toBe(false);
+        // 가위가 지나갈 폭이 남아야 한다.
+        expect(Math.abs(p.minY - q.minY)).toBeGreaterThanOrEqual(STICK.gapMm);
+      }
+    }
+    // 마구리가 띠 블록 밖으로 뻗는 만큼을 좌우에 다 두고도 시트 안이다.
+    expect(STICK_ORIGIN.xMm).toBeGreaterThan(STICK_CAP_REACH_MM);
+  });
+
+  /**
+   * **조립물이 두 장으로 쪼개지면 이어 붙인 자리에서 전개도가 어긋난다**(골대
+   * 시트와 같은 판단). 인쇄 여백은 사용자가 고르는 값이라, 흔히 쓰는 여백까지는
+   * 한 장을 지켜야 한다.
+   */
+  it('인쇄 여백 8mm까지 A4 세로 한 장이다', () => {
+    const marginMm = 8;
+    expect(STICK_SHEET.widthMm).toBeLessThanOrEqual(210 - marginMm * 2);
+    expect(STICK_SHEET.heightMm).toBeLessThanOrEqual(297 - marginMm * 2);
+    expect(game.parts.find((p) => p.id === 'sticks')!.orientation).toBe(
+      'portrait',
+    );
+  });
+
+  /**
+   * 배는 민짜, 등에는 나뭇결이다. 쪼갠 통나무의 겉과 쪼갠 자리를 옮긴 대비이고,
+   * **접기 전에도** 어느 띠가 배인지 이것으로 갈린다.
+   */
+  it('나뭇결이 등 세 면에만 있고 배 띠는 비어 있다', () => {
+    const grains = [
+      ...svgOf('sticks').querySelectorAll('#pc-art g line'),
+    ] as SVGLineElement[];
+    // 결 하나가 두 도막이다 — 한 줄로 이으면 괘선이 되어 접는선과 헷갈린다.
+    expect(grains).toHaveLength(STICK_COUNT * 3 * STICK.grainLines * 2);
+    for (const g of grains) {
+      const yMm = Number(g.getAttribute('y1'));
+      expect(Number(g.getAttribute('y2'))).toBe(yMm);
+      const topMm = stickNetTopMm(
+        Math.floor(
+          (yMm - STICK_ORIGIN.yMm) / (STICK_NET.heightMm + STICK.gapMm),
+        ),
+      );
+      const bellyTop = topMm + stickPanelTopMm('belly');
+      const onBelly = yMm > bellyTop && yMm < bellyTop + STICK.bellyMm;
+      expect(onBelly, `배 띠(${yMm})에 결이 있다`).toBe(false);
+      // 속대는 안으로 숨는 면이라 잉크를 쓰지 않는다.
+      expect(yMm).toBeLessThan(bellyTop);
+    }
+  });
+
+  /**
+   * 백도는 "그 가락만 배로 나왔을 때"라 표식이 **배 면**에 있어야 한다. 색을 쓰지
+   * 않는 것은 흑백으로 뽑아도 나머지 셋과 갈려야 하기 때문이다(`IDE-009` 규약).
+   */
+  it('백도 표식이 한 장의 배에만 있고 흑백으로도 갈린다', () => {
+    const svg = ARTWORK.sticks();
+    const doc = svgOf('sticks');
+    // 과녁은 겹동그라미다 — 어느 쪽으로 누워도 같은 모양이라 방향을 타지 않는다.
+    const marks = [...doc.querySelectorAll('#pc-art circle')].filter(
+      (c) => Number(c.getAttribute('r')) >= 2,
+    );
+    expect(marks).toHaveLength(2);
+    const topMm = stickNetTopMm(BAEKDO_STICK_INDEX);
+    const bellyTop = topMm + stickPanelTopMm('belly');
+    for (const mark of marks) {
+      const cy = Number(mark.getAttribute('cy'));
+      expect(cy).toBeGreaterThan(bellyTop);
+      expect(cy).toBeLessThan(bellyTop + STICK.bellyMm);
+      // 흑백 출력에서도 남으려면 색이 아니라 잉크여야 한다.
+      const paint = `${mark.getAttribute('fill')}${mark.getAttribute('stroke')}`;
+      expect(/#(dc2626|1d4ed8|15803d|7e22ce)/.test(paint)).toBe(false);
+    }
+    // 글자는 양 끝에 하나씩 — 마주 앉은 사람도 읽는다.
+    expect(svg.split('>백도<').length - 1).toBe(2);
+    expect(BAEKDO_STICK_INDEX).toBeLessThan(STICK_COUNT);
+  });
+
+  /** 시트의 번호와 규칙문의 번호가 어긋나면 "1번 속대"를 시트에서 못 찾는다. */
+  it('규칙문의 조립 순서가 시트의 번호와 같은 말을 쓴다', () => {
+    expect(STICK_ASSEMBLY_STEPS).toHaveLength(4);
+    for (const step of STICK_ASSEMBLY_STEPS) {
+      expect(ruleText).toContain(step);
+    }
+    const steps = STICK_ASSEMBLY_STEPS.join('\n');
+    for (const [number, name] of [
+      ['1', '속대'],
+      ['2', '마구리'],
+      ['3', '탭'],
+    ]) {
+      expect(steps, name).toContain(`${number}번 ${name}`);
+      expect(ARTWORK.sticks(), name).toContain(`${number} ${name}`);
+    }
+    // 종이 윷은 가벼워 맨 상에서 튄다 — 던지는 자리를 규칙문이 일러 준다.
+    expect(ruleText).toContain(STICK_THROW_NOTE);
   });
 });

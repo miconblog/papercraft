@@ -13,8 +13,8 @@
 | --------- | ---- |
 | `todo`    | 0    |
 | `doing`   | 1    |
-| `blocked` | 5    |
-| `review`  | 6    |
+| `blocked` | 4    |
+| `review`  | 7    |
 | `done`    | 8    |
 
 **지금 할 것** — [IDE-007](IDE-007-print-and-pdf-export.md)(인쇄·PDF 내보내기)은
@@ -57,8 +57,21 @@ PDF까지 나온다. 남은 것은 종이 실측과 놀아 보기다. 도시 수
 조판한 게임 방법 한 장이 각각 A4 한 장씩 나온다. 규칙을 인쇄 부속으로 낸 것은
 축구가 `rules-card`를 뺀 뒤 처음인데, 값은 여전히 도안 정의의 `rules` 필드
 하나이고 부속은 그것을 조판할 뿐이다. 남은 것은 **종이 실측과 놀아 보기**다 —
-업기를 밑동 숫자로 표시할지가 거기서 정해진다. 뒤를 잇는
-[IDE-018](IDE-018-paper-yut-sticks-buildable.md)(종이 윷가락)은 아직 `blocked`다.
+업기를 밑동 숫자로 표시할지가 거기서 정해진다.
+
+뒤를 잇는 [IDE-018](IDE-018-paper-yut-sticks-buildable.md)(종이 윷가락)도
+2026-09-09 `review`가 됐다. **판을 굴리는 물건**이라 앞선 도안들과 확인할 것이
+다르다 — 말판은 종이에 대고 재면 끝나지만 윷가락은 던져 봐야 안다. 통나무를 반으로
+쪼갠 단면을 **정육각형의 아래 절반**(배 16 · 등 8mm씩)으로 근사하고, 띠 일곱이
+**한 방향으로 감기는 나선**이라 배까지 감으면 종이가 그대로 안으로 들어가 속대가
+된다. 그 속대가 이음매를 받치고 — 여기가 이 이슈의 핵심인데 — **무게를 등 쪽에
+실어 준다.** 배가 가장 넓은 면이라 겹을 배에 넣으면 배를 깔고 눕기만 하기
+때문이다. 잠금은 골대처럼 사슬 셋(`1 속대 · 2 마구리 · 3 탭`)이고 풀도 칼도 쓰지
+않는다. **스키마는 또 한 줄도 안 고쳤다** — 한 게임에 조립물이 둘인 첫 게임이다.
+던져 보기 전에 알 수 있는 데까지는 코드로 옮겼다(무게중심과 면이 차지하는 각도로
+배가 나올 몫을 **0.28~0.63 구간**까지 좁혔고, 그 구간이 반반을 품는지를 도안
+테스트가 지킨다). 남은 넷은 **접어서 100번 던져 봐야** 정해진다 — 배 비율 ·
+모서리로 서기 · 튐 · 벌어짐. 벗어났을 때 고칠 나사는 `bellyMm` 하나다.
 
 [IDE-019](IDE-019-dot-to-dot-photo-outline.md)(점 잇기)가 `review`다. **다섯 번째
 게임**이고(2026-09-09), 앞의 넷과 근본이 다르다 — **인쇄물의 형태가 저장소에
@@ -145,7 +158,7 @@ OpenCV.js는 8MB라 첫 화면보다 크다. 사진 픽셀에서 A4 PDF 한 장�
 | [IDE-015](IDE-015-world-tour-dice-board-vector-artwork.md) | 세계일주 — 실제 세계지도와 도시·경로 데이터 | content  | P1   | 4d   | `review`  |
 | [IDE-016](IDE-016-map-city-toggle-and-route-editing.md)    | 지도 위 도시 토글과 경로 편집               | frontend | P1   | 4d   | `review`  |
 | [IDE-017](IDE-017-yut-nori-board-vector-artwork.md)        | 윷놀이 — 말판(윷판)과 말 도안               | content  | P1   | 3d   | `review`  |
-| [IDE-018](IDE-018-paper-yut-sticks-buildable.md)           | 종이 윷가락 조립 도안                       | content  | P1   | 3d   | `blocked` |
+| [IDE-018](IDE-018-paper-yut-sticks-buildable.md)           | 종이 윷가락 조립 도안                       | content  | P1   | 3d   | `review`  |
 | [IDE-019](IDE-019-dot-to-dot-photo-outline.md)             | 점 잇기 — 사진 윤곽선과 점·번호 도안        | content  | P1   | 4d   | `review`  |
 | [IDE-020](IDE-020-dot-to-dot-editor.md)                    | 점 잇기 에디터 — 사진 넣기와 도안 간직      | frontend | P1   | 3d   | `blocked` |
 
