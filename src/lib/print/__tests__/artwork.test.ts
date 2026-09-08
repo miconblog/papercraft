@@ -69,7 +69,8 @@ describe('parseArtwork', () => {
       expect(fold.fixedStroke).toBe(true);
     }
     // 표시선이 통째로 빠졌던 회귀를 여기서 잡는다 — 전개도 2벌의 바깥 윤곽과
-    // 골접기 스물여섯이 전부 읽혀야 한다. 산접기는 없다(2026-09-08).
+    // 골접기 스물여섯이 전부 읽혀야 한다. 산접기는 벌마다 하나, 뚜껑을 두 겹으로
+    // 포개는 줄뿐이다(2026-09-08).
     const cuts = paths(art.items).filter((p) => p.mark === 'cut');
     const mountains = paths(art.items).filter(
       (p) => p.mark === 'fold-mountain',
@@ -78,7 +79,7 @@ describe('parseArtwork', () => {
     const glues = paths(art.items).filter((p) => p.mark === 'glue');
     expect(cuts.length).toBe(2);
     expect(folds.length).toBe(26);
-    expect(mountains.length).toBe(0);
+    expect(mountains.length).toBe(2);
     expect(glues.length).toBe(0);
     for (const mark of [...cuts, ...folds, ...mountains]) {
       expect(
