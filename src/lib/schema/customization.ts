@@ -196,12 +196,15 @@ export const resolveParts = (
  * 동적 파트의 지금 크기 — 목록 슬롯의 항목 수가 정하는 단계와, 틀 슬롯이
  * `map`이면 지도 높이. 렌더러가 그리는 SVG의 크기와 같아야 하며 내보내기가
  * 그것을 확인한다.
+ *
+ * **크기 단계가 없는 동적 파트는 파트 선언 그대로다**(IDE-019) — 사진이
+ * 무엇이든 점 잇기 판은 190×277 한 장이고 그림만 값에서 나온다.
  */
 export function dynamicSize(
   part: Part,
   customization: GameCustomization,
 ): { widthMm: number; heightMm: number; itemCount: number; mapOnly: boolean } {
-  if (!part.dynamic) {
+  if (!part.dynamic?.sizeSteps || !part.dynamic.listSlotId) {
     return {
       widthMm: part.widthMm,
       heightMm: part.heightMm,
@@ -236,7 +239,14 @@ export const customizationBody = z.object({
   gameId: z.string(),
   values: z.record(
     z.string(),
-    z.union([z.string(), z.number(), z.array(z.union([z.string(), listItem]))]),
+    z.union([
+      z.string(),
+      z.number(),
+      // 윤곽 슬롯(IDE-019)이 먼저다 — 납작한 수 배열은 목록 값의 모양이기도
+      // 해서, 순서를 바꾸면 좌표가 "id 문자열의 목록"으로 읽히려다 걸린다.
+      z.array(z.number()),
+      z.array(z.union([z.string(), listItem])),
+    ]),
   ),
   positions: z.record(
     z.string(),

@@ -79,6 +79,14 @@ export type PartVariants = z.infer<typeof partVariants>;
  * `frameSlotId`(choice)의 값이 `map`이면 제목·안내 띠 없이 지도만 낸다 — 그때
  * 높이는 `mapHeightMm`다.
  *
+ * **`listSlotId`·`sizeSteps`는 함께 있거나 함께 없다.** 없으면 크기가 파트
+ * 선언 그대로 고정이고 그림만 값에서 나온다 — 점 잇기(IDE-019)가 그렇다.
+ * 사진이 무엇이든 판은 190×277 한 장이고, 바뀌는 것은 그 위의 점과 번호뿐이다.
+ *
+ * **무엇이 그림을 바꾸는지는 따로 적지 않는다.** 이 파트에 `control` 배치를
+ * 가진 슬롯이 곧 그것이다(`dynamicSourceSlots`) — 같은 사실을 두 곳에 적으면
+ * 슬롯을 더할 때 한쪽만 고쳐 미리보기가 안 따라오는 일이 생긴다.
+ *
  * `artwork`는 그대로 둔다 — 기본값으로 그린 정적 파일이고 썸네일이 그것을 쓴다.
  */
 export const dynamicSizeStep = z.strictObject({
@@ -89,11 +97,32 @@ export const dynamicSizeStep = z.strictObject({
 });
 export type DynamicSizeStep = z.infer<typeof dynamicSizeStep>;
 
-export const partDynamic = z.strictObject({
-  listSlotId: slug,
-  sizeSteps: z.array(dynamicSizeStep).min(1),
-  frameSlotId: slug.optional(),
-});
+export const partDynamic = z
+  .strictObject({
+    listSlotId: slug.optional(),
+    sizeSteps: z.array(dynamicSizeStep).min(1).optional(),
+    frameSlotId: slug.optional(),
+  })
+  .check((ctx) => {
+    const d = ctx.value;
+    if ((d.listSlotId === undefined) !== (d.sizeSteps === undefined)) {
+      ctx.issues.push({
+        code: 'custom',
+        input: d,
+        path: ['sizeSteps'],
+        message:
+          '목록 슬롯(listSlotId)과 크기 단계(sizeSteps)는 함께 적거나 함께 비운다',
+      });
+    }
+    if (d.frameSlotId !== undefined && d.sizeSteps === undefined) {
+      ctx.issues.push({
+        code: 'custom',
+        input: d,
+        path: ['frameSlotId'],
+        message: '틀 슬롯은 크기 단계가 있을 때만 뜻이 있다',
+      });
+    }
+  });
 export type PartDynamic = z.infer<typeof partDynamic>;
 
 /** 지도만 낼 때 frame 슬롯이 갖는 값. */
@@ -148,7 +177,7 @@ export const part = z
         message: '변형(variants)과 동적(dynamic)은 함께 쓰지 않는다',
       });
     }
-    if (p.dynamic) {
+    if (p.dynamic?.sizeSteps) {
       let previousMax = 0;
       for (const [i, step] of p.dynamic.sizeSteps.entries()) {
         if (step.maxItems <= previousMax) {

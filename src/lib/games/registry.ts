@@ -11,6 +11,7 @@ import {
   type GameDefinitionInput,
 } from '@/lib/schema';
 import baseball from '@/assets/games/baseball';
+import dotToDot from '@/assets/games/dot-to-dot';
 import soccer from '@/assets/games/soccer';
 import worldTour from '@/assets/games/world-tour';
 import yutNori from '@/assets/games/yut-nori';
@@ -20,6 +21,7 @@ const definitions: GameDefinitionInput[] = [
   baseball,
   worldTour,
   yutNori,
+  dotToDot,
 ];
 
 function registerAll(inputs: GameDefinitionInput[]): readonly GameDefinition[] {

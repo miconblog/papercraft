@@ -138,12 +138,30 @@ export const gameDefinition = z
       }
     }
 
-    // 동적 파트 — 목록 슬롯과 (있다면) 틀 슬롯이 이 파트에 control 배치를 갖는다.
+    // 동적 파트 — 그림을 정하는 슬롯이 이 파트에 control 배치를 하나는 가져야
+    // 한다. 하나도 없으면 값이 아무리 바뀌어도 늘 같은 그림이라 동적일 이유가
+    // 없고, 에디터가 그 파트에서 보여 줄 조작도 없다.
     for (const [i, p] of g.parts.entries()) {
       if (!p.dynamic) continue;
       const path = ['parts', i, 'dynamic'];
-      const list = slotById.get(p.dynamic.listSlotId);
-      if (!list) {
+      if (
+        !g.slots.some((s) =>
+          s.placements.some(
+            (pl) => pl.mode === 'control' && pl.partId === p.id,
+          ),
+        )
+      ) {
+        push(
+          path,
+          `동적 파트인데 '${p.id}'에 control 배치를 가진 슬롯이 하나도 없다 — 그림을 바꿀 값이 없다`,
+        );
+      }
+      const list = p.dynamic.listSlotId
+        ? slotById.get(p.dynamic.listSlotId)
+        : undefined;
+      if (p.dynamic.listSlotId === undefined) {
+        // 크기가 고정인 동적 파트다(IDE-019). 목록·틀 슬롯 검사가 없다.
+      } else if (!list) {
         push(
           [...path, 'listSlotId'],
           `없는 슬롯을 가리킨다: ${p.dynamic.listSlotId}`,
@@ -582,6 +600,23 @@ export const findSlot = (
 /** 파트 하나에 나타나는 슬롯들. 렌더러가 파트 단위로 그릴 때 쓴다. */
 export const slotsOfPart = (game: GameDefinition, partId: string): Slot[] =>
   game.slots.filter((s) => s.placements.some((p) => p.partId === partId));
+
+/**
+ * 동적 파트의 **그림을 정하는** 슬롯들 — 그 파트에 `control` 배치를 가진
+ * 슬롯이다(IDE-016 · IDE-019).
+ *
+ * `control`의 뜻이 원래 "그려지지는 않지만 그 파트의 렌더링을 바꾸는 값"이라
+ * 파트에 따로 목록을 적을 필요가 없다. 미리보기(`BoardPreview`)는 이 값들이
+ * 바뀔 때만 서버에 판을 다시 청한다 — 말 이름이나 색은 그림과 무관하므로
+ * 여기 들지 않고, 그래서 글자를 한 자 칠 때마다 요청이 나가지 않는다.
+ */
+export const dynamicSourceSlots = (
+  game: GameDefinition,
+  partId: string,
+): Slot[] =>
+  game.slots.filter((s) =>
+    s.placements.some((p) => p.mode === 'control' && p.partId === partId),
+  );
 
 /**
  * 파트 하나의 **인쇄물을 실제로 바꾸는** 슬롯들.

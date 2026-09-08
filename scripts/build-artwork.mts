@@ -13,6 +13,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ARTWORK as baseball } from '../src/assets/games/baseball/artwork/index.ts';
+import { ARTWORK as dotToDot } from '../src/assets/games/dot-to-dot/artwork/index.ts';
 import { ARTWORK as soccer } from '../src/assets/games/soccer/artwork/index.ts';
 import { ARTWORK as worldTour } from '../src/assets/games/world-tour/artwork/index.ts';
 import { ARTWORK as yutNori } from '../src/assets/games/yut-nori/artwork/index.ts';
@@ -21,7 +22,13 @@ import { ARTWORK as yutNori } from '../src/assets/games/yut-nori/artwork/index.t
 const ARTWORK_BY_GAME: Record<
   string,
   Readonly<Record<string, () => string>>
-> = { soccer, baseball, 'world-tour': worldTour, 'yut-nori': yutNori };
+> = {
+  soccer,
+  baseball,
+  'world-tour': worldTour,
+  'yut-nori': yutNori,
+  'dot-to-dot': dotToDot,
+};
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 

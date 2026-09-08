@@ -686,3 +686,110 @@ describe('목록 슬롯 (IDE-016)', () => {
     ).toContain("'text' 배치를 쓸 수 없다");
   });
 });
+
+describe('윤곽 슬롯과 크기가 고정인 동적 파트 (IDE-019)', () => {
+  const square = [10, 10, 40, 10, 40, 40, 10, 40];
+
+  const withOutline = (
+    patch: Partial<{
+      default: unknown;
+      minPoints: number;
+      maxPoints: number;
+      dynamic: unknown;
+    }> = {},
+  ): GameDefinitionInput => {
+    const base = makeGame();
+    const partId = base.parts[0].id;
+    return makeGame({
+      parts: [
+        {
+          ...base.parts[0],
+          dynamic: (patch.dynamic ?? {}) as never,
+        },
+        ...base.parts.slice(1),
+      ],
+      slots: [
+        ...base.slots,
+        {
+          id: 'outline',
+          kind: 'outline',
+          label: '윤곽선',
+          minPoints: patch.minPoints ?? 3,
+          maxPoints: patch.maxPoints ?? 2000,
+          default: (patch.default ?? square) as number[],
+          placements: [{ partId, mode: 'control' }],
+        },
+        {
+          id: 'dot-count',
+          kind: 'number',
+          label: '점 개수',
+          min: 5,
+          max: 100,
+          integer: true,
+          default: 20,
+          placements: [{ partId, mode: 'control' }],
+        },
+      ],
+    });
+  };
+
+  it('좌표 배열이면 통과한다', () => {
+    const game = parseGame(withOutline());
+    const slot = game.slots.find((s) => s.id === 'outline')!;
+    expect(slot.kind).toBe('outline');
+    expect(slot.default).toEqual(square);
+  });
+
+  it('x·y가 짝을 못 이루거나 수가 아니면 걸러진다', () => {
+    expect(issuesOf(withOutline({ default: [1, 2, 3] }))).toContain(
+      'x·y가 짝을 이뤄야 한다',
+    );
+    // 배열이 아니거나 NaN이 섞인 값은 원소 검사에서 먼저 걸린다. 사유 문구는
+    // zod의 것이지만, 도안이 깨진 채 등록되지 않는다는 것이 여기서 볼 것이다.
+    expect(() => parseGame(withOutline({ default: '10,10' }))).toThrow();
+    expect(() => parseGame(withOutline({ default: [1, 2, 3, NaN] }))).toThrow();
+  });
+
+  it('점이 minPoints보다 적으면 걸러진다', () => {
+    expect(issuesOf(withOutline({ default: [1, 2, 3, 4] }))).toContain(
+      '점이 3개 이상',
+    );
+  });
+
+  it('숫자 슬롯도 control 배치를 쓸 수 있다 — 값이 판을 다시 그린다', () => {
+    expect(() => parseGame(withOutline())).not.toThrow();
+  });
+
+  it('크기 단계 없는 동적 파트가 통과한다 — 그림만 값에서 나온다', () => {
+    const game = parseGame(withOutline());
+    expect(game.parts[0].dynamic).toEqual({});
+  });
+
+  it('목록 슬롯과 크기 단계는 함께 적거나 함께 비운다', () => {
+    expect(
+      issuesOf(withOutline({ dynamic: { listSlotId: 'outline' } })),
+    ).toContain('함께 적거나 함께 비운다');
+    expect(
+      issuesOf(
+        withOutline({
+          dynamic: {
+            sizeSteps: [{ maxItems: 9, widthMm: 100, heightMm: 200 }],
+          },
+        }),
+      ),
+    ).toContain('함께 적거나 함께 비운다');
+  });
+
+  it('control 배치를 가진 슬롯이 하나도 없으면 동적일 이유가 없다', () => {
+    const base = makeGame();
+    const noControl = makeGame({
+      parts: [
+        { ...base.parts[0], dynamic: {} as never },
+        ...base.parts.slice(1),
+      ],
+    });
+    expect(issuesOf(noControl)).toContain(
+      'control 배치를 가진 슬롯이 하나도 없다',
+    );
+  });
+});

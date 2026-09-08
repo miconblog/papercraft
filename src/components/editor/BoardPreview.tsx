@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import {
+  dynamicSourceSlots,
   resolveVariant,
   slotsOfPart,
   styleSetBounds,
@@ -118,20 +119,19 @@ export function BoardPreview({
     };
   }, [game]);
 
-  // 동적 파트(세계일주 게임판)는 값에서 그때 그린다 — 목록·틀 슬롯이 바뀔 때만
-  // 서버에 다시 청한다. 나머지 값(말 이름·색)은 그림과 무관하므로 키에 넣지
-  // 않고, 요청 본문은 ref로 최신 값을 쓴다.
+  // 동적 파트(세계일주 게임판 · 점 잇기 판)는 값에서 그때 그린다 — 그 파트에
+  // control 배치를 가진 슬롯이 바뀔 때만 서버에 다시 청한다. 나머지 값(말
+  // 이름·색)은 그림과 무관하므로 키에 넣지 않고, 요청 본문은 ref로 최신 값을 쓴다.
   const customizationRef = useRef(customization);
   useEffect(() => {
     customizationRef.current = customization;
   });
   const dynamicKey = part.dynamic
-    ? JSON.stringify([
-        customization.values[part.dynamic.listSlotId],
-        part.dynamic.frameSlotId
-          ? customization.values[part.dynamic.frameSlotId]
-          : null,
-      ])
+    ? JSON.stringify(
+        dynamicSourceSlots(game, part.id).map(
+          (s) => customization.values[s.id],
+        ),
+      )
     : null;
 
   useEffect(() => {

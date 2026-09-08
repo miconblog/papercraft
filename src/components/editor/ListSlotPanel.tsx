@@ -57,7 +57,15 @@ export function ListSlotPanel({
   onChange,
 }: ListSlotPanelProps) {
   const id = useId();
-  const selected: ListValue = Array.isArray(value) ? value : [];
+  // 값이 배열이라고 다 목록은 아니다 — 윤곽 슬롯의 좌표도 배열이다(IDE-019).
+  // 이 패널이 그리는 것은 목록 슬롯뿐이므로 항목의 모양까지 확인하고 받는다.
+  const selected: ListValue =
+    Array.isArray(value) &&
+    value.every(
+      (entry) => typeof entry === 'string' || typeof entry === 'object',
+    )
+      ? (value as ListValue)
+      : [];
   const selectedIds = selected.map(listEntryId);
   const selectedSet = new Set(selectedIds);
   const labelOf = (entry: ListEntry) => listEntryLabel(slot, entry);
