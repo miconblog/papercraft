@@ -166,6 +166,25 @@ describe('parseArtwork', () => {
     expect(paths(art.items)[0].commands[0]).toEqual({ c: 'M', x: 4, y: 5 });
   });
 
+  /**
+   * 회전이 걸린 글자는 **자리도 함께 돌아야** 한다. 평행이동·배율만 먹이면
+   * 180° 돌린 글자가 대칭점이 아니라 원래 자리에 남아, 화면(브라우저가 SVG를
+   * 그대로 그린다)과 PDF가 다른 그림이 된다. 윷놀이 말의 업기 숫자가 처음
+   * 밟았다(IDE-017) — 텐트형 카드의 위쪽 면은 접으면 뒤집히므로 미리 돌려
+   * 그린다.
+   */
+  it('180° 돌린 글자는 자리도 대칭점으로 옮긴다', () => {
+    const art = parseArtwork(
+      '<svg viewBox="0 0 10 10">' +
+        '<text x="3" y="4" font-size="2" transform="rotate(180 5 5)">2</text>' +
+        '</svg>',
+    );
+    const [item] = texts(art.items);
+    expect(item.xMm).toBeCloseTo(7, 6);
+    expect(item.yMm).toBeCloseTo(6, 6);
+    expect(item.rotationDeg).toBe(180);
+  });
+
   it('모르는 요소·색·변환은 조용히 넘기지 않고 알린다', () => {
     expect(() =>
       parseArtwork('<svg viewBox="0 0 10 10"><image href="a.png" /></svg>'),

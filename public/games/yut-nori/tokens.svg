@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 자동 생성 파일. 고치려면 src/assets/games/soccer/artwork/ 를 고치고 `npm run artwork` 를 돌린다. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="112mm" height="252mm" viewBox="0 0 112 252" font-family="Noto Sans KR">
+<title>윷놀이 · 말</title>
+<g id="pc-cut" fill="none" stroke="#000000" stroke-width="0.25" stroke-linecap="butt">
+<rect x="10" y="26" width="20" height="52" />
+<rect x="34" y="26" width="20" height="52" />
+<rect x="58" y="26" width="20" height="52" />
+<rect x="82" y="26" width="20" height="52" />
+<rect x="10" y="82" width="20" height="52" />
+<rect x="34" y="82" width="20" height="52" />
+<rect x="58" y="82" width="20" height="52" />
+<rect x="82" y="82" width="20" height="52" />
+<rect x="10" y="138" width="20" height="52" />
+<rect x="34" y="138" width="20" height="52" />
+<rect x="58" y="138" width="20" height="52" />
+<rect x="82" y="138" width="20" height="52" />
+<rect x="10" y="194" width="20" height="52" />
+<rect x="34" y="194" width="20" height="52" />
+<rect x="58" y="194" width="20" height="52" />
+<rect x="82" y="194" width="20" height="52" />
+</g>
+<g id="pc-fold-mountain" fill="none" stroke="#000000" stroke-width="0.2" stroke-dasharray="4 1.2 0.6 1.2" stroke-linecap="butt">
+<line x1="10" y1="52" x2="30" y2="52" />
+<line x1="34" y1="52" x2="54" y2="52" />
+<line x1="58" y1="52" x2="78" y2="52" />
+<line x1="82" y1="52" x2="102" y2="52" />
+<line x1="10" y1="108" x2="30" y2="108" />
+<line x1="34" y1="108" x2="54" y2="108" />
+<line x1="58" y1="108" x2="78" y2="108" />
+<line x1="82" y1="108" x2="102" y2="108" />
+<line x1="10" y1="164" x2="30" y2="164" />
+<line x1="34" y1="164" x2="54" y2="164" />
+<line x1="58" y1="164" x2="78" y2="164" />
+<line x1="82" y1="164" x2="102" y2="164" />
+<line x1="10" y1="220" x2="30" y2="220" />
+<line x1="34" y1="220" x2="54" y2="220" />
+<line x1="58" y1="220" x2="78" y2="220" />
+<line x1="82" y1="220" x2="102" y2="220" />
+</g>
+<g id="pc-art" fill="none" stroke="none">
+<text x="56" y="9" font-size="5" dominant-baseline="central" text-anchor="middle" font-weight="700" fill="#1a1a1a">말 · 네 편</text>
+<text x="56" y="15" font-size="2.5" dominant-baseline="central" text-anchor="middle" fill="#6b7280">한 줄이 한 편이다. 오려서 가운데를 산 모양으로 접으면 혼자 선다.</text>
+<g id="pc-side-1" fill="#dc2626" stroke="none">
+<circle cx="20" cy="60" r="4.75" />
+<rect x="13" y="66.2" width="14" height="1.4" />
+<circle cx="20" cy="44" r="4.75" />
+<rect x="13" y="36.4" width="14" height="1.4" />
+<circle cx="44" cy="60" r="4.75" />
+<rect x="37" y="66.2" width="14" height="1.4" />
+<circle cx="44" cy="44" r="4.75" />
+<rect x="37" y="36.4" width="14" height="1.4" />
+<circle cx="68" cy="60" r="4.75" />
+<rect x="61" y="66.2" width="14" height="1.4" />
+<circle cx="68" cy="44" r="4.75" />
+<rect x="61" y="36.4" width="14" height="1.4" />
+<circle cx="92" cy="60" r="4.75" />
+<rect x="85" y="66.2" width="14" height="1.4" />
+<circle cx="92" cy="44" r="4.75" />
+<rect x="85" y="36.4" width="14" height="1.4" />
+</g>
+<g id="pc-side-2" fill="#1d4ed8" stroke="none">
+<path d="M20 111.25L24.75 119.8L15.25 119.8Z" />
+<rect x="13" y="122.2" width="14" height="1.4" />
+<path d="M20 104.75L15.25 96.2L24.75 96.2Z" />
+<rect x="13" y="92.4" width="14" height="1.4" />
+<path d="M44 111.25L48.75 119.8L39.25 119.8Z" />
+<rect x="37" y="122.2" width="14" height="1.4" />
+<path d="M44 104.75L39.25 96.2L48.75 96.2Z" />
+<rect x="37" y="92.4" width="14" height="1.4" />
+<path d="M68 111.25L72.75 119.8L63.25 119.8Z" />
+<rect x="61" y="122.2" width="14" height="1.4" />
+<path d="M68 104.75L63.25 96.2L72.75 96.2Z" />
+<rect x="61" y="92.4" width="14" height="1.4" />
+<path d="M92 111.25L96.75 119.8L87.25 119.8Z" />
+<rect x="85" y="122.2" width="14" height="1.4" />
+<path d="M92 104.75L87.25 96.2L96.75 96.2Z" />
+<rect x="85" y="92.4" width="14" height="1.4" />
+</g>
+<g id="pc-side-3" fill="#15803d" stroke="none">
+<path d="M15.725 167.725L24.275 167.725L24.275 176.275L15.725 176.275Z" />
+<rect x="13" y="178.2" width="14" height="1.4" />
+<path d="M24.275 160.275L15.725 160.275L15.725 151.725L24.275 151.725Z" />
+<rect x="13" y="148.4" width="14" height="1.4" />
+<path d="M39.725 167.725L48.275 167.725L48.275 176.275L39.725 176.275Z" />
+<rect x="37" y="178.2" width="14" height="1.4" />
+<path d="M48.275 160.275L39.725 160.275L39.725 151.725L48.275 151.725Z" />
+<rect x="37" y="148.4" width="14" height="1.4" />
+<path d="M63.725 167.725L72.275 167.725L72.275 176.275L63.725 176.275Z" />
+<rect x="61" y="178.2" width="14" height="1.4" />
+<path d="M72.275 160.275L63.725 160.275L63.725 151.725L72.275 151.725Z" />
+<rect x="61" y="148.4" width="14" height="1.4" />
+<path d="M87.725 167.725L96.275 167.725L96.275 176.275L87.725 176.275Z" />
+<rect x="85" y="178.2" width="14" height="1.4" />
+<path d="M96.275 160.275L87.725 160.275L87.725 151.725L96.275 151.725Z" />
+<rect x="85" y="148.4" width="14" height="1.4" />
+</g>
+<g id="pc-side-4" fill="#7e22ce" stroke="none">
+<path d="M20 223.25L21.256 226.271L24.518 226.532L22.033 228.661L22.792 231.843L20 230.138L17.208 231.843L17.967 228.661L15.482 226.532L18.744 226.271Z" />
+<rect x="13" y="234.2" width="14" height="1.4" />
+<path d="M20 216.75L18.744 213.729L15.482 213.468L17.967 211.339L17.208 208.157L20 209.863L22.792 208.157L22.033 211.339L24.518 213.468L21.256 213.729Z" />
+<rect x="13" y="204.4" width="14" height="1.4" />
+<path d="M44 223.25L45.256 226.271L48.518 226.532L46.033 228.661L46.792 231.843L44 230.138L41.208 231.843L41.967 228.661L39.482 226.532L42.744 226.271Z" />
+<rect x="37" y="234.2" width="14" height="1.4" />
+<path d="M44 216.75L42.744 213.729L39.482 213.468L41.967 211.339L41.208 208.157L44 209.863L46.792 208.157L46.033 211.339L48.518 213.468L45.256 213.729Z" />
+<rect x="37" y="204.4" width="14" height="1.4" />
+<path d="M68 223.25L69.256 226.271L72.518 226.532L70.033 228.661L70.792 231.843L68 230.138L65.208 231.843L65.967 228.661L63.482 226.532L66.744 226.271Z" />
+<rect x="61" y="234.2" width="14" height="1.4" />
+<path d="M68 216.75L66.744 213.729L63.482 213.468L65.967 211.339L65.208 208.157L68 209.863L70.792 208.157L70.033 211.339L72.518 213.468L69.256 213.729Z" />
+<rect x="61" y="204.4" width="14" height="1.4" />
+<path d="M92 223.25L93.256 226.271L96.518 226.532L94.033 228.661L94.792 231.843L92 230.138L89.208 231.843L89.967 228.661L87.482 226.532L90.744 226.271Z" />
+<rect x="85" y="234.2" width="14" height="1.4" />
+<path d="M92 216.75L90.744 213.729L87.482 213.468L89.967 211.339L89.208 208.157L92 209.863L94.792 208.157L94.033 211.339L96.518 213.468L93.256 213.729Z" />
+<rect x="85" y="204.4" width="14" height="1.4" />
+</g>
+<text x="44" y="75" font-size="3.6" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" stroke="none" font-weight="700">2</text>
+<text x="44" y="29" font-size="3.6" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" stroke="none" font-weight="700" transform="rotate(180 44 29)">2</text>
+<text x="68" y="75" font-size="3.6" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" stroke="none" font-weight="700">3</text>
+<text x="68" y="29" font-size="3.6" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" stroke="none" font-weight="700" transform="rotate(180 68 29)">3</text>
+<text x="92" y="75" font-size="3.6" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" stroke="none" font-weight="700">4</text>
+<text x="92" y="29" font-size="3.6" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" stroke="none" font-weight="700" transform="rotate(180 92 29)">4</text>
+<text x="44" y="131" font-size="3.6" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" stroke="none" font-weight="700">2</text>
+<text x="44" y="85" font-size="3.6" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" stroke="none" font-weight="700" transform="rotate(180 44 85)">2</text>
+<text x="68" y="131" font-size="3.6" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" stroke="none" font-weight="700">3</text>
+<text x="68" y="85" font-size="3.6" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" stroke="none" font-weight="700" transform="rotate(180 68 85)">3</text>
+<text x="92" y="131" font-size="3.6" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" stroke="none" font-weight="700">4</text>
+<text x="92" y="85" font-size="3.6" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" stroke="none" font-weight="700" transform="rotate(180 92 85)">4</text>
+<text x="44" y="187" font-size="3.6" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" stroke="none" font-weight="700">2</text>
+<text x="44" y="141" font-size="3.6" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" stroke="none" font-weight="700" transform="rotate(180 44 141)">2</text>
+<text x="68" y="187" font-size="3.6" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" stroke="none" font-weight="700">3</text>
+<text x="68" y="141" font-size="3.6" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" stroke="none" font-weight="700" transform="rotate(180 68 141)">3</text>
+<text x="92" y="187" font-size="3.6" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" stroke="none" font-weight="700">4</text>
+<text x="92" y="141" font-size="3.6" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" stroke="none" font-weight="700" transform="rotate(180 92 141)">4</text>
+<text x="44" y="243" font-size="3.6" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" stroke="none" font-weight="700">2</text>
+<text x="44" y="197" font-size="3.6" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" stroke="none" font-weight="700" transform="rotate(180 44 197)">2</text>
+<text x="68" y="243" font-size="3.6" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" stroke="none" font-weight="700">3</text>
+<text x="68" y="197" font-size="3.6" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" stroke="none" font-weight="700" transform="rotate(180 68 197)">3</text>
+<text x="92" y="243" font-size="3.6" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" stroke="none" font-weight="700">4</text>
+<text x="92" y="197" font-size="3.6" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" stroke="none" font-weight="700" transform="rotate(180 92 197)">4</text>
+</g>
+</svg>

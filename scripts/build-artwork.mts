@@ -15,12 +15,13 @@ import { fileURLToPath } from 'node:url';
 import { ARTWORK as baseball } from '../src/assets/games/baseball/artwork/index.ts';
 import { ARTWORK as soccer } from '../src/assets/games/soccer/artwork/index.ts';
 import { ARTWORK as worldTour } from '../src/assets/games/world-tour/artwork/index.ts';
+import { ARTWORK as yutNori } from '../src/assets/games/yut-nori/artwork/index.ts';
 
 /** 게임 id → 파트 id별 생성기. 새 게임을 더할 때 여기 한 줄을 더한다. */
 const ARTWORK_BY_GAME: Record<
   string,
   Readonly<Record<string, () => string>>
-> = { soccer, baseball, 'world-tour': worldTour };
+> = { soccer, baseball, 'world-tour': worldTour, 'yut-nori': yutNori };
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 

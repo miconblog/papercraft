@@ -11,10 +11,10 @@
 
 | 상태      | 개수 |
 | --------- | ---- |
-| `todo`    | 2    |
+| `todo`    | 1    |
 | `doing`   | 1    |
 | `blocked` | 5    |
-| `review`  | 4    |
+| `review`  | 5    |
 | `done`    | 8    |
 
 **지금 할 것** — [IDE-007](IDE-007-print-and-pdf-export.md)(인쇄·PDF 내보내기)은
@@ -46,6 +46,19 @@ PDF까지 나온다. 남은 것은 종이 실측과 놀아 보기다. 도시 수
 화면의 "도시 수" 선택이 미리보기·인쇄 장수·PDF를 그 판으로 바꾼다. 개별 도시
 토글과 경로 편집(2단계)은 아트워크를 값에서 그때 그리는 두 번째 확장이 필요해
 남아 있다.
+
+[IDE-017](IDE-017-yut-nori-board-vector-artwork.md)(윷놀이)이 `review`다. 사용자가
+고른 **네 번째 게임**이고(2026-09-08), 이번에도 **스키마는 한 줄도 안 고쳤다**.
+이 게임이 규격에서 처음 밟은 것이 셋이다 — **정사각 보드**(198×198, 검증이
+`widthMm >= heightMm`를 가로로 읽어 `landscape`로 선언한다) · **마커도 프리셋도
+없는 게임**(말이 판 밖에서 시작해 말판 파트에 걸리는 슬롯이 하나도 없다. 에디터가
+옵션 줄만 비우고 멀쩡히 열린다) · **갈라지는 경로**(순환 목록이 아니라 그래프다.
+바깥길 20칸, 지름길로 질러 가면 11칸). 밭 스물아홉과 텐트형 말 열여섯, 두 단으로
+조판한 게임 방법 한 장이 각각 A4 한 장씩 나온다. 규칙을 인쇄 부속으로 낸 것은
+축구가 `rules-card`를 뺀 뒤 처음인데, 값은 여전히 도안 정의의 `rules` 필드
+하나이고 부속은 그것을 조판할 뿐이다. 남은 것은 **종이 실측과 놀아 보기**다 —
+업기를 밑동 숫자로 표시할지가 거기서 정해진다. 뒤를 잇는
+[IDE-018](IDE-018-paper-yut-sticks-buildable.md)(종이 윷가락)은 아직 `blocked`다.
 
 [IDE-013](IDE-013-self-hosted-web-analytics.md)(자체 웹 분석)은 2026-09-07 `done`이다.
 이제 **어떤 게임이 얼마나 읽히고 뽑히는지 숫자로 보인다** — 그동안 보드의 후보
@@ -108,7 +121,7 @@ PDF까지 나온다. 남은 것은 종이 실측과 놀아 보기다. 도시 수
 | [IDE-014](IDE-014-baseball-board-vector-artwork.md)        | 야구 게임판 도안 벡터화                     | content  | P1   | 3d   | `review`  |
 | [IDE-015](IDE-015-world-tour-dice-board-vector-artwork.md) | 세계일주 — 실제 세계지도와 도시·경로 데이터 | content  | P1   | 4d   | `review`  |
 | [IDE-016](IDE-016-map-city-toggle-and-route-editing.md)    | 지도 위 도시 토글과 경로 편집               | frontend | P1   | 4d   | `review`  |
-| [IDE-017](IDE-017-yut-nori-board-vector-artwork.md)        | 윷놀이 — 말판(윷판)과 말 도안               | content  | P1   | 3d   | `todo`    |
+| [IDE-017](IDE-017-yut-nori-board-vector-artwork.md)        | 윷놀이 — 말판(윷판)과 말 도안               | content  | P1   | 3d   | `review`  |
 | [IDE-018](IDE-018-paper-yut-sticks-buildable.md)           | 종이 윷가락 조립 도안                       | content  | P1   | 3d   | `blocked` |
 | [IDE-019](IDE-019-dot-to-dot-photo-outline.md)             | 점 잇기 — 사진 윤곽선과 점·번호 도안        | content  | P1   | 4d   | `todo`    |
 | [IDE-020](IDE-020-dot-to-dot-editor.md)                    | 점 잇기 에디터 — 사진 넣기와 도안 간직      | frontend | P1   | 3d   | `blocked` |
