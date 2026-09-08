@@ -9,3 +9,7 @@ spikes/print-pipeline/assets
 # 그때마다 `npm run format` 이 무관한 diff 를 만든다. 저쪽 스타일 그대로 둔다.
 src/components/ui
 src/lib/utils.ts
+
+# Natural Earth에서 단순화한 해안선. 고리 하나가 한 줄이라 prettier가 펼치면 열 배가 된다.
+src/assets/games/world-tour/artwork/land.json
+src/assets/games/world-tour/search/world-cities.json

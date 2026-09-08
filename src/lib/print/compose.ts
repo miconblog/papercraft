@@ -9,6 +9,7 @@
  */
 import {
   findRegion,
+  resolvePart,
   resolveVariant,
   slotsOfPart,
   styleSetBounds,
@@ -41,6 +42,16 @@ import type { ExportOptions, PartSelection } from './options';
 
 /** `public/games/…` 자산 경로를 SVG 원문으로 바꿔 주는 함수. */
 export type LoadArtwork = (assetRef: string) => string;
+
+/**
+ * 동적 파트의 SVG를 값에서 그린다(IDE-016). 서버의 렌더러 등록소
+ * (`lib/games/dynamic-artwork.ts`)가 온다. 동적 파트가 있는데 이것이 없으면
+ * 합성은 실패한다 — 정적 파일로 조용히 대체하면 고른 도시가 빠진 채 뽑힌다.
+ */
+export type RenderArtwork = (
+  part: Part,
+  customization: GameCustomization,
+) => string;
 
 export interface ExportPage {
   readonly widthMm: number;
@@ -76,6 +87,7 @@ export interface ComposeInput {
   readonly customization: GameCustomization;
   readonly options: ExportOptions;
   readonly loadArtwork: LoadArtwork;
+  readonly renderArtwork?: RenderArtwork;
 }
 
 const textAnchorOf = { start: 'start', center: 'middle', end: 'end' } as const;
@@ -89,13 +101,29 @@ const textAnchorOf = { start: 'start', center: 'middle', end: 'end' } as const;
 export function partDraws(
   game: GameDefinition,
   customization: GameCustomization,
-  part: Part,
+  givenPart: Part,
   loadArtwork: LoadArtwork,
+  renderArtwork?: RenderArtwork,
 ): Draw[] {
   const items: Draw[] = [];
+  // 변형·동적 파트는 지금 값의 모습으로 그린다(IDE-016). 아래 크기 검사도
+  // 그 모습과 견준다.
+  const part = resolvePart(game, givenPart, customization);
 
-  if (part.artwork) {
-    const artwork = parseArtwork(loadArtwork(part.artwork), {
+  let svg: string | null = null;
+  if (part.dynamic) {
+    if (!renderArtwork) {
+      throw new Error(
+        `동적 파트 '${part.id}'는 렌더러가 있어야 그린다 — composeExport에 renderArtwork를 넘긴다`,
+      );
+    }
+    svg = renderArtwork(part, customization);
+  } else if (part.artwork) {
+    svg = loadArtwork(part.artwork);
+  }
+
+  if (svg !== null) {
+    const artwork = parseArtwork(svg, {
       paint: paintOverrides(game, customization, part.id),
     });
     if (
@@ -277,6 +305,7 @@ export function composeExport({
   customization,
   options,
   loadArtwork,
+  renderArtwork,
 }: ComposeInput): ExportDocument {
   const parts: PartExportPlan[] = [];
   const pages: ExportPage[] = [];
@@ -284,7 +313,8 @@ export function composeExport({
   // 도안이 선언한 순서대로 낸다 — 보드가 먼저고 부속이 뒤다.
   const ordered = game.parts
     .map((part) => ({
-      part,
+      // 타일 계산과 문서 제목도 지금 값의 파트로 한다 — 그림과 종이가 맞아야 한다.
+      part: resolvePart(game, part, customization),
       selection: options.parts.find((s) => s.partId === part.id),
     }))
     .filter(
@@ -293,7 +323,13 @@ export function composeExport({
     );
 
   for (const { part, selection } of ordered) {
-    const items = partDraws(game, customization, part, loadArtwork);
+    const items = partDraws(
+      game,
+      customization,
+      part,
+      loadArtwork,
+      renderArtwork,
+    );
     const { plan, pages: partPageList } = partPages(
       game,
       part,

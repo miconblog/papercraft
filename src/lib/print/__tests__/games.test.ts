@@ -14,6 +14,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { GAMES } from '@/lib/games';
+import { renderDynamicArtwork } from '@/lib/games/dynamic-artwork';
 import { defaultCustomization } from '@/lib/schema';
 import { composeExport } from '../compose';
 import { defaultExportOptions } from '../options';
@@ -38,6 +39,10 @@ describe.each(GAMES.map((game) => [game.id, game] as const))(
           })),
         },
         loadArtwork,
+        // 동적 파트(세계일주 게임판)는 값에서 그린다 — 내보내기 API가 넘기는 것과
+        // 같은 등록소다.
+        renderArtwork: (part, customization) =>
+          renderDynamicArtwork(game, part, customization),
       });
 
       expect(doc.parts).toHaveLength(game.parts.length);

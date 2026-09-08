@@ -9,6 +9,8 @@
     "lint": "eslint",
     "db:migrate": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --env-file-if-exists=.env.local scripts/db-migrate.mts",
     "artwork": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-artwork.mts",
+    "fetch:land": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/fetch-natural-earth.mts",
+    "fetch:cities": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/fetch-world-cities.mts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "next typegen && tsc --noEmit",

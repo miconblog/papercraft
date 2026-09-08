@@ -128,8 +128,120 @@ export const gameDefinition = z
       }
     };
     checkAsset(['thumbnail'], g.thumbnail);
-    for (const [i, p] of g.parts.entries())
+    for (const [i, p] of g.parts.entries()) {
       checkAsset(['parts', i, 'artwork'], p.artwork);
+      for (const [j, option] of (p.variants?.options ?? []).entries()) {
+        checkAsset(
+          ['parts', i, 'variants', 'options', j, 'artwork'],
+          option.artwork,
+        );
+      }
+    }
+
+    // 동적 파트 — 목록 슬롯과 (있다면) 틀 슬롯이 이 파트에 control 배치를 갖는다.
+    for (const [i, p] of g.parts.entries()) {
+      if (!p.dynamic) continue;
+      const path = ['parts', i, 'dynamic'];
+      const list = slotById.get(p.dynamic.listSlotId);
+      if (!list) {
+        push(
+          [...path, 'listSlotId'],
+          `없는 슬롯을 가리킨다: ${p.dynamic.listSlotId}`,
+        );
+      } else if (list.kind !== 'list') {
+        push(
+          [...path, 'listSlotId'],
+          `목록 슬롯은 list여야 한다 (현재 ${list.kind})`,
+        );
+      } else if (
+        !list.placements.some(
+          (pl) => pl.mode === 'control' && pl.partId === p.id,
+        )
+      ) {
+        push(
+          [...path, 'listSlotId'],
+          `슬롯 '${list.id}'가 파트 '${p.id}'에 control 배치를 갖지 않는다`,
+        );
+      }
+      if (p.dynamic.frameSlotId) {
+        const frame = slotById.get(p.dynamic.frameSlotId);
+        if (!frame) {
+          push(
+            [...path, 'frameSlotId'],
+            `없는 슬롯을 가리킨다: ${p.dynamic.frameSlotId}`,
+          );
+        } else if (frame.kind !== 'choice') {
+          push(
+            [...path, 'frameSlotId'],
+            `틀 슬롯은 choice여야 한다 (현재 ${frame.kind})`,
+          );
+        } else if (!frame.options.some((o) => o.value === 'map')) {
+          push(
+            [...path, 'frameSlotId'],
+            `틀 슬롯 '${frame.id}'에 'map' 선택지가 없다`,
+          );
+        } else if (
+          !frame.placements.some(
+            (pl) => pl.mode === 'control' && pl.partId === p.id,
+          )
+        ) {
+          push(
+            [...path, 'frameSlotId'],
+            `슬롯 '${frame.id}'가 파트 '${p.id}'에 control 배치를 갖지 않는다`,
+          );
+        }
+      }
+    }
+
+    // 파트 변형 — 선택 슬롯이 이 파트에 control 배치를 가진 choice 슬롯이고,
+    // 선택지가 변형 값과 같으며, 기본값 변형이 파트 자체와 같아야 한다.
+    for (const [i, p] of g.parts.entries()) {
+      if (!p.variants) continue;
+      const path = ['parts', i, 'variants'];
+      const s = slotById.get(p.variants.selectorSlotId);
+      if (!s) {
+        push(
+          [...path, 'selectorSlotId'],
+          `없는 슬롯을 가리킨다: ${p.variants.selectorSlotId}`,
+        );
+        continue;
+      }
+      if (s.kind !== 'choice') {
+        push(
+          [...path, 'selectorSlotId'],
+          `선택 슬롯은 choice여야 한다 (현재 ${s.kind})`,
+        );
+        continue;
+      }
+      if (
+        !s.placements.some((pl) => pl.mode === 'control' && pl.partId === p.id)
+      ) {
+        push(
+          [...path, 'selectorSlotId'],
+          `슬롯 '${s.id}'가 파트 '${p.id}'에 control 배치를 갖지 않는다 — 에디터가 그 파트에서 보여 줄 수 없다`,
+        );
+      }
+      const optionValues = [...s.options.map((o) => o.value)].sort();
+      const variantValues = [...p.variants.options.map((v) => v.value)].sort();
+      if (optionValues.join('|') !== variantValues.join('|')) {
+        push(
+          [...path, 'options'],
+          `슬롯 '${s.id}'의 선택지(${optionValues.join(', ')})가 변형 목록(${variantValues.join(', ')})과 다르다`,
+        );
+      }
+      const base = p.variants.options.find((v) => v.value === s.default);
+      if (
+        base &&
+        (base.widthMm !== p.widthMm ||
+          base.heightMm !== p.heightMm ||
+          base.artwork !== p.artwork)
+      ) {
+        push(
+          [...path, 'options'],
+          `기본값 변형 '${base.value}'(${base.widthMm}×${base.heightMm}mm, ${base.artwork})이 파트 자체(${p.widthMm}×${p.heightMm}mm, ${p.artwork ?? '아트워크 없음'})와 다르다`,
+        );
+      }
+    }
     for (const [i, set] of g.styleSets.entries()) {
       for (const [j, v] of set.variants.entries()) {
         checkAsset(['styleSets', i, 'variants', j, 'artwork'], v.artwork);

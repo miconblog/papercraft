@@ -177,6 +177,21 @@ export default async function GamePage({ params }: Props) {
               <div className="mt-1 text-muted-foreground">
                 배율 100%에서 {part.widthMm}×{part.heightMm}mm ·{' '}
                 {ORIENTATION_LABEL[part.orientation]}
+                {/* 변형이 있는 파트(세계일주 게임판의 도시 수)는 고르는 값에
+                    따라 크기가 달라진다 — 기본값만 적으면 거짓말이 된다. */}
+                {part.variants && (
+                  <>
+                    {' '}
+                    · 만들기에서 고르는 값에 따라{' '}
+                    {[
+                      ...new Set(
+                        part.variants.options.map(
+                          (o) => `${o.widthMm}×${o.heightMm}mm`,
+                        ),
+                      ),
+                    ].join(' / ')}
+                  </>
+                )}
               </div>
               {part.description && (
                 <p className="mt-1 text-muted-foreground">{part.description}</p>

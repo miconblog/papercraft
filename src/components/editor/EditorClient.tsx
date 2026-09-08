@@ -5,10 +5,13 @@ import {
   applyPreset,
   defaultCustomization,
   findSlot,
+  resolveParts,
+  slotsAffectingPart,
   validateSlotValue,
   type GameCustomization,
   type GameDefinition,
   type SlotPoint,
+  type SlotValue,
 } from '@/lib/schema';
 import { movedPoint } from '@/lib/customization/movement';
 import { saveCustomization } from '@/lib/customization/storage';
@@ -21,6 +24,7 @@ import {
   hasUngroupedFormSlots,
 } from './CustomizationForm';
 import { BoardPreview } from './BoardPreview';
+import { ListSlotPanel } from './ListSlotPanel';
 
 /**
  * 커스터마이즈 에디터 진입점 (IDE-006)
@@ -41,6 +45,10 @@ export function EditorClient({ game }: { game: GameDefinition }) {
       key={hydrated ? 'restored' : 'initial'}
       game={game}
       initial={initial}
+      // 하이드레이션 전 첫 화면은 기본값이다. 그때 저장하면 사용자가 만든 값을
+      // 기본값으로 덮어쓴 뒤에야 복원이 시작된다 — 복원할 것이 이미 없다
+      // (2026-09-08 "새로고침하면 경로가 초기화된다"). 복원이 끝난 폼만 저장한다.
+      persist={hydrated}
     />
   );
 }
@@ -48,9 +56,11 @@ export function EditorClient({ game }: { game: GameDefinition }) {
 function EditorForm({
   game,
   initial,
+  persist,
 }: {
   game: GameDefinition;
   initial: GameCustomization;
+  persist: boolean;
 }) {
   const [customization, setCustomization] = useState(initial);
   const [currentPartId, setCurrentPartId] = useState(
@@ -74,8 +84,8 @@ function EditorForm({
   // 값이 바뀔 때마다 로컬 저장소에 동기화한다 — 새로고침해도 남아야 한다는
   // 수용 기준이 근거다.
   useEffect(() => {
-    saveCustomization(customization);
-  }, [customization]);
+    if (persist) saveCustomization(customization);
+  }, [customization, persist]);
 
   const errors = useMemo(() => {
     const result: Record<string, string | null> = {};
@@ -87,7 +97,7 @@ function EditorForm({
 
   const hasErrors = Object.values(errors).some((e) => e !== null);
 
-  const handleChange = (slotId: string, value: string | number) => {
+  const handleChange = (slotId: string, value: SlotValue) => {
     setCustomization((prev) => ({
       ...prev,
       values: { ...prev.values, [slotId]: value },
@@ -136,8 +146,10 @@ function EditorForm({
     setSelectedPresetByGroup((prev) => ({ ...prev, [groupId]: presetId }));
   };
 
-  const currentPart =
-    game.parts.find((p) => p.id === currentPartId) ?? game.parts[0];
+  // 변형이 있는 파트는 지금 값의 모습이다(IDE-016) — 도시 수를 바꾸면 미리보기의
+  // 크기·그림과 파트 버튼의 제목이 함께 바뀐다. 파트 id는 원본 그대로다.
+  const parts = resolveParts(game, customization);
+  const currentPart = parts.find((p) => p.id === currentPartId) ?? parts[0];
 
   // 옵션은 **지금 보는 파트에 쓰이는 것만** 낸다(2026-09-08 사용자 요청 —
   // "점수 기록칸이나 골대 전개도를 선택하면 운동장 옵션은 모두 숨겨줘").
@@ -145,6 +157,11 @@ function EditorForm({
   // 빈 상자가 여백만 남기지 않게 한다.
   const hasUngroupedSlots = hasUngroupedFormSlots(game, currentPart.id);
   const visibleGroups = formGroupsFor(game, currentPart.id);
+  // 목록 슬롯(세계일주의 도시 목록)은 판 아래에 패널로 놓는다 — 항목이 백 개가
+  // 넘어 한 줄 입력에 들어가지 않고, 판과 나란히 보여야 켜고 끈 결과가 읽힌다.
+  const listSlots = slotsAffectingPart(game, currentPart.id).filter(
+    (slot) => slot.kind === 'list',
+  );
 
   const formProps = {
     game,
@@ -183,7 +200,7 @@ function EditorForm({
             role="group"
             aria-label="편집할 파트 선택"
           >
-            {game.parts.map((part) => (
+            {parts.map((part) => (
               <button
                 key={part.id}
                 type="button"
@@ -237,6 +254,20 @@ function EditorForm({
           onMoveSlot={handleMoveSlot}
         />
       </div>
+
+      {listSlots.map((slot) =>
+        slot.kind === 'list' ? (
+          <ListSlotPanel
+            key={slot.id}
+            slot={slot}
+            value={customization.values[slot.id]}
+            error={errors[slot.id] ?? null}
+            part={currentPart}
+            gameId={game.id}
+            onChange={(value) => handleChange(slot.id, value)}
+          />
+        ) : null,
+      )}
 
       {/* 팀 줄 — 그룹(팀)마다 제목·색·대형이 한 줄이다. 축구 게임판이라면 홈과
           원정이 나란히 서고, 폭이 모자라면 원정이 아랫줄로 내려간다. 게임을

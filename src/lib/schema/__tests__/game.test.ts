@@ -482,3 +482,207 @@ describe('자산 경로', () => {
     expect(issuesOf(makeGame({ thumbnail: '/thumb.png' }))).toMatch(/games/);
   });
 });
+
+describe('파트 변형 (IDE-016)', () => {
+  const withVariants = (
+    patch: Partial<{
+      selector: string;
+      values: string[];
+      baseArtwork: string;
+      options: Array<{
+        value: string;
+        widthMm: number;
+        heightMm: number;
+        artwork: string;
+      }>;
+    }> = {},
+  ): GameDefinitionInput => {
+    const base = makeGame();
+    const board = base.parts[0];
+    const values = patch.values ?? ['small', 'large'];
+    const options = patch.options ?? [
+      {
+        value: 'small',
+        widthMm: board.widthMm,
+        heightMm: board.heightMm,
+        artwork: patch.baseArtwork ?? '/games/demo/board.svg',
+      },
+      {
+        value: 'large',
+        widthMm: board.widthMm * 2,
+        heightMm: board.heightMm * 2,
+        artwork: '/games/demo/board-large.svg',
+      },
+    ];
+    return makeGame({
+      parts: [
+        {
+          ...board,
+          artwork: patch.baseArtwork ?? '/games/demo/board.svg',
+          variants: {
+            selectorSlotId: patch.selector ?? 'size',
+            options,
+          },
+        },
+        ...base.parts.slice(1),
+      ],
+      slots: [
+        ...base.slots,
+        {
+          id: 'size',
+          kind: 'choice',
+          label: '크기',
+          options: values.map((value) => ({ value, label: value })),
+          default: values[0],
+          placements: [{ partId: board.id, mode: 'control' }],
+        },
+      ],
+    });
+  };
+
+  it('선택 슬롯·선택지·기본값이 맞으면 통과한다', () => {
+    const game = parseGame(withVariants());
+    expect(game.parts[0].variants?.options).toHaveLength(2);
+  });
+
+  it('선택 슬롯이 없거나 choice가 아니면 걸러진다', () => {
+    expect(issuesOf(withVariants({ selector: 'nope' }))).toContain(
+      '없는 슬롯을 가리킨다: nope',
+    );
+    expect(issuesOf(withVariants({ selector: 'headline' }))).toContain(
+      '선택 슬롯은 choice여야 한다',
+    );
+  });
+
+  it('선택지와 변형 값이 다르면 걸러진다', () => {
+    expect(issuesOf(withVariants({ values: ['small', 'huge'] }))).toContain(
+      '변형 목록',
+    );
+  });
+
+  it('기본값 변형이 파트 자체와 다르면 걸러진다 — 썸네일이 보는 것이 기본값이어야 한다', () => {
+    const base = makeGame().parts[0];
+    expect(
+      issuesOf(
+        withVariants({
+          options: [
+            {
+              value: 'small',
+              widthMm: base.widthMm + 10,
+              heightMm: base.heightMm,
+              artwork: '/games/demo/board.svg',
+            },
+            {
+              value: 'large',
+              widthMm: base.widthMm * 2,
+              heightMm: base.heightMm * 2,
+              artwork: '/games/demo/board-large.svg',
+            },
+          ],
+        }),
+      ),
+    ).toContain('파트 자체');
+  });
+
+  it('변형이 파트의 인쇄 방향을 바꾸면 걸러진다', () => {
+    const base = makeGame().parts[0];
+    const flipped =
+      base.widthMm >= base.heightMm
+        ? { widthMm: base.heightMm, heightMm: base.widthMm * 2 }
+        : { widthMm: base.widthMm * 2, heightMm: base.heightMm };
+    expect(
+      issuesOf(
+        withVariants({
+          options: [
+            {
+              value: 'small',
+              widthMm: base.widthMm,
+              heightMm: base.heightMm,
+              artwork: '/games/demo/board.svg',
+            },
+            { value: 'large', ...flipped, artwork: '/games/demo/board-l.svg' },
+          ],
+        }),
+      ),
+    ).toContain('인쇄 방향');
+  });
+});
+
+describe('목록 슬롯 (IDE-016)', () => {
+  const withList = (
+    patch: Partial<{
+      custom: boolean;
+      search: { providerId: string } | undefined;
+      fixed: string[];
+      default: string[];
+    }> = {},
+  ): GameDefinitionInput => {
+    const base = makeGame();
+    return makeGame({
+      slots: [
+        ...base.slots,
+        {
+          id: 'stops',
+          kind: 'list',
+          label: '정거장',
+          options: [
+            { value: 'a', label: 'A', group: '앞' },
+            { value: 'b', label: 'B', group: '앞' },
+            { value: 'c', label: 'C', group: '뒤' },
+          ],
+          presets: [{ id: 'two', label: '둘', values: ['a', 'b'] }],
+          fixed: patch.fixed ?? ['a'],
+          min: 2,
+          custom: patch.custom ?? false,
+          ...(patch.search ? { search: patch.search } : {}),
+          default: patch.default ?? ['a', 'b'],
+          placements: [{ partId: base.parts[0].id, mode: 'control' }],
+        },
+      ],
+    });
+  };
+
+  it('기본값·프리셋이 옵션 안이고 고정 항목을 품으면 통과한다', () => {
+    const game = parseGame(withList());
+    const slot = game.slots.find((s) => s.id === 'stops')!;
+    expect(slot.kind).toBe('list');
+  });
+
+  it('기본값에 고정 항목이 빠지거나 옵션 밖 값이 있으면 걸러진다', () => {
+    expect(issuesOf(withList({ default: ['b', 'c'] }))).toContain(
+      '고정 항목이 빠졌다',
+    );
+    expect(issuesOf(withList({ default: ['a', 'zzz'] }))).toContain(
+      'options에 없는 항목',
+    );
+  });
+
+  it('검색은 직접 추가를 허용하는 목록에만 둔다', () => {
+    expect(
+      issuesOf(withList({ search: { providerId: 'x' }, custom: false })),
+    ).toContain('직접 추가');
+    expect(() =>
+      parseGame(withList({ search: { providerId: 'x' }, custom: true })),
+    ).not.toThrow();
+  });
+
+  it('목록 슬롯은 control 배치만 받는다', () => {
+    const base = withList();
+    const slot = base.slots.find((s) => s.id === 'stops')!;
+    const broken = {
+      ...slot,
+      placements: [
+        {
+          partId: base.parts[0].id,
+          mode: 'text',
+          xMm: 10,
+          yMm: 10,
+          fontSizeMm: 4,
+        },
+      ],
+    } as unknown as GameDefinitionInput['slots'][0];
+    expect(
+      issuesOf(makeGame({ slots: [...makeGame().slots, broken] })),
+    ).toContain("'text' 배치를 쓸 수 없다");
+  });
+});

@@ -1,13 +1,18 @@
 /**
  * 커스터마이즈 값을 브라우저에 남기는 저장소 (IDE-006)
  *
- * 새로고침해도 입력이 남아야 한다는 수용 기준이 근거다. 게임마다 키를 나누고,
- * 저장된 값이 지금 도안과 안 맞으면(슬롯이 바뀐 옛 저장 등) 조용히 버린다 —
- * 잘못된 값으로 에디터가 오류 상태로 시작하는 것보다 기본값으로 새로 시작하는
- * 편이 낫다.
+ * 새로고침해도 입력이 남아야 한다는 수용 기준이 근거다. 게임마다 키를 나눈다.
+ *
+ * 저장된 값이 지금 도안과 안 맞으면(슬롯이 늘거나 이름이 바뀐 뒤의 옛 저장)
+ * **맞는 것만 살리고 나머지는 기본값으로 채운다**(2026-09-08). 처음엔 통째로
+ * 버렸는데, 도안을 손볼 때마다 사용자가 만든 경로가 사라졌다 — 슬롯 하나가
+ * 새로 생겼다고 도시 60개의 차례를 잃을 이유는 없다.
  */
 import {
-  validateCustomization,
+  containsPoint,
+  defaultCustomization,
+  slotMarker,
+  validateSlotValue,
   type GameCustomization,
   type GameDefinition,
 } from '@/lib/schema';
@@ -16,17 +21,61 @@ const KEY_PREFIX = 'papercraft:customization:';
 
 const storageKey = (gameId: string): string => `${KEY_PREFIX}${gameId}`;
 
+/**
+ * 저장된 값을 지금 도안에 맞춰 살린다. 슬롯마다 저장값이 있고 제약을 지키면
+ * 그것을, 아니면 기본값을 쓴다. 좌표도 마찬가지 — 영역 안이면 살린다. 도안에
+ * 없는 슬롯의 값은 버린다. 하나라도 살렸으면 돌려주고, 전부 기본값이면 null이다
+ * — 그래야 "복원했다"는 표시가 거짓말이 아니다.
+ */
+export const restoreCustomization = (
+  game: GameDefinition,
+  stored: unknown,
+): GameCustomization | null => {
+  if (!stored || typeof stored !== 'object') return null;
+  const parsed = stored as Partial<GameCustomization>;
+  if (parsed.gameId !== game.id) return null;
+  const values = parsed.values ?? {};
+  const positions = parsed.positions ?? {};
+  if (typeof values !== 'object' || typeof positions !== 'object') return null;
+
+  const merged = defaultCustomization(game);
+  let kept = 0;
+  for (const slot of game.slots) {
+    const value = (values as Record<string, unknown>)[slot.id];
+    if (value !== undefined && validateSlotValue(slot, value) === null) {
+      merged.values[slot.id] = value as GameCustomization['values'][string];
+      kept += 1;
+    }
+    const marker = slotMarker(slot);
+    if (!marker) continue;
+    const point = (positions as Record<string, unknown>)[slot.id];
+    if (!point || typeof point !== 'object') continue;
+    const { xMm, yMm, rotationDeg } = point as Record<string, unknown>;
+    if (!Number.isFinite(xMm) || !Number.isFinite(yMm)) continue;
+    if (rotationDeg !== undefined && !Number.isFinite(rotationDeg)) continue;
+    const part = game.parts.find((p) => p.id === marker.partId);
+    const region = part?.regions.find((r) => r.id === marker.regionId);
+    if (region && !containsPoint(region.rect, xMm as number, yMm as number))
+      continue;
+    merged.positions[slot.id] = {
+      xMm: xMm as number,
+      yMm: yMm as number,
+      ...(rotationDeg !== undefined
+        ? { rotationDeg: rotationDeg as number }
+        : {}),
+    };
+    kept += 1;
+  }
+  return kept > 0 ? merged : null;
+};
+
 const parseStored = (
   raw: string | null,
   game: GameDefinition,
 ): GameCustomization | null => {
   if (!raw) return null;
   try {
-    const parsed = JSON.parse(raw) as GameCustomization;
-    if (!parsed || typeof parsed !== 'object' || parsed.gameId !== game.id)
-      return null;
-    if (validateCustomization(game, parsed).length > 0) return null;
-    return parsed;
+    return restoreCustomization(game, JSON.parse(raw));
   } catch {
     return null;
   }

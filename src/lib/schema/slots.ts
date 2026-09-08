@@ -128,8 +128,71 @@ export const choiceSlot = z.strictObject({
   default: slug,
 });
 
+export const listOption = z.strictObject({
+  value: slug,
+  label: z.string().min(1).max(60),
+  /** 목록을 묶어 보여 줄 이름(세계일주의 경로 구간). 없으면 한 묶음이다. */
+  group: z.string().max(40).optional(),
+});
+export type ListOption = z.infer<typeof listOption>;
+
+export const listPreset = z.strictObject({
+  id: slug,
+  label: z.string().min(1).max(40),
+  values: z.array(slug).min(1),
+});
+
+/**
+ * 사용자가 **직접 더한 항목**. `options`에 없는 것이라 이름과 자료를 값에 싣고
+ * 다닌다 — 세계일주라면 검색해서 더한 도시의 이름·경위도다. `data`의 뜻은
+ * 게임 렌더러가 안다.
+ */
+export const listItem = z.strictObject({
+  id: slug,
+  label: z.string().min(1).max(40),
+  data: z.record(z.string(), z.union([z.string(), z.number()])).default({}),
+});
+export type ListItem = z.infer<typeof listItem>;
+
+/** 목록 슬롯의 검색 — 서버의 제공자(`lib/games/list-search.ts`)가 `providerId`로 잇는다. */
+export const listSearch = z.strictObject({
+  providerId: slug,
+  placeholder: z.string().max(60).optional(),
+});
+
+/**
+ * 목록 슬롯 — **차례가 있는 항목 집합**이다 (IDE-016 2단계).
+ *
+ * 세계일주 게임판이 처음 쓴다: 도시 113개 가운데 켠 것들이 그 차례대로 경로가
+ * 된다. `choice`로는 안 된다 — 선택지를 2^113개 만들 수 없고, 값이 집합이
+ * 아니라 차례까지 갖는다. 배치는 `control`뿐이다 — 값을 글자나 마커로 그릴 수
+ * 없고, 이 값에서 판을 그때 그리는 것은 파트의 `dynamic`이 한다.
+ *
+ * `fixed`는 뺄 수 없는 항목(출발지 서울)이고, `presets`는 한 번에 고르는
+ * 묶음(도시 50·60·…개)이다.
+ */
+export const listSlot = z.strictObject({
+  ...slotBase,
+  kind: z.literal('list'),
+  options: z.array(listOption).min(2),
+  presets: z.array(listPreset).default([]),
+  fixed: z.array(slug).default([]),
+  min: z.number().int().positive().default(1),
+  /** 참이면 `options` 밖의 항목(`ListItem`)도 값에 올 수 있다. */
+  custom: z.boolean().default(false),
+  /** 있으면 에디터가 검색 상자를 낸다. `custom`이 참이어야 뜻이 있다. */
+  search: listSearch.optional(),
+  default: z.array(slug),
+});
+
 export const slot = z
-  .discriminatedUnion('kind', [textSlot, numberSlot, colorSlot, choiceSlot])
+  .discriminatedUnion('kind', [
+    textSlot,
+    numberSlot,
+    colorSlot,
+    choiceSlot,
+    listSlot,
+  ])
   .check((ctx) => {
     const s = ctx.value;
 
@@ -200,6 +263,88 @@ export const slot = z
       }
     }
 
+    if (s.kind === 'list') {
+      const values = new Set(s.options.map((o) => o.value));
+      if (values.size !== s.options.length) {
+        ctx.issues.push({
+          code: 'custom',
+          input: s,
+          path: ['options'],
+          message: '목록 항목 값이 중복된다',
+        });
+      }
+      const checkList = (
+        path: (string | number)[],
+        list: readonly string[],
+        name: string,
+      ) => {
+        const seen = new Set<string>();
+        for (const id of list) {
+          if (!values.has(id)) {
+            ctx.issues.push({
+              code: 'custom',
+              input: s,
+              path,
+              message: `${name}에 options에 없는 항목이 있다: ${id}`,
+            });
+          }
+          if (seen.has(id)) {
+            ctx.issues.push({
+              code: 'custom',
+              input: s,
+              path,
+              message: `${name}에 항목이 중복된다: ${id}`,
+            });
+          }
+          seen.add(id);
+        }
+        for (const id of s.fixed) {
+          if (!seen.has(id)) {
+            ctx.issues.push({
+              code: 'custom',
+              input: s,
+              path,
+              message: `${name}에 고정 항목이 빠졌다: ${id}`,
+            });
+          }
+        }
+        if (list.length < s.min) {
+          ctx.issues.push({
+            code: 'custom',
+            input: s,
+            path,
+            message: `${name}은 ${s.min}개 이상이어야 한다 (현재 ${list.length}개)`,
+          });
+        }
+      };
+      checkList(['default'], s.default, '기본값');
+      for (const [i, preset] of s.presets.entries()) {
+        checkList(
+          ['presets', i, 'values'],
+          preset.values,
+          `프리셋 '${preset.id}'`,
+        );
+      }
+      for (const id of s.fixed) {
+        if (!values.has(id)) {
+          ctx.issues.push({
+            code: 'custom',
+            input: s,
+            path: ['fixed'],
+            message: `고정 항목이 options에 없다: ${id}`,
+          });
+        }
+      }
+      if (s.search && !s.custom) {
+        ctx.issues.push({
+          code: 'custom',
+          input: s,
+          path: ['search'],
+          message: '검색은 직접 추가(custom)를 허용하는 목록에만 둔다',
+        });
+      }
+    }
+
     // kind와 placement 방식의 조합. 색을 글자로 그리거나 선택지를 마커로 놓는 건
     // 렌더러가 처리할 수 없다.
     const allowed: Record<typeof s.kind, ReadonlyArray<Placement['mode']>> = {
@@ -207,6 +352,7 @@ export const slot = z
       number: ['text', 'marker'],
       color: ['paint'],
       choice: ['control', 'text'],
+      list: ['control'],
     };
     for (const [i, pl] of s.placements.entries()) {
       if (!allowed[s.kind].includes(pl.mode)) {
@@ -233,7 +379,24 @@ export const slot = z
 
 export type Slot = z.infer<typeof slot>;
 export type SlotKind = Slot['kind'];
-export type SlotValue = string | number;
+/**
+ * 목록 슬롯의 값 — 항목 id(옵션) 또는 직접 더한 항목의 차례 있는 배열.
+ */
+export type ListEntry = string | ListItem;
+export type ListValue = ListEntry[];
+export type SlotValue = string | number | ListValue;
+
+export const listEntryId = (entry: ListEntry): string =>
+  typeof entry === 'string' ? entry : entry.id;
+
+/** 항목의 표시 이름. 옵션이면 슬롯의 라벨, 직접 더한 것이면 실려 온 라벨. */
+export const listEntryLabel = (
+  s: Extract<Slot, { kind: 'list' }>,
+  entry: ListEntry,
+): string =>
+  typeof entry === 'string'
+    ? (s.options.find((o) => o.value === entry)?.label ?? entry)
+    : entry.label;
 
 /** 이 슬롯이 나타나는 파트 id 집합. 선언 순서를 유지한다. */
 export const slotPartIds = (s: Slot): string[] => [
@@ -279,6 +442,32 @@ export function validateSlotValue(s: Slot, value: unknown): string | null {
         !s.options.some((o) => o.value === value)
       )
         return '고를 수 있는 값이 아니다';
+      return null;
+    }
+    case 'list': {
+      if (!Array.isArray(value)) return '항목의 목록이어야 한다';
+      const known = new Set(s.options.map((o) => o.value));
+      const ids: string[] = [];
+      for (const entry of value as unknown[]) {
+        if (typeof entry === 'string') {
+          if (!known.has(entry)) return '목록에 없는 항목이 있다';
+          ids.push(entry);
+          continue;
+        }
+        if (!s.custom) return '이 목록에는 직접 더한 항목을 둘 수 없다';
+        const parsed = listItem.safeParse(entry);
+        if (!parsed.success) return '직접 더한 항목의 모양이 틀렸다';
+        if (known.has(parsed.data.id))
+          return '직접 더한 항목의 id가 옵션과 겹친다';
+        ids.push(parsed.data.id);
+      }
+      if (new Set(ids).size !== ids.length) return '항목이 중복된다';
+      const missing = s.fixed.filter((id) => !ids.includes(id));
+      if (missing.length > 0)
+        return `뺄 수 없는 항목이 빠졌다: ${missing
+          .map((id) => s.options.find((o) => o.value === id)?.label ?? id)
+          .join(', ')}`;
+      if (ids.length < s.min) return `${s.min}개 이상 골라야 한다`;
       return null;
     }
   }

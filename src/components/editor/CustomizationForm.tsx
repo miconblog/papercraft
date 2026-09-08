@@ -7,6 +7,7 @@ import {
   type GameDefinition,
   type Group,
   type Slot,
+  type SlotValue,
 } from '@/lib/schema';
 import { SlotField } from './SlotField';
 import { FormationPicker } from './FormationPicker';
@@ -41,9 +42,10 @@ import { FormationPicker } from './FormationPicker';
  * 이 파트에서 폼에 낼 수 있는 슬롯. **마커 슬롯은 늘 뺀다** — 그 편집은
  * 미리보기에서 끌어 놓는 것이다.
  */
+// 목록 슬롯은 한 줄 입력이 아니라 판 아래 패널이다(`ListSlotPanel`).
 const formSlots = (game: GameDefinition, partId?: string): Slot[] =>
   (partId ? slotsAffectingPart(game, partId) : game.slots).filter(
-    (slot) => !slotMarker(slot),
+    (slot) => !slotMarker(slot) && slot.kind !== 'list',
   );
 
 /** 이 파트에서 그릴 것이 남는 그룹. 빈 그룹은 제목만 남아 줄을 먹는다. */
@@ -71,7 +73,7 @@ export interface CustomizationFormProps {
   game: GameDefinition;
   values: GameCustomization['values'];
   errors: Record<string, string | null>;
-  onChange: (slotId: string, value: string | number) => void;
+  onChange: (slotId: string, value: SlotValue) => void;
   /** 그룹 id → 그 그룹에 마지막으로 적용한 프리셋 id. 버튼 활성 표시에 쓴다. */
   selectedPresetByGroup: Record<string, string | undefined>;
   onApplyPreset: (groupId: string, presetId: string) => void;
