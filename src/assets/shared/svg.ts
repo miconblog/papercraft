@@ -7,7 +7,7 @@
  * **viewBox 한 칸 = 1mm**다. `width`/`height`에 mm를 붙여 두면 브라우저로 열어도
  * 실제 크기로 보이고, 렌더러(IDE-007)는 viewBox 좌표를 그대로 mm로 읽으면 된다.
  */
-import { MARK_STYLES, type MarkKind } from '../../../../lib/schema/marks.ts';
+import { MARK_STYLES, type MarkKind } from '../../lib/schema/marks.ts';
 
 /** 좌표 반올림. 소수가 길어지면 파일만 커지고 0.001mm는 인쇄에서 의미가 없다. */
 export const num = (value: number): string => {

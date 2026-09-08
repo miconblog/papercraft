@@ -36,7 +36,7 @@ import {
   path,
   rect,
   svgDocument,
-} from './svg.ts';
+} from '../../../shared/svg.ts';
 
 const {
   centerCircleRadiusMm,

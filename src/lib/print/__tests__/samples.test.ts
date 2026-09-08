@@ -17,7 +17,7 @@ import { composeExport, partDraws } from '../compose';
 import { defaultExportOptions, type PartSelection } from '../options';
 import { renderPdf } from '../pdf';
 import { FIELD, FIELD_MARKS } from '@/assets/games/soccer/dimensions';
-import { FIELD_LINE_COLOR } from '@/assets/games/soccer/artwork/svg';
+import { FIELD_LINE_COLOR } from '@/assets/shared/svg';
 import { probeDocument } from '../probe';
 
 const enabled = process.env.PRINT_SAMPLES === '1';
