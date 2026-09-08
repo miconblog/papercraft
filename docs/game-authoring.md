@@ -10,7 +10,9 @@
    `defineGame({ … })`을 `export default` 한다. 본보기는
    [`src/assets/games/soccer/index.ts`](../src/assets/games/soccer/index.ts)다.
 2. **등록한다** — [`src/lib/games/registry.ts`](../src/lib/games/registry.ts)에
-   import를 더하고 `definitions` 배열에 넣는다.
+   import를 더하고 `definitions` 배열에 넣는다. 아트워크를 코드로 만든다면
+   [`scripts/build-artwork.mts`](../scripts/build-artwork.mts)의 `ARTWORK_BY_GAME`
+   에도 한 줄을 더한다.
 3. **검증한다** — `npm run test:run`. 규격을 어겼으면 어느 칸이 왜 틀렸는지
    한국어로 나온다.
 
@@ -18,10 +20,18 @@
 가리키면 검증에서 걸린다.
 
 도안 SVG는 **코드로 만드는 것을 권한다.** 슬롯 좌표와 그림이 같은 치수 상수를
-읽어야 어긋나지 않는다. 축구 게임판이 그렇게 되어 있다 —
-`src/assets/games/soccer/dimensions.ts`에 치수를 모으고 `artwork/`가 SVG를 지으며
-`npm run artwork`가 `public/`에 쓴다. 자세한 것은
-[docs/soccer-artwork.md](soccer-artwork.md) 1절.
+읽어야 어긋나지 않는다. 두 게임이 다 그렇게 되어 있다 —
+`src/assets/games/<게임 id>/dimensions.ts`에 치수를 모으고 `artwork/`가 SVG를
+지으며 `npm run artwork [게임 id]`가 `public/`에 쓴다. 자세한 것은
+[docs/soccer-artwork.md](soccer-artwork.md) 1절과
+[docs/baseball-artwork.md](baseball-artwork.md) 1절.
+
+게임에 매이지 않는 그리기 도구는 [`src/assets/shared/`](../src/assets/shared)에
+있다. `svg.ts`가 SVG 문자열을 짓고(표시 레이어·빗금·글자 폭 어림), `figure.ts`가
+관절 각도에서 사람 그림을 짓는다 — 관절을 도형으로 부풀리고, 마커 상자에 맞춰
+넣고, 모서리를 둥글리는 일이 거기 있다. **종목이 갖는 것은 거기 두지 않는다**:
+몸 비율·자세 각도·부위를 쌓는 차례는 게임마다 다르고, 그 차이가 그림을 종목처럼
+보이게 한다(축구는 반바지에 맨머리, 야구는 긴 바지에 모자다).
 
 ## 좌표계와 단위
 
@@ -155,6 +165,8 @@
 - 프리셋은 **그룹 하나**를 통째로 배치한다. 두 팀이 서로 다른 대형을 고를 수
   있어야 하므로 하나의 프리셋에 양 팀을 담지 않는다.
 - 같은 대형의 팀별 프리셋은 `formationId`로 묶는다. UI는 이 단위로 대형을 보여준다.
+  **선택 값이다** — 야구 게임판의 수비 시프트처럼 필드에 서는 그룹이 하나뿐이면
+  묶을 팀별 쌍이 없다. 그때 UI는 프리셋의 `label`을 그대로 보여준다.
 - 상대 진영용은 `mirrorPositions`로 세로 중심선 기준 반전해 만든다.
 - 검증은 이것들을 본다: 그룹의 옮길 수 있는 슬롯을 **빠짐없이 한 번씩** 배치했는가,
   좌표가 영역 안인가, 마커끼리 겹치지 않는가.
@@ -166,7 +178,10 @@
 > 본다. 축구 게임판에서는 두 팀이 각자 진영 절반에 갇히면 상대 골대 쪽에 패스를
 > 받을 선수가 없어 경기가 성립하지 않는데, 그 배치도 검증은 통과한다. 게임이
 > 성립하는 조건은 도안 쪽 테스트로 지킨다 —
-> [`src/assets/games/soccer/__tests__/formations.test.ts`](../src/assets/games/soccer/__tests__/formations.test.ts)가 그 예다.
+> [`src/assets/games/soccer/__tests__/formations.test.ts`](../src/assets/games/soccer/__tests__/formations.test.ts)와
+> [`src/assets/games/baseball/__tests__/artwork.test.ts`](../src/assets/games/baseball/__tests__/artwork.test.ts)가
+> 그 예다. 야구 쪽은 "어느 수비 시프트든 외야에 셋, 내야에 여섯"을 본다 —
+> 그 조건이 깨지면 한쪽으로 친 타구를 잡을 사람이 없다.
 
 ## 표시 규약 — 오림선 · 접는선 · 풀칠면
 

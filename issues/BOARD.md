@@ -11,10 +11,10 @@
 
 | 상태      | 개수 |
 | --------- | ---- |
-| `todo`    | 1    |
-| `doing`   | 0    |
+| `todo`    | 0    |
+| `doing`   | 1    |
 | `blocked` | 3    |
-| `review`  | 1    |
+| `review`  | 2    |
 | `done`    | 8    |
 
 **지금 할 것** — [IDE-007](IDE-007-print-and-pdf-export.md)(인쇄·PDF 내보내기)은
@@ -23,11 +23,17 @@
 [IDE-004](IDE-004-soccer-board-vector-artwork.md)다. `IDE-004`는 사용자 답변도
 하나 기다린다(아웃·핸들링·파울 처리와 옛 인쇄본의 출처).
 
+[IDE-014](IDE-014-baseball-board-vector-artwork.md)(야구 게임판)가 `review`다.
+사용자가 옛 인쇄본 〈프로야구판〉 사진을 주며 고른 두 번째 게임이고
+(2026-09-08), 이로써 [IDE-011](IDE-011-two-more-games-and-authoring-guide.md)이
+`doing`이 됐다 — **스키마는 한 줄도 안 고치고** 구조가 다른 게임이 들어갔다는
+것이 그 이슈가 확인하려던 것이다. 남은 것은 세 번째 게임과 종이 실측이다.
+
 [IDE-013](IDE-013-self-hosted-web-analytics.md)(자체 웹 분석)은 2026-09-07 `done`이다.
 이제 **어떤 게임이 얼마나 읽히고 뽑히는지 숫자로 보인다** — 그동안 보드의 후보
 목록(URL 공유·보관함·인쇄소 주문)이 전부 "요구가 확인되지 않았다"로 미뤄져 있었고,
-[IDE-011](IDE-011-two-more-games-and-authoring-guide.md)의 "다음 게임"도 감으로
-골라야 했다. `/admin/analytics` 를 얼마간 보고 나서 정하면 된다.
+`IDE-011`의 "다음 게임"도 감으로 골라야 했다. 야구가 올라갔으니 세 번째 게임은
+`/admin/analytics` 를 얼마간 보고 나서 정하면 된다.
 
 [IDE-009](IDE-009-accessibility-responsive-print-quality.md)(접근성·반응형·출력
 품질)도 `review`다. 포커스 표시·팀 색 흑백 구분 경고·마커 아트워크 캐싱은
@@ -76,10 +82,11 @@
 
 ## M2 — 게임 확장 (011–020)
 
-| ID                                                       | 제목                             | 영역    | 우선 | 추정 | 상태   |
-| -------------------------------------------------------- | -------------------------------- | ------- | ---- | ---- | ------ |
-| [IDE-011](IDE-011-two-more-games-and-authoring-guide.md) | 게임 2종 추가와 도안 제작 가이드 | content | P2   | 5d   | `todo` |
-| [IDE-013](IDE-013-self-hosted-web-analytics.md)          | 자체 웹 분석 (Supabase)          | backend | P1   | 3d   | `done` |
+| ID                                                       | 제목                             | 영역    | 우선 | 추정 | 상태     |
+| -------------------------------------------------------- | -------------------------------- | ------- | ---- | ---- | -------- |
+| [IDE-011](IDE-011-two-more-games-and-authoring-guide.md) | 게임 2종 추가와 도안 제작 가이드 | content | P2   | 5d   | `doing`  |
+| [IDE-013](IDE-013-self-hosted-web-analytics.md)          | 자체 웹 분석 (Supabase)          | backend | P1   | 3d   | `done`   |
+| [IDE-014](IDE-014-baseball-board-vector-artwork.md)      | 야구 게임판 도안 벡터화          | content | P1   | 3d   | `review` |
 
 ---
 

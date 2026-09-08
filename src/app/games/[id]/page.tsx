@@ -5,10 +5,11 @@ import { notFound } from 'next/navigation';
 import { gameIds, getGame } from '@/lib/games';
 import { groupRuleSections, type RuleBody } from '@/lib/schema';
 import {
-  formatPlayers,
   ORIENTATION_LABEL,
   PART_KIND_LABEL,
   SUPPORTED_PAPER_SIZE,
+  boardOf,
+  formatPlayers,
 } from '@/lib/games/format';
 
 type Params = { id: string };
@@ -59,7 +60,7 @@ export default async function GamePage({ params }: Props) {
   const game = getGame(id);
   if (!game) notFound();
 
-  const board = game.parts.find((p) => p.kind === 'board')!;
+  const board = boardOf(game);
   const accessories = game.parts.filter((p) => p.kind !== 'board');
   const sections = groupRuleSections(game.rules);
 

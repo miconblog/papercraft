@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { GameCard } from '@/components/GameCard';
 import { GAMES } from '@/lib/games';
+import { boardOf } from '@/lib/games/format';
 import { formatPlayers, SUPPORTED_PAPER_SIZE } from '@/lib/games/format';
 
 /**
@@ -125,8 +126,8 @@ export default function Home() {
               <Image
                 src={featured.thumbnail}
                 alt=""
-                width={297}
-                height={210}
+                width={boardOf(featured).widthMm}
+                height={boardOf(featured).heightMm}
                 priority
                 className="h-auto w-full rounded-sm"
               />

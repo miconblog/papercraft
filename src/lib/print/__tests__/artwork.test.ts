@@ -13,8 +13,22 @@ import { MARK_STYLES } from '@/lib/schema';
 import { parseArtwork } from '../artwork';
 import type { PathDraw, TextDraw } from '../draw';
 
-const dir = join(process.cwd(), 'public/games/soccer');
+const gamesDir = join(process.cwd(), 'public/games');
+const dir = join(gamesDir, 'soccer');
 const read = (name: string) => readFileSync(join(dir, name), 'utf8');
+
+/** 배포된 도안 전부 — 게임 폴더를 훑는다. 게임을 더해도 목록을 고칠 일이 없다. */
+const publishedArtwork = (): { file: string; svg: string }[] =>
+  readdirSync(gamesDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .flatMap((entry) =>
+      readdirSync(join(gamesDir, entry.name))
+        .filter((f) => f.endsWith('.svg'))
+        .map((f) => ({
+          file: `${entry.name}/${f}`,
+          svg: readFileSync(join(gamesDir, entry.name, f), 'utf8'),
+        })),
+    );
 
 const paths = (items: readonly unknown[]) =>
   items.filter((i): i is PathDraw => (i as PathDraw).kind === 'path');
@@ -178,8 +192,11 @@ describe('parseArtwork', () => {
   });
 
   it('배포된 도안 전부를 읽을 수 있다', () => {
-    for (const file of readdirSync(dir).filter((f) => f.endsWith('.svg'))) {
-      const art = parseArtwork(read(file));
+    const published = publishedArtwork();
+    // 게임 폴더를 못 찾아 조용히 0건을 통과하는 일이 없게 못 박는다.
+    expect(published.length).toBeGreaterThan(20);
+    for (const { file, svg } of published) {
+      const art = parseArtwork(svg);
       expect(art.widthMm, file).toBeGreaterThan(0);
       expect(art.items.length, file).toBeGreaterThan(0);
       // 좌표가 전부 0이면 속성을 못 읽은 것이다.

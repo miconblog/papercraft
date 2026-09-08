@@ -54,7 +54,7 @@ import {
   rect,
   svgDocument,
   text,
-} from './svg.ts';
+} from '../../../shared/svg.ts';
 
 const {
   mouthWidthMm,
