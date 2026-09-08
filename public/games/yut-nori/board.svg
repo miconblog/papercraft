@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 자동 생성 파일. 고치려면 src/assets/games/soccer/artwork/ 를 고치고 `npm run artwork` 를 돌린다. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="198mm" height="198mm" viewBox="0 0 198 198" font-family="Noto Sans KR">
+<title>윷놀이 · 말판</title>
+<g id="pc-art" fill="none" stroke="none">
+<line x1="179" y1="19" x2="19" y2="179" stroke="#c2410c" stroke-width="1.2" stroke-linecap="round" />
+<line x1="19" y1="19" x2="179" y2="179" stroke="#c2410c" stroke-width="1.2" stroke-linecap="round" />
+<path d="M179 96.3L181.1 101.7L176.9 101.7Z" fill="#1a1a1a" stroke="none" />
+<path d="M96.3 19L101.7 16.9L101.7 21.1Z" fill="#1a1a1a" stroke="none" />
+<path d="M19 101.7L16.9 96.3L21.1 96.3Z" fill="#1a1a1a" stroke="none" />
+<path d="M101.7 179L96.3 181.1L96.3 176.9Z" fill="#1a1a1a" stroke="none" />
+<path d="M137.091 60.909L139.424 55.606L142.394 58.576Z" fill="#c2410c" stroke="none" />
+<path d="M60.909 60.909L55.606 58.576L58.576 55.606Z" fill="#c2410c" stroke="none" />
+<path d="M140.909 140.909L135.606 138.576L138.576 135.606Z" fill="#c2410c" stroke="none" />
+<path d="M57.091 140.909L59.424 135.606L62.394 138.576Z" fill="#c2410c" stroke="none" />
+<circle cx="179" cy="179" r="15" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="179" cy="179" r="12.2" fill="none" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="179" cy="147" r="11" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="179" cy="115" r="11" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="179" cy="83" r="11" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="179" cy="51" r="11" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="179" cy="19" r="15" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="179" cy="19" r="12.2" fill="none" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="147" cy="19" r="11" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="115" cy="19" r="11" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="83" cy="19" r="11" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="51" cy="19" r="11" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="19" cy="19" r="15" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="19" cy="19" r="12.2" fill="none" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="19" cy="51" r="11" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="19" cy="83" r="11" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="19" cy="115" r="11" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="19" cy="147" r="11" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="19" cy="179" r="15" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="19" cy="179" r="12.2" fill="none" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="51" cy="179" r="11" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="83" cy="179" r="11" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="115" cy="179" r="11" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="147" cy="179" r="11" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="152.333" cy="45.667" r="11" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="125.667" cy="72.333" r="11" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="45.667" cy="45.667" r="11" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="72.333" cy="72.333" r="11" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="152.333" cy="152.333" r="11" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="125.667" cy="125.667" r="11" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="45.667" cy="152.333" r="11" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="72.333" cy="125.667" r="11" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="99" cy="99" r="15" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.7" />
+<circle cx="99" cy="99" r="12.2" fill="none" stroke="#1a1a1a" stroke-width="0.7" />
+<text x="179" y="170.4" font-size="3.4" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" font-weight="700">출발</text>
+<text x="179" y="187.6" font-size="3.4" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a" font-weight="700">도착</text>
+</g>
+</svg>

@@ -20,12 +20,13 @@
 가리키면 검증에서 걸린다.
 
 도안 SVG는 **코드로 만드는 것을 권한다.** 슬롯 좌표와 그림이 같은 치수 상수를
-읽어야 어긋나지 않는다. 세 게임이 다 그렇게 되어 있다 —
+읽어야 어긋나지 않는다. 네 게임이 다 그렇게 되어 있다 —
 `src/assets/games/<게임 id>/dimensions.ts`에 치수를 모으고 `artwork/`가 SVG를
 지으며 `npm run artwork [게임 id]`가 `public/`에 쓴다. 자세한 것은
 [docs/soccer-artwork.md](soccer-artwork.md) 1절,
 [docs/baseball-artwork.md](baseball-artwork.md) 1절,
-[docs/world-tour-artwork.md](world-tour-artwork.md) 1절.
+[docs/world-tour-artwork.md](world-tour-artwork.md) 1절,
+[docs/yut-nori-artwork.md](yut-nori-artwork.md) 1절.
 
 게임에 매이지 않는 그리기 도구는 [`src/assets/shared/`](../src/assets/shared)에
 있다. `svg.ts`가 SVG 문자열을 짓고(표시 레이어·빗금·글자 폭 어림), `figure.ts`가
@@ -66,7 +67,10 @@
 **인쇄 파트에 매지 않는다.** 축구 게임판은 오래 규칙을 `rules-card` 파트로 뽑았는데,
 그 장을 출력물에서 빼자 규칙이 갈 곳이 없어졌다(2026-09-05). 어느 파트를 뽑든
 규칙은 읽을 수 있어야 한다 — 그래서 파트가 아니라 게임의 필드다. 규칙 카드를
-원하는 게임은 이 값을 읽어 부속을 그리면 된다.
+원하는 게임은 이 값을 읽어 부속을 그리면 된다. 윷놀이가 그렇게 한다
+(`src/assets/games/yut-nori/artwork/rules-sheet.ts`) — 규칙이 길고 놀면서 자꾸
+되짚는 게임이라 판 옆에 둘 종이가 있어야 했다. 값은 여전히 `rules` 필드 하나이고
+부속은 그것을 조판할 뿐이다.
 
 마크다운은 받지 않는다. 렌더러가 커지고, 인쇄물로 조판할 때 다룰 수 없는 문법이
 섞인다.

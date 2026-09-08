@@ -13,8 +13,14 @@ import {
 import baseball from '@/assets/games/baseball';
 import soccer from '@/assets/games/soccer';
 import worldTour from '@/assets/games/world-tour';
+import yutNori from '@/assets/games/yut-nori';
 
-const definitions: GameDefinitionInput[] = [soccer, baseball, worldTour];
+const definitions: GameDefinitionInput[] = [
+  soccer,
+  baseball,
+  worldTour,
+  yutNori,
+];
 
 function registerAll(inputs: GameDefinitionInput[]): readonly GameDefinition[] {
   const games = inputs.map((definition) => parseGame(definition));

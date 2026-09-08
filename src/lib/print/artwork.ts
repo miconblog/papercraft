@@ -21,6 +21,7 @@ import {
   type TextBaseline,
 } from './draw';
 import {
+  applyTransform,
   circlePath,
   composeTransform,
   IDENTITY,
@@ -296,21 +297,19 @@ export function parseArtwork(
             Number(capture.attrs.x ?? 0),
             Number(capture.attrs.y ?? 0),
           ];
+          // 회전이 걸린 글자는 자리도 함께 돌아야 한다 — 평행이동·배율만
+          // 먹이면 180° 돌린 글자가 대칭점이 아니라 원래 자리에 남는다.
+          // (윷놀이 말의 업기 숫자가 처음 밟았다, IDE-017)
           const t = style.transform;
+          const [drawXMm, drawYMm] = applyTransform(t, xMm, yMm);
           items.push(
-            textDraw(
-              content,
-              t.txMm + t.scale * xMm,
-              t.tyMm + t.scale * yMm,
-              style.fontSizeMm * t.scale,
-              {
-                anchor: style.anchor,
-                baseline: style.baseline,
-                bold: style.bold,
-                fill: style.fill ?? BLACK,
-                rotationDeg: t.rotationDeg,
-              },
-            ),
+            textDraw(content, drawXMm, drawYMm, style.fontSizeMm * t.scale, {
+              anchor: style.anchor,
+              baseline: style.baseline,
+              bold: style.bold,
+              fill: style.fill ?? BLACK,
+              rotationDeg: t.rotationDeg,
+            }),
           );
         }
         capture = null;
