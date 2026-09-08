@@ -12,9 +12,12 @@ import {
 /**
  * 슬롯 하나에 대응하는 입력 컴포넌트 (IDE-006)
  *
- * 슬롯 `kind`가 입력 종류를 정한다 — 텍스트·숫자·색상·선택지 네 가지뿐이라
- * 게임을 몰라도 렌더링할 수 있다. 자동 폼 생성기(`CustomizationForm`)가 슬롯
- * 배열을 순회하며 이 컴포넌트를 늘어놓는다.
+ * 슬롯 `kind`가 입력 종류를 정한다 — 텍스트·숫자·색상·선택지 네 가지가 한 줄
+ * 입력이라 게임을 몰라도 렌더링할 수 있다. 자동 폼 생성기(`CustomizationForm`)
+ * 가 슬롯 배열을 순회하며 이 컴포넌트를 늘어놓는다.
+ *
+ * 나머지 둘은 여기서 그리지 않는다 — 목록(`list`)은 판 아래 패널이, 윤곽
+ * (`outline`)은 사진 넣기 화면이 맡는다.
  */
 export interface SlotFieldProps {
   slot: Slot;
@@ -182,6 +185,11 @@ function SlotInput({
 
     case 'list':
       // 목록 슬롯은 여기서 그리지 않는다 — 판 아래 패널(`ListSlotPanel`)이 맡는다.
+      return null;
+
+    case 'outline':
+      // 윤곽 슬롯의 값은 사진에서 생성된다(IDE-019). 사진을 넣고 다시 따는
+      // 조작은 `IDE-020`이 만든다 — 좌표 배열을 손으로 칠 칸은 없다.
       return null;
 
     case 'choice':

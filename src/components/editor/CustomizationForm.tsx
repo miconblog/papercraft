@@ -42,10 +42,12 @@ import { FormationPicker } from './FormationPicker';
  * 이 파트에서 폼에 낼 수 있는 슬롯. **마커 슬롯은 늘 뺀다** — 그 편집은
  * 미리보기에서 끌어 놓는 것이다.
  */
-// 목록 슬롯은 한 줄 입력이 아니라 판 아래 패널이다(`ListSlotPanel`).
+// 목록 슬롯은 한 줄 입력이 아니라 판 아래 패널이고(`ListSlotPanel`), 윤곽
+// 슬롯은 사진에서 생성돼 손으로 칠 칸이 없다(IDE-019).
 const formSlots = (game: GameDefinition, partId?: string): Slot[] =>
   (partId ? slotsAffectingPart(game, partId) : game.slots).filter(
-    (slot) => !slotMarker(slot) && slot.kind !== 'list',
+    (slot) =>
+      !slotMarker(slot) && slot.kind !== 'list' && slot.kind !== 'outline',
   );
 
 /** 이 파트에서 그릴 것이 남는 그룹. 빈 그룹은 제목만 남아 줄을 먹는다. */

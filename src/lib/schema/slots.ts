@@ -185,6 +185,32 @@ export const listSlot = z.strictObject({
   default: z.array(slug),
 });
 
+/**
+ * 윤곽 슬롯 — **사용자 입력에서 생성된 기하 데이터**다 (IDE-019).
+ *
+ * 점 잇기가 처음 쓴다. 앞선 슬롯들과 다른 점은 **도안이 후보를 미리 선언해
+ * 둘 수 없다**는 것이다 — 값이 사용자가 넣은 사진에서 나온다. `list`도 값을
+ * 미리 다 적지는 않지만(직접 더한 도시) 그쪽은 여전히 "고르는 것"이고 이쪽은
+ * "계산되는 것"이다.
+ *
+ * 값은 `[x0, y0, x1, y1, …]`이 납작하게 늘어선 **닫힌 폴리라인**이고 단위는
+ * **파트 로컬 mm**다. 마지막 점 다음은 첫 점이라 첫 점을 되풀이해 적지 않는다.
+ * 점마다 객체를 두지 않는 것은 크기 때문이다 — 점 400개가 객체면 12KB,
+ * 납작한 수 배열이면 4KB고 `localStorage`에 사진과 함께 들어가야 한다(IDE-020).
+ *
+ * 배치는 `control`뿐이다. 값을 글자나 마커로 그릴 수 없고, 이 값에서 판을 그때
+ * 그리는 것은 파트의 `dynamic`이 한다 — 목록 슬롯과 같은 규약이다.
+ */
+export const outlineSlot = z.strictObject({
+  ...slotBase,
+  kind: z.literal('outline'),
+  /** 이보다 꼭짓점이 적으면 이을 형태가 아니다. */
+  minPoints: z.number().int().min(3).default(3),
+  /** 이보다 많으면 저장이 커지고 단순화가 덜 된 것이다. */
+  maxPoints: z.number().int().positive().default(2000),
+  default: z.array(z.number()),
+});
+
 export const slot = z
   .discriminatedUnion('kind', [
     textSlot,
@@ -192,6 +218,7 @@ export const slot = z
     colorSlot,
     choiceSlot,
     listSlot,
+    outlineSlot,
   ])
   .check((ctx) => {
     const s = ctx.value;
@@ -345,14 +372,38 @@ export const slot = z
       }
     }
 
+    if (s.kind === 'outline') {
+      if (s.minPoints > s.maxPoints) {
+        ctx.issues.push({
+          code: 'custom',
+          input: s,
+          path: ['minPoints'],
+          message: `minPoints(${s.minPoints})가 maxPoints(${s.maxPoints})보다 크다`,
+        });
+      }
+      const reason = validateOutlineValue(s, s.default);
+      if (reason) {
+        ctx.issues.push({
+          code: 'custom',
+          input: s,
+          path: ['default'],
+          message: `기본값이 제 제약을 어긴다: ${reason}`,
+        });
+      }
+    }
+
     // kind와 placement 방식의 조합. 색을 글자로 그리거나 선택지를 마커로 놓는 건
     // 렌더러가 처리할 수 없다.
+    //
+    // `number`에 `control`이 있는 것은 점 잇기의 점 개수 때문이다(IDE-019) —
+    // 값이 글자로 찍히는 게 아니라 **판 전체를 다시 그리게 한다**.
     const allowed: Record<typeof s.kind, ReadonlyArray<Placement['mode']>> = {
       text: ['text', 'marker'],
-      number: ['text', 'marker'],
+      number: ['text', 'marker', 'control'],
       color: ['paint'],
       choice: ['control', 'text'],
       list: ['control'],
+      outline: ['control'],
     };
     for (const [i, pl] of s.placements.entries()) {
       if (!allowed[s.kind].includes(pl.mode)) {
@@ -384,7 +435,9 @@ export type SlotKind = Slot['kind'];
  */
 export type ListEntry = string | ListItem;
 export type ListValue = ListEntry[];
-export type SlotValue = string | number | ListValue;
+/** 윤곽 슬롯의 값 — `[x0, y0, x1, y1, …]` 납작한 mm 좌표(IDE-019). */
+export type OutlineValue = number[];
+export type SlotValue = string | number | ListValue | OutlineValue;
 
 export const listEntryId = (entry: ListEntry): string =>
   typeof entry === 'string' ? entry : entry.id;
@@ -470,5 +523,28 @@ export function validateSlotValue(s: Slot, value: unknown): string | null {
       if (ids.length < s.min) return `${s.min}개 이상 골라야 한다`;
       return null;
     }
+    case 'outline':
+      return validateOutlineValue(s, value);
   }
+}
+
+/**
+ * 윤곽 값 검사 (IDE-019).
+ *
+ * 값이 생성된 것이라 사용자가 오타를 낼 일은 없다. 그래도 여기서 막는 이유는
+ * **옛 저장값과 손으로 만든 요청**이다 — 홀수 길이 배열이나 `NaN`이 그대로
+ * 렌더러에 들어가면 SVG의 `d` 속성이 통째로 깨져 빈 판이 나온다.
+ */
+function validateOutlineValue(
+  s: Extract<Slot, { kind: 'outline' }>,
+  value: unknown,
+): string | null {
+  if (!Array.isArray(value)) return '좌표의 배열이어야 한다';
+  if (value.some((v) => typeof v !== 'number' || !Number.isFinite(v)))
+    return '좌표가 모두 유한한 수여야 한다';
+  if (value.length % 2 !== 0) return 'x·y가 짝을 이뤄야 한다';
+  const points = value.length / 2;
+  if (points < s.minPoints) return `점이 ${s.minPoints}개 이상이어야 한다`;
+  if (points > s.maxPoints) return `점이 ${s.maxPoints}개를 넘는다`;
+  return null;
 }

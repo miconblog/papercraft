@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 자동 생성 파일. 고치려면 src/assets/games/soccer/artwork/ 를 고치고 `npm run artwork` 를 돌린다. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="190mm" height="277mm" viewBox="0 0 190 277" font-family="Noto Sans KR">
+<title>점 잇기 판</title>
+<g id="pc-art" fill="#1a1a1a" stroke="none">
+<line x1="26" y1="20" x2="164" y2="20" stroke="#6b7280" stroke-width="0.3" />
+<text x="95" y="27.5" font-size="3.4" dominant-baseline="central" text-anchor="middle" fill="#6b7280">1번부터 번호를 차례로 이어 보세요.</text>
+<circle cx="43.819" cy="49.542" r="0.9" fill="#1a1a1a" />
+<circle cx="54.229" cy="74.699" r="0.9" fill="#1a1a1a" />
+<circle cx="62.904" cy="69.494" r="0.9" fill="#1a1a1a" />
+<circle cx="94.133" cy="69.494" r="0.9" fill="#1a1a1a" />
+<circle cx="102.807" cy="74.699" r="0.9" fill="#1a1a1a" />
+<circle cx="113.217" cy="49.542" r="0.9" fill="#1a1a1a" />
+<circle cx="134.036" cy="103.325" r="0.9" fill="#1a1a1a" />
+<circle cx="130.566" cy="114.602" r="0.9" fill="#1a1a1a" />
+<circle cx="109.747" cy="128.482" r="0.9" fill="#1a1a1a" />
+<circle cx="132.301" cy="221.301" r="0.9" fill="#1a1a1a" />
+<circle cx="153.12" cy="223.036" r="0.9" fill="#1a1a1a" />
+<circle cx="167" cy="233.446" r="0.9" fill="#1a1a1a" />
+<circle cx="161.795" cy="243.855" r="0.9" fill="#1a1a1a" />
+<circle cx="146.181" cy="239.518" r="0.9" fill="#1a1a1a" />
+<circle cx="35.145" cy="242.988" r="0.9" fill="#1a1a1a" />
+<circle cx="24.735" cy="221.301" r="0.9" fill="#1a1a1a" />
+<circle cx="47.289" cy="128.482" r="0.9" fill="#1a1a1a" />
+<circle cx="26.47" cy="114.602" r="0.9" fill="#1a1a1a" />
+<circle cx="23" cy="103.325" r="0.9" fill="#1a1a1a" />
+<circle cx="26.47" cy="89.446" r="0.9" fill="#1a1a1a" />
+<text x="47.146" y="48.166" font-size="3.2" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a">1</text>
+<text x="51.708" y="70.497" font-size="3.2" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a">2</text>
+<text x="62.312" y="65.943" font-size="3.2" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a">3</text>
+<text x="96.654" y="65.292" font-size="3.2" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a">4</text>
+<text x="99.481" y="73.322" font-size="3.2" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a">5</text>
+<text x="116.612" y="48.344" font-size="3.2" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a">6</text>
+<text x="137.477" y="104.384" font-size="3.2" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a">7</text>
+<text x="133.844" y="118.245" font-size="3.2" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a">8</text>
+<text x="113.18" y="127.398" font-size="3.2" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a">9</text>
+<text x="132.6" y="217.714" font-size="3.2" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a">10</text>
+<text x="156.06" y="219.116" font-size="3.2" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a">11</text>
+<text x="171.383" y="235.637" font-size="3.2" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a">12</text>
+<text x="160.832" y="247.324" font-size="3.2" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a">13</text>
+<text x="146.48" y="243.106" font-size="3.2" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a">14</text>
+<text x="30.727" y="245.108" font-size="3.2" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a">15</text>
+<text x="19.944" y="220.275" font-size="3.2" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a">16</text>
+<text x="45.098" y="132.865" font-size="3.2" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a">17</text>
+<text x="21.787" y="116.043" font-size="3.2" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a">18</text>
+<text x="18.246" y="102.137" font-size="3.2" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a">19</text>
+<text x="22.393" y="86.728" font-size="3.2" dominant-baseline="central" text-anchor="middle" fill="#1a1a1a">20</text>
+<path d="M 49.99 56.62 L 46.60 52.61 L 49.56 51.39 Z" fill="#1a1a1a" stroke="none" />
+<text x="53.983" y="45.336" font-size="2.8" dominant-baseline="central" text-anchor="middle" fill="#6b7280">시작</text>
+<text x="17.317" y="83.344" font-size="2.8" dominant-baseline="central" text-anchor="middle" fill="#6b7280">1로</text>
+<text x="95" y="269" font-size="3" dominant-baseline="central" text-anchor="middle" fill="#6b7280">다 이으면 색칠해 보세요.</text>
+</g>
+</svg>
