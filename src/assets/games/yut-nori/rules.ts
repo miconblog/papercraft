@@ -15,6 +15,7 @@
  */
 
 import type { RuleBlock } from '@/lib/schema';
+import { STICK_FACE_NUMBERS } from './dimensions.ts';
 
 export const RULES_TITLE = '윷놀이 · 게임 방법';
 
@@ -31,6 +32,24 @@ export const TOKEN_ASSEMBLY_STEPS: readonly string[] = [
   '카드 한가운데의 일점쇄선을 인쇄면이 바깥으로 오게(산 모양) 접는다.',
   '밑동을 조금 벌리면 혼자 선다. 풀도 탭도 쓰지 않는다.',
 ];
+
+/**
+ * 윷가락 접는 순서 (IDE-018).
+ *
+ * 말과 달리 **속대가 있는 관**이라 순서가 있다. 맞물리는 세 면을 이름이 아니라
+ * 번호로 부르는 것은 골대와 같은 약속이고(`STICK_FACE_NUMBERS`), 전개도에도 그
+ * 번호만 적혀 있다 — 여기 글과 시트가 같은 말을 쓴다.
+ */
+export const STICK_ASSEMBLY_STEPS: readonly string[] = [
+  '전개도 넉 장을 바깥 실선을 따라 오린다. 마구리와 탭까지 한 붓이다.',
+  '접는선을 다 접는다. 일점쇄선은 산접기, 파선(탭 밑동 둘)만 골접기다.',
+  `맨 위 등부터 같은 쪽으로 만다. 배까지 감으면 종이가 안으로 들어가는데 그것이 ${STICK_FACE_NUMBERS.liner}번 속대다 — 등에 대고 갈고리를 모서리 너머로 눌러 넣는다.`,
+  `양 끝에서 ${STICK_FACE_NUMBERS.cap}번 마구리를 세우고 ${STICK_FACE_NUMBERS.tab}번 탭을 속대 밑으로 밀어 넣는다. 넉 장 가운데 하나만 배에 백도 표식이 있다.`,
+];
+
+/** 던지는 자리 안내. 가벼운 종이 윷이라 딱딱한 상에서 튄다. */
+export const STICK_THROW_NOTE =
+  '담요나 방석을 깔고 그 위에 던진다. 종이 윷은 가벼워 맨 상에서는 튀어 나간다 — 전통 윷도 멍석 위에 던졌다.';
 
 /**
  * 윷가락이 내는 다섯 값.
@@ -59,13 +78,16 @@ export const RULES: readonly RuleBlock[] = [
   },
   {
     kind: 'bullet',
-    text: '윷가락 넷. 종이로 접는 윷가락 도안이 따로 있고, 집에 윷이 있으면 그걸 써도 된다.',
+    text: '윷가락 넷. 종이로 접는 윷가락 도안이 함께 들어 있고, 집에 윷이 있으면 그걸 써도 된다.',
   },
-  { kind: 'bullet', text: '가위 · 두꺼운 종이(말용)' },
+  { kind: 'bullet', text: '가위 · 두꺼운 종이(말·윷가락용)' },
   { kind: 'bullet', text: PAPER_NOTE },
 
   { kind: 'heading', text: '말 접는 법' },
   ...TOKEN_ASSEMBLY_STEPS.map((text) => ({ kind: 'step', text }) as const),
+
+  { kind: 'heading', text: '윷가락 접는 법' },
+  ...STICK_ASSEMBLY_STEPS.map((text) => ({ kind: 'step', text }) as const),
 
   { kind: 'heading', text: '차리기' },
   {
@@ -86,6 +108,7 @@ export const RULES: readonly RuleBlock[] = [
     kind: 'bullet',
     text: '윷가락 넷을 던져 배(평평한 면)가 나온 수로 간다 — 하나면 도(1칸), 둘이면 개(2칸), 셋이면 걸(3칸), 넷이면 윷(4칸), 하나도 없으면 모(5칸).',
   },
+  { kind: 'bullet', text: STICK_THROW_NOTE },
   {
     kind: 'bullet',
     text: '윷과 모가 나오면 한 번 더 던진다. 남의 말을 잡았을 때도 한 번 더 던진다.',
@@ -141,7 +164,7 @@ export const RULES: readonly RuleBlock[] = [
   { kind: 'heading', text: '백도 — 넣어도 빼도 되는 규칙' },
   {
     kind: 'bullet',
-    text: '윷가락 하나에 표식이 있고, 그 하나만 배로 나오고 나머지 셋이 등이면 뒤로 한 칸이다. 표식은 종이 윷가락 도안이 그 가락에 인쇄한다.',
+    text: '윷가락 하나의 배에 과녁 표식이 있다. 그 하나만 배로 나오고 나머지 셋이 등이면 뒤로 한 칸이다.',
   },
   {
     kind: 'bullet',

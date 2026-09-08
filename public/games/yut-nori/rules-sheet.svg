@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 자동 생성 파일. 고치려면 src/assets/games/soccer/artwork/ 를 고치고 `npm run artwork` 를 돌린다. -->
-<svg xmlns="http://www.w3.org/2000/svg" width="190mm" height="240mm" viewBox="0 0 190 240" font-family="Noto Sans KR">
+<svg xmlns="http://www.w3.org/2000/svg" width="190mm" height="266mm" viewBox="0 0 190 266" font-family="Noto Sans KR">
 <title>윷놀이 · 게임 방법</title>
 <g id="pc-cut" fill="none" stroke="#000000" stroke-width="0.25" stroke-linecap="butt">
-<rect x="5" y="5" width="180" height="230" />
+<rect x="5" y="5" width="180" height="256" />
 </g>
 <g id="pc-art" fill="#1a1a1a" stroke="none">
 <text x="12" y="16" font-size="5.5" dominant-baseline="central" text-anchor="start" font-weight="700">윷놀이 · 게임 방법</text>
 <text x="12" y="23" font-size="2.4" dominant-baseline="central" text-anchor="start" fill="#6b7280">판 옆에 두고 보세요. 오림선을 따라 오려 게임판과 함께 두면 잃어버리지 않습니다.</text>
-<line x1="95" y1="28" x2="95" y2="229" stroke="#6b7280" stroke-width="0.2" fill="none" />
+<line x1="95" y1="28" x2="95" y2="255" stroke="#6b7280" stroke-width="0.2" fill="none" />
 <text x="12" y="35.4" font-size="3.6" dominant-baseline="central" text-anchor="start" font-weight="700">준비물</text>
 <text x="12" y="40.2" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
 <text x="16.4" y="40.2" font-size="2.9" dominant-baseline="central" text-anchor="start">말판 한 장. 말은 편마다 넷이고 2~4편이 논다. 만들기</text>
 <text x="16.4" y="44.4" font-size="2.9" dominant-baseline="central" text-anchor="start">화면에서 편마다 이름과 색을 넣어 뽑을 수 있다.</text>
 <text x="12" y="49.6" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
-<text x="16.4" y="49.6" font-size="2.9" dominant-baseline="central" text-anchor="start">윷가락 넷. 종이로 접는 윷가락 도안이 따로 있고, 집에</text>
-<text x="16.4" y="53.8" font-size="2.9" dominant-baseline="central" text-anchor="start">윷이 있으면 그걸 써도 된다.</text>
+<text x="16.4" y="49.6" font-size="2.9" dominant-baseline="central" text-anchor="start">윷가락 넷. 종이로 접는 윷가락 도안이 함께 들어 있고,</text>
+<text x="16.4" y="53.8" font-size="2.9" dominant-baseline="central" text-anchor="start">집에 윷이 있으면 그걸 써도 된다.</text>
 <text x="12" y="59" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
-<text x="16.4" y="59" font-size="2.9" dominant-baseline="central" text-anchor="start">가위 · 두꺼운 종이(말용)</text>
+<text x="16.4" y="59" font-size="2.9" dominant-baseline="central" text-anchor="start">가위 · 두꺼운 종이(말·윷가락용)</text>
 <text x="12" y="64.2" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
 <text x="16.4" y="64.2" font-size="2.9" dominant-baseline="central" text-anchor="start">말판은 A4 한 장에 그대로 들어간다. 스케치북에 붙여</text>
 <text x="16.4" y="68.4" font-size="2.9" dominant-baseline="central" text-anchor="start">두면 오래 간다. 말은 두꺼운 종이에 뽑는다.</text>
@@ -30,85 +30,102 @@
 <text x="16.4" y="95.4" font-size="2.9" dominant-baseline="central" text-anchor="start">모양) 접는다.</text>
 <text x="12" y="100.6" font-size="2.9" dominant-baseline="central" text-anchor="start">3.</text>
 <text x="16.4" y="100.6" font-size="2.9" dominant-baseline="central" text-anchor="start">밑동을 조금 벌리면 혼자 선다. 풀도 탭도 쓰지 않는다.</text>
-<text x="12" y="109.2" font-size="3.6" dominant-baseline="central" text-anchor="start" font-weight="700">차리기</text>
+<text x="12" y="109.2" font-size="3.6" dominant-baseline="central" text-anchor="start" font-weight="700">윷가락 접는 법</text>
 <text x="12" y="114" font-size="2.9" dominant-baseline="central" text-anchor="start">1.</text>
-<text x="16.4" y="114" font-size="2.9" dominant-baseline="central" text-anchor="start">편을 나눈다. 2~4편이고 편마다 말이 넷이다. 편은 색과</text>
-<text x="16.4" y="118.2" font-size="2.9" dominant-baseline="central" text-anchor="start">그림으로 갈린다 — 흑백으로 뽑아도 그림이 다르면</text>
-<text x="16.4" y="122.4" font-size="2.9" dominant-baseline="central" text-anchor="start">헷갈리지 않는다.</text>
-<text x="12" y="127.6" font-size="2.9" dominant-baseline="central" text-anchor="start">2.</text>
-<text x="16.4" y="127.6" font-size="2.9" dominant-baseline="central" text-anchor="start">말은 판 밖에서 시작한다. 판 위에 미리 놓지 않는다 —</text>
-<text x="16.4" y="131.8" font-size="2.9" dominant-baseline="central" text-anchor="start">윷을 던져야 판에 들어온다.</text>
-<text x="12" y="137" font-size="2.9" dominant-baseline="central" text-anchor="start">3.</text>
-<text x="16.4" y="137" font-size="2.9" dominant-baseline="central" text-anchor="start">윷을 한 번씩 던져 큰 수가 나온 편부터 차례를 잡는다.</text>
-<text x="16.4" y="141.2" font-size="2.9" dominant-baseline="central" text-anchor="start">차례는 그 순서대로 돈다.</text>
-<text x="12" y="149.8" font-size="3.6" dominant-baseline="central" text-anchor="start" font-weight="700">윷 던지기</text>
-<text x="12" y="154.6" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
-<text x="16.4" y="154.6" font-size="2.9" dominant-baseline="central" text-anchor="start">윷가락 넷을 던져 배(평평한 면)가 나온 수로 간다 —</text>
-<text x="16.4" y="158.8" font-size="2.9" dominant-baseline="central" text-anchor="start">하나면 도(1칸), 둘이면 개(2칸), 셋이면 걸(3칸),</text>
-<text x="16.4" y="163" font-size="2.9" dominant-baseline="central" text-anchor="start">넷이면 윷(4칸), 하나도 없으면 모(5칸).</text>
-<text x="12" y="168.2" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
-<text x="16.4" y="168.2" font-size="2.9" dominant-baseline="central" text-anchor="start">윷과 모가 나오면 한 번 더 던진다. 남의 말을 잡았을 때도</text>
-<text x="16.4" y="172.4" font-size="2.9" dominant-baseline="central" text-anchor="start">한 번 더 던진다.</text>
-<text x="12" y="177.6" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
-<text x="16.4" y="177.6" font-size="2.9" dominant-baseline="central" text-anchor="start">한 차례에 여러 번 던졌으면 나온 수를 말 하나에 몰아</text>
-<text x="16.4" y="181.8" font-size="2.9" dominant-baseline="central" text-anchor="start">써도 되고 여러 말에 나눠 써도 된다.</text>
-<text x="12" y="190.4" font-size="3.6" dominant-baseline="central" text-anchor="start" font-weight="700">말 옮기기</text>
-<text x="12" y="195.2" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
-<text x="16.4" y="195.2" font-size="2.9" dominant-baseline="central" text-anchor="start">말은 오른쪽 아래 큰 밭(참먹이)에서 판에 들어와</text>
-<text x="16.4" y="199.4" font-size="2.9" dominant-baseline="central" text-anchor="start">화살표를 따라 반시계로 돈다. 나온 수만큼 밭을 세어</text>
-<text x="16.4" y="203.6" font-size="2.9" dominant-baseline="central" text-anchor="start">옮기고, 지금 서 있는 밭은 세지 않는다.</text>
+<text x="16.4" y="114" font-size="2.9" dominant-baseline="central" text-anchor="start">전개도 넉 장을 바깥 실선을 따라 오린다. 마구리와</text>
+<text x="16.4" y="118.2" font-size="2.9" dominant-baseline="central" text-anchor="start">탭까지 한 붓이다.</text>
+<text x="12" y="123.4" font-size="2.9" dominant-baseline="central" text-anchor="start">2.</text>
+<text x="16.4" y="123.4" font-size="2.9" dominant-baseline="central" text-anchor="start">접는선을 다 접는다. 일점쇄선은 산접기, 파선(탭 밑동</text>
+<text x="16.4" y="127.6" font-size="2.9" dominant-baseline="central" text-anchor="start">둘)만 골접기다.</text>
+<text x="12" y="132.8" font-size="2.9" dominant-baseline="central" text-anchor="start">3.</text>
+<text x="16.4" y="132.8" font-size="2.9" dominant-baseline="central" text-anchor="start">맨 위 등부터 같은 쪽으로 만다. 배까지 감으면 종이가</text>
+<text x="16.4" y="137" font-size="2.9" dominant-baseline="central" text-anchor="start">안으로 들어가는데 그것이 1번 속대다 — 등에 대고</text>
+<text x="16.4" y="141.2" font-size="2.9" dominant-baseline="central" text-anchor="start">갈고리를 모서리 너머로 눌러 넣는다.</text>
+<text x="12" y="146.4" font-size="2.9" dominant-baseline="central" text-anchor="start">4.</text>
+<text x="16.4" y="146.4" font-size="2.9" dominant-baseline="central" text-anchor="start">양 끝에서 2번 마구리를 세우고 3번 탭을 속대 밑으로</text>
+<text x="16.4" y="150.6" font-size="2.9" dominant-baseline="central" text-anchor="start">밀어 넣는다. 넉 장 가운데 하나만 배에 백도 표식이</text>
+<text x="16.4" y="154.8" font-size="2.9" dominant-baseline="central" text-anchor="start">있다.</text>
+<text x="12" y="163.4" font-size="3.6" dominant-baseline="central" text-anchor="start" font-weight="700">차리기</text>
+<text x="12" y="168.2" font-size="2.9" dominant-baseline="central" text-anchor="start">1.</text>
+<text x="16.4" y="168.2" font-size="2.9" dominant-baseline="central" text-anchor="start">편을 나눈다. 2~4편이고 편마다 말이 넷이다. 편은 색과</text>
+<text x="16.4" y="172.4" font-size="2.9" dominant-baseline="central" text-anchor="start">그림으로 갈린다 — 흑백으로 뽑아도 그림이 다르면</text>
+<text x="16.4" y="176.6" font-size="2.9" dominant-baseline="central" text-anchor="start">헷갈리지 않는다.</text>
+<text x="12" y="181.8" font-size="2.9" dominant-baseline="central" text-anchor="start">2.</text>
+<text x="16.4" y="181.8" font-size="2.9" dominant-baseline="central" text-anchor="start">말은 판 밖에서 시작한다. 판 위에 미리 놓지 않는다 —</text>
+<text x="16.4" y="186" font-size="2.9" dominant-baseline="central" text-anchor="start">윷을 던져야 판에 들어온다.</text>
+<text x="12" y="191.2" font-size="2.9" dominant-baseline="central" text-anchor="start">3.</text>
+<text x="16.4" y="191.2" font-size="2.9" dominant-baseline="central" text-anchor="start">윷을 한 번씩 던져 큰 수가 나온 편부터 차례를 잡는다.</text>
+<text x="16.4" y="195.4" font-size="2.9" dominant-baseline="central" text-anchor="start">차례는 그 순서대로 돈다.</text>
+<text x="12" y="204" font-size="3.6" dominant-baseline="central" text-anchor="start" font-weight="700">윷 던지기</text>
 <text x="12" y="208.8" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
-<text x="16.4" y="208.8" font-size="2.9" dominant-baseline="central" text-anchor="start">모서리의 큰 밭에 정확히 멈추면 지름길로 들어간다.</text>
-<text x="16.4" y="213" font-size="2.9" dominant-baseline="central" text-anchor="start">지나칠 뿐이면 지름길로 가지 않는다 — 크게 그린 밭이 곧</text>
-<text x="16.4" y="217.2" font-size="2.9" dominant-baseline="central" text-anchor="start">갈림길이다.</text>
-<text x="99" y="32" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
-<text x="103.4" y="32" font-size="2.9" dominant-baseline="central" text-anchor="start">가운데 큰 밭(방)에 정확히 멈추면 다시 지름길로 질러</text>
-<text x="103.4" y="36.2" font-size="2.9" dominant-baseline="central" text-anchor="start">출발점 쪽으로 나온다. 방을 지나칠 뿐이면 들어온</text>
-<text x="103.4" y="40.4" font-size="2.9" dominant-baseline="central" text-anchor="start">대각선을 곧게 건너 반대편 모서리로 나간다.</text>
-<text x="99" y="45.6" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
-<text x="103.4" y="45.6" font-size="2.9" dominant-baseline="central" text-anchor="start">왼쪽 아래 모서리에서는 지름길로 들어가지 않는다. 그</text>
-<text x="103.4" y="49.8" font-size="2.9" dominant-baseline="central" text-anchor="start">대각선은 방에서 나오는 길이라 거기로 들어가면</text>
-<text x="103.4" y="54" font-size="2.9" dominant-baseline="central" text-anchor="start">바깥으로 도는 것보다 오히려 한 칸 더 걸린다.</text>
-<text x="99" y="59.2" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
-<text x="103.4" y="59.2" font-size="2.9" dominant-baseline="central" text-anchor="start">가장 짧은 길은 11칸(오른쪽 위 모서리 → 방 →</text>
-<text x="103.4" y="63.4" font-size="2.9" dominant-baseline="central" text-anchor="start">출발점)이고, 바깥으로만 돌면 20칸이다.</text>
-<text x="99" y="72" font-size="3.6" dominant-baseline="central" text-anchor="start" font-weight="700">업기와 잡기</text>
-<text x="99" y="76.8" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
-<text x="103.4" y="76.8" font-size="2.9" dominant-baseline="central" text-anchor="start">같은 편 말이 한 밭에서 만나면 업는다. 업은 말은 한</text>
-<text x="103.4" y="81" font-size="2.9" dominant-baseline="central" text-anchor="start">몸으로 함께 움직이고 함께 난다.</text>
-<text x="99" y="86.2" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
-<text x="103.4" y="86.2" font-size="2.9" dominant-baseline="central" text-anchor="start">업은 수는 밑동에 2·3·4가 적힌 말로 바꿔 세워</text>
-<text x="103.4" y="90.4" font-size="2.9" dominant-baseline="central" text-anchor="start">표시한다. 말이 따로 서 있을 때는 그 숫자를 보지 않는다</text>
-<text x="103.4" y="94.6" font-size="2.9" dominant-baseline="central" text-anchor="start">— 어느 말이든 한 마리다.</text>
-<text x="99" y="99.8" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
-<text x="103.4" y="99.8" font-size="2.9" dominant-baseline="central" text-anchor="start">다른 편 말이 있는 밭에 멈추면 그 말을 잡는다. 잡힌 말은</text>
-<text x="103.4" y="104" font-size="2.9" dominant-baseline="central" text-anchor="start">판 밖으로 나가 처음부터 다시 들어온다. 업은 말은</text>
-<text x="103.4" y="108.2" font-size="2.9" dominant-baseline="central" text-anchor="start">통째로 잡힌다.</text>
-<text x="99" y="116.8" font-size="3.6" dominant-baseline="central" text-anchor="start" font-weight="700">나기와 승부</text>
+<text x="16.4" y="208.8" font-size="2.9" dominant-baseline="central" text-anchor="start">윷가락 넷을 던져 배(평평한 면)가 나온 수로 간다 —</text>
+<text x="16.4" y="213" font-size="2.9" dominant-baseline="central" text-anchor="start">하나면 도(1칸), 둘이면 개(2칸), 셋이면 걸(3칸),</text>
+<text x="16.4" y="217.2" font-size="2.9" dominant-baseline="central" text-anchor="start">넷이면 윷(4칸), 하나도 없으면 모(5칸).</text>
+<text x="12" y="222.4" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
+<text x="16.4" y="222.4" font-size="2.9" dominant-baseline="central" text-anchor="start">담요나 방석을 깔고 그 위에 던진다. 종이 윷은 가벼워 맨</text>
+<text x="16.4" y="226.6" font-size="2.9" dominant-baseline="central" text-anchor="start">상에서는 튀어 나간다 — 전통 윷도 멍석 위에 던졌다.</text>
+<text x="12" y="231.8" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
+<text x="16.4" y="231.8" font-size="2.9" dominant-baseline="central" text-anchor="start">윷과 모가 나오면 한 번 더 던진다. 남의 말을 잡았을 때도</text>
+<text x="16.4" y="236" font-size="2.9" dominant-baseline="central" text-anchor="start">한 번 더 던진다.</text>
+<text x="12" y="241.2" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
+<text x="16.4" y="241.2" font-size="2.9" dominant-baseline="central" text-anchor="start">한 차례에 여러 번 던졌으면 나온 수를 말 하나에 몰아</text>
+<text x="16.4" y="245.4" font-size="2.9" dominant-baseline="central" text-anchor="start">써도 되고 여러 말에 나눠 써도 된다.</text>
+<text x="99" y="35.4" font-size="3.6" dominant-baseline="central" text-anchor="start" font-weight="700">말 옮기기</text>
+<text x="99" y="40.2" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
+<text x="103.4" y="40.2" font-size="2.9" dominant-baseline="central" text-anchor="start">말은 오른쪽 아래 큰 밭(참먹이)에서 판에 들어와</text>
+<text x="103.4" y="44.4" font-size="2.9" dominant-baseline="central" text-anchor="start">화살표를 따라 반시계로 돈다. 나온 수만큼 밭을 세어</text>
+<text x="103.4" y="48.6" font-size="2.9" dominant-baseline="central" text-anchor="start">옮기고, 지금 서 있는 밭은 세지 않는다.</text>
+<text x="99" y="53.8" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
+<text x="103.4" y="53.8" font-size="2.9" dominant-baseline="central" text-anchor="start">모서리의 큰 밭에 정확히 멈추면 지름길로 들어간다.</text>
+<text x="103.4" y="58" font-size="2.9" dominant-baseline="central" text-anchor="start">지나칠 뿐이면 지름길로 가지 않는다 — 크게 그린 밭이 곧</text>
+<text x="103.4" y="62.2" font-size="2.9" dominant-baseline="central" text-anchor="start">갈림길이다.</text>
+<text x="99" y="67.4" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
+<text x="103.4" y="67.4" font-size="2.9" dominant-baseline="central" text-anchor="start">가운데 큰 밭(방)에 정확히 멈추면 다시 지름길로 질러</text>
+<text x="103.4" y="71.6" font-size="2.9" dominant-baseline="central" text-anchor="start">출발점 쪽으로 나온다. 방을 지나칠 뿐이면 들어온</text>
+<text x="103.4" y="75.8" font-size="2.9" dominant-baseline="central" text-anchor="start">대각선을 곧게 건너 반대편 모서리로 나간다.</text>
+<text x="99" y="81" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
+<text x="103.4" y="81" font-size="2.9" dominant-baseline="central" text-anchor="start">왼쪽 아래 모서리에서는 지름길로 들어가지 않는다. 그</text>
+<text x="103.4" y="85.2" font-size="2.9" dominant-baseline="central" text-anchor="start">대각선은 방에서 나오는 길이라 거기로 들어가면</text>
+<text x="103.4" y="89.4" font-size="2.9" dominant-baseline="central" text-anchor="start">바깥으로 도는 것보다 오히려 한 칸 더 걸린다.</text>
+<text x="99" y="94.6" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
+<text x="103.4" y="94.6" font-size="2.9" dominant-baseline="central" text-anchor="start">가장 짧은 길은 11칸(오른쪽 위 모서리 → 방 →</text>
+<text x="103.4" y="98.8" font-size="2.9" dominant-baseline="central" text-anchor="start">출발점)이고, 바깥으로만 돌면 20칸이다.</text>
+<text x="99" y="107.4" font-size="3.6" dominant-baseline="central" text-anchor="start" font-weight="700">업기와 잡기</text>
+<text x="99" y="112.2" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
+<text x="103.4" y="112.2" font-size="2.9" dominant-baseline="central" text-anchor="start">같은 편 말이 한 밭에서 만나면 업는다. 업은 말은 한</text>
+<text x="103.4" y="116.4" font-size="2.9" dominant-baseline="central" text-anchor="start">몸으로 함께 움직이고 함께 난다.</text>
 <text x="99" y="121.6" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
-<text x="103.4" y="121.6" font-size="2.9" dominant-baseline="central" text-anchor="start">한 바퀴를 돌아 출발점을 지나면 그 말은 난다. 남는 수는</text>
-<text x="103.4" y="125.8" font-size="2.9" dominant-baseline="central" text-anchor="start">상관없다 — 지나기만 하면 된다.</text>
-<text x="99" y="131" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
-<text x="103.4" y="131" font-size="2.9" dominant-baseline="central" text-anchor="start">말 넷이 먼저 다 나는 편이 이긴다.</text>
-<text x="99" y="139.6" font-size="3.6" dominant-baseline="central" text-anchor="start" font-weight="700">백도 — 넣어도 빼도 되는 규칙</text>
-<text x="99" y="144.4" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
-<text x="103.4" y="144.4" font-size="2.9" dominant-baseline="central" text-anchor="start">윷가락 하나에 표식이 있고, 그 하나만 배로 나오고</text>
-<text x="103.4" y="148.6" font-size="2.9" dominant-baseline="central" text-anchor="start">나머지 셋이 등이면 뒤로 한 칸이다. 표식은 종이 윷가락</text>
-<text x="103.4" y="152.8" font-size="2.9" dominant-baseline="central" text-anchor="start">도안이 그 가락에 인쇄한다.</text>
-<text x="99" y="158" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
-<text x="103.4" y="158" font-size="2.9" dominant-baseline="central" text-anchor="start">아직 판에 들어오지 않은 말이 백도를 만나면 어떻게</text>
-<text x="103.4" y="162.2" font-size="2.9" dominant-baseline="central" text-anchor="start">할지(그대로 두기 · 출발점 바로 앞 밭에 놓기)는 시작</text>
-<text x="103.4" y="166.4" font-size="2.9" dominant-baseline="central" text-anchor="start">전에 정한다.</text>
-<text x="99" y="171.6" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
-<text x="103.4" y="171.6" font-size="2.9" dominant-baseline="central" text-anchor="start">백도를 안 쓰는 고장도 많다. 빼고 놀아도 놀이는 그대로</text>
-<text x="103.4" y="175.8" font-size="2.9" dominant-baseline="central" text-anchor="start">된다.</text>
-<text x="99" y="184.4" font-size="3.6" dominant-baseline="central" text-anchor="start" font-weight="700">이 규칙은 기본값입니다</text>
+<text x="103.4" y="121.6" font-size="2.9" dominant-baseline="central" text-anchor="start">업은 수는 밑동에 2·3·4가 적힌 말로 바꿔 세워</text>
+<text x="103.4" y="125.8" font-size="2.9" dominant-baseline="central" text-anchor="start">표시한다. 말이 따로 서 있을 때는 그 숫자를 보지 않는다</text>
+<text x="103.4" y="130" font-size="2.9" dominant-baseline="central" text-anchor="start">— 어느 말이든 한 마리다.</text>
+<text x="99" y="135.2" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
+<text x="103.4" y="135.2" font-size="2.9" dominant-baseline="central" text-anchor="start">다른 편 말이 있는 밭에 멈추면 그 말을 잡는다. 잡힌 말은</text>
+<text x="103.4" y="139.4" font-size="2.9" dominant-baseline="central" text-anchor="start">판 밖으로 나가 처음부터 다시 들어온다. 업은 말은</text>
+<text x="103.4" y="143.6" font-size="2.9" dominant-baseline="central" text-anchor="start">통째로 잡힌다.</text>
+<text x="99" y="152.2" font-size="3.6" dominant-baseline="central" text-anchor="start" font-weight="700">나기와 승부</text>
+<text x="99" y="157" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
+<text x="103.4" y="157" font-size="2.9" dominant-baseline="central" text-anchor="start">한 바퀴를 돌아 출발점을 지나면 그 말은 난다. 남는 수는</text>
+<text x="103.4" y="161.2" font-size="2.9" dominant-baseline="central" text-anchor="start">상관없다 — 지나기만 하면 된다.</text>
+<text x="99" y="166.4" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
+<text x="103.4" y="166.4" font-size="2.9" dominant-baseline="central" text-anchor="start">말 넷이 먼저 다 나는 편이 이긴다.</text>
+<text x="99" y="175" font-size="3.6" dominant-baseline="central" text-anchor="start" font-weight="700">백도 — 넣어도 빼도 되는 규칙</text>
+<text x="99" y="179.8" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
+<text x="103.4" y="179.8" font-size="2.9" dominant-baseline="central" text-anchor="start">윷가락 하나의 배에 과녁 표식이 있다. 그 하나만 배로</text>
+<text x="103.4" y="184" font-size="2.9" dominant-baseline="central" text-anchor="start">나오고 나머지 셋이 등이면 뒤로 한 칸이다.</text>
 <text x="99" y="189.2" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
-<text x="103.4" y="189.2" font-size="2.9" dominant-baseline="central" text-anchor="start">여기 적힌 것은 기본 규칙입니다. 함께 노는 사람끼리</text>
-<text x="103.4" y="193.4" font-size="2.9" dominant-baseline="central" text-anchor="start">합의해 자유롭게 바꿔서 즐기세요.</text>
-<text x="99" y="198.6" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
-<text x="103.4" y="198.6" font-size="2.9" dominant-baseline="central" text-anchor="start">시작 전에 정해 두면 좋은 것 — 판 밖으로 나간 윷(낙)을</text>
-<text x="103.4" y="202.8" font-size="2.9" dominant-baseline="central" text-anchor="start">무효로 볼지, 윷·모를 연달아 몇 번까지 다시 던질 수</text>
-<text x="103.4" y="207" font-size="2.9" dominant-baseline="central" text-anchor="start">있는지, 백도를 쓸지.</text>
+<text x="103.4" y="189.2" font-size="2.9" dominant-baseline="central" text-anchor="start">아직 판에 들어오지 않은 말이 백도를 만나면 어떻게</text>
+<text x="103.4" y="193.4" font-size="2.9" dominant-baseline="central" text-anchor="start">할지(그대로 두기 · 출발점 바로 앞 밭에 놓기)는 시작</text>
+<text x="103.4" y="197.6" font-size="2.9" dominant-baseline="central" text-anchor="start">전에 정한다.</text>
+<text x="99" y="202.8" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
+<text x="103.4" y="202.8" font-size="2.9" dominant-baseline="central" text-anchor="start">백도를 안 쓰는 고장도 많다. 빼고 놀아도 놀이는 그대로</text>
+<text x="103.4" y="207" font-size="2.9" dominant-baseline="central" text-anchor="start">된다.</text>
+<text x="99" y="215.6" font-size="3.6" dominant-baseline="central" text-anchor="start" font-weight="700">이 규칙은 기본값입니다</text>
+<text x="99" y="220.4" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
+<text x="103.4" y="220.4" font-size="2.9" dominant-baseline="central" text-anchor="start">여기 적힌 것은 기본 규칙입니다. 함께 노는 사람끼리</text>
+<text x="103.4" y="224.6" font-size="2.9" dominant-baseline="central" text-anchor="start">합의해 자유롭게 바꿔서 즐기세요.</text>
+<text x="99" y="229.8" font-size="2.9" dominant-baseline="central" text-anchor="start">·</text>
+<text x="103.4" y="229.8" font-size="2.9" dominant-baseline="central" text-anchor="start">시작 전에 정해 두면 좋은 것 — 판 밖으로 나간 윷(낙)을</text>
+<text x="103.4" y="234" font-size="2.9" dominant-baseline="central" text-anchor="start">무효로 볼지, 윷·모를 연달아 몇 번까지 다시 던질 수</text>
+<text x="103.4" y="238.2" font-size="2.9" dominant-baseline="central" text-anchor="start">있는지, 백도를 쓸지.</text>
 </g>
 </svg>
