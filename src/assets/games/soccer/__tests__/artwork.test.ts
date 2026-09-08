@@ -11,7 +11,12 @@ import { describe, expect, it } from 'vitest';
 import { getGame } from '@/lib/games/registry';
 import { MARK_STYLES, findPart, slotMarker } from '@/lib/schema';
 import { ARTWORK } from '../artwork';
-import { GOAL_NET_ORIGINS, goalNetFaces, type Face } from '../artwork/goals';
+import {
+  GOAL_NET_ORIGINS,
+  goalNetFaces,
+  goalSideWallDiagonals,
+  type Face,
+} from '../artwork/goals';
 import {
   BALL,
   BOARD,
@@ -132,24 +137,41 @@ describe('골대 전개도', () => {
    * 밖으로 나간다는 사용자 지적이었다. 3번 구조의 지붕과 달리 뒷벽 위에 경첩처럼
    * 달려 앞으로 덮이고, 양옆 귀를 옆벽 바깥에 씌워 닫으므로 붙일 것이 없다.
    */
-  it('뚜껑이 쟁반 위를 빈틈없이 덮는다', () => {
+  it('뚜껑이 쟁반 위 뒤쪽 절반을 덮는다', () => {
     const lid = face('lid');
     const floor = face('floor');
-    // 뚜껑 깊이 = 바닥 깊이. 짧으면 앞이 열려 공이 나가고, 길면 골문 밖으로
-    // 처마처럼 튀어나와 공이 들어오는 길을 막는다.
-    expect(lid.heightMm).toBe(floor.heightMm);
+    // 뚜껑 깊이 = 바닥 깊이의 **절반**. 통째로 덮었더니 공이 들어갔는지 보이지
+    // 않는다는 지적이 나와 앞쪽 절반을 열었다(2026-09-08). 더 짧으면 튀어 오른
+    // 공을 못 막고, 더 길면 다시 안이 안 보인다.
+    expect(lid.heightMm * 2).toBe(floor.heightMm);
+    // 폭은 그대로 바닥 폭이다 — 귀가 옆벽을 감싸야 하므로 좁힐 수 없다.
     expect(lid.widthMm).toBe(floor.widthMm);
     // 뒷벽 위에 붙어 있어야 경첩이 된다 — 사이에 다른 면이 끼면 접는선이 는다.
     expect(lid.yMm + lid.heightMm).toBe(face('wall-back').yMm);
-    // 귀는 뚜껑 깊이에서 모서리 홈만큼만 짧다 — 홈이 없으면 아래 모서리 탭에
-    // 붙어 버려 뚜껑을 덮을 때 탭이 딸려 온다.
+    // 귀는 경첩에서 `lidEarInsetMm`만큼 물러나 앉는다 — 그래야 옆벽 안쪽에서
+    // 모서리 탭과 자리를 다투지 않는다(2026-09-08).
     for (const id of ['lid-flap-left', 'lid-flap-right']) {
-      expect(face(id).heightMm).toBe(lid.heightMm - GOAL.cornerNotchMm);
+      expect(face(id).heightMm).toBe(lid.heightMm - GOAL.lidEarInsetMm);
       // 귀가 옆벽보다 깊게 내려오면 바닥에 닿아 뚜껑이 뜬다.
       expect(face(id).widthMm).toBeLessThan(GOAL.wallHeightMm);
     }
-    // 귀가 모서리 탭보다 좁아야 전개도가 옆으로 넓어지지 않는다.
-    expect(GOAL.lidFlapMm).toBeLessThan(GOAL.cornerTabMm);
+  });
+
+  /**
+   * 귀는 **바깥에서 안으로** 옮겨 왔다(2026-09-08 사용자 요청 — "안으로 넣어서
+   * 겹과 맞물려 접으면 깔끔할 것"). 겉면에 나오는 것이 없어지고 접는 방향이
+   * 골접기 하나로 통일된 대신, 귀와 모서리 탭이 **같은 옆벽 안쪽 면**을 나눠
+   * 쓰게 됐다. 둘이 겹치면 그 자리만 종이가 넉 겹이 되어 겹이 닫히지 않는다.
+   */
+  it('귀와 모서리 탭이 옆벽 안쪽에서 자리를 다투지 않는다', () => {
+    // 탭은 뒷벽에서 앞으로 `cornerTabMm`만큼 뻗고, 귀는 그만큼 물러나 앉는다.
+    expect(GOAL.lidEarInsetMm).toBeGreaterThanOrEqual(GOAL.cornerTabMm);
+    // 물러나고도 귀가 남아야 뚜껑이 잡힌다.
+    expect(GOAL.lidDepthMm).toBeGreaterThan(GOAL.lidEarInsetMm);
+    // 귀는 겹(8mm) 밑으로 들어가야 물린다 — 길이가 같으면 조금만 어긋나도 빠진다.
+    expect(GOAL.lidFlapMm).toBeGreaterThan(face('hem-left').widthMm);
+    // 홈은 가위가 들어갈 깊이 이상이어야 한다. 귀 쪽은 물러남이 그 역할을 겸한다.
+    expect(GOAL.lidEarInsetMm).toBeGreaterThanOrEqual(GOAL.cornerNotchMm);
   });
 
   /**
@@ -190,15 +212,18 @@ describe('골대 전개도', () => {
    * 두께만큼 턱이 생겨 미끄러져 오는 공이 골문에서 걸린다는 이유였다. 바닥이
    * 그대로 앞으로 뻗어 나오면 그 턱이 아예 생기지 않는다.
    */
-  it('입술이 바닥과 한 장으로 이어져 공이 넘을 턱이 없다', () => {
+  it('입술을 안으로 접으면 바닥 앞쪽에 포개진다', () => {
     const floor = face('floor');
     const lip = face('lip');
-    // 좌우가 같은 자리에서 같은 폭으로 이어져야 접는선 없는 한 면이 된다.
+    // 좌우가 같은 자리에서 같은 폭이라야 접어 넣었을 때 바닥에 딱 포개진다.
     expect(lip.xMm).toBe(floor.xMm);
     expect(lip.widthMm).toBe(floor.widthMm);
-    // 바닥 앞 끝에서 곧장 시작한다 — 사이에 다른 면이 끼면 접는선이 생긴다.
+    // 바닥 앞 끝에 이어져 있어야 그 모서리가 접힌 면이 된다.
     expect(lip.yMm).toBe(floor.yMm + floor.heightMm);
-    // 운동장 위에 얹혀 눈금까지 닿을 만큼은 길어야 한다.
+    // 바닥보다 길면 접었을 때 뒷벽에 닿아 들뜬다.
+    expect(lip.heightMm).toBeLessThanOrEqual(floor.heightMm);
+    // 공이 부드럽게 넘어올 만큼은 있어야 한다 — 너무 짧으면 앞 모서리만 접힌
+    // 꼴이라 바닥을 받쳐 주지 못한다.
     expect(lip.heightMm).toBeGreaterThan(BALL.diameterMm);
   });
 
@@ -208,8 +233,10 @@ describe('골대 전개도', () => {
    */
   it('실제 축척보다 뚜렷이 크다 — 종이 게임용으로 과장한 값이다', () => {
     // 실제 골문 7.32m를 이 판의 축척(2.85mm/m)으로 줄이면 20.9mm다.
+    // 배수는 70mm였을 때 3.3배, 55mm로 줄인 뒤로는 2.6배다(2026-09-08) —
+    // "뚜렷이 크다"는 조건은 2.5배를 하한으로 잡는다.
     const trueScaleWidthMm = (7.32 * FIELD.widthMm) / 100;
-    expect(GOAL.mouthWidthMm).toBeGreaterThan(trueScaleWidthMm * 3);
+    expect(GOAL.mouthWidthMm).toBeGreaterThan(trueScaleWidthMm * 2.5);
     // 그러면서도 골라인(필드 짧은 변)의 절반은 넘지 않아야 골대가 판을 먹지 않는다.
     expect(GOAL.mouthWidthMm).toBeLessThan(FIELD.heightMm / 2);
   });
@@ -282,6 +309,39 @@ describe('골대 전개도', () => {
     }
   });
 
+  /**
+   * 뚜껑이 바닥의 절반만 덮으면서 옆벽 앞쪽 위에 얹힐 것이 없어졌다. 그 자리를
+   * 사선으로 접어 넘기면 앞이 낮아지는 쐐기 — 쓰레받기가 된다(2026-09-08 사용자가
+   * 손으로 접어 보고 알려 준 모양).
+   *
+   * **두 끝점은 고를 여지가 없다.** 뚜껑 앞 모서리가 닿는 벽 위쪽 점과 바닥 앞
+   * 모서리를 이어야 접어 넘긴 삼각형의 두 변이 뚜껑·바닥에 각각 맞아떨어진다.
+   * 뚜껑 깊이나 바닥 깊이를 고치면 이 선도 따라와야 한다.
+   */
+  it('옆벽 사선이 뚜껑 앞 모서리와 바닥 앞 모서리를 잇는다', () => {
+    const diagonals = goalSideWallDiagonals(0, 0);
+    expect(diagonals).toHaveLength(2);
+
+    const wall = face('wall-left');
+    const [left, right] = diagonals;
+    // 위 끝 — 벽 위쪽(겹이 붙는 변)에서, 뒷벽으로부터 뚜껑 깊이만큼.
+    expect(left.topMm[0]).toBe(wall.xMm);
+    expect(left.topMm[1]).toBe(wall.yMm + GOAL.lidDepthMm);
+    // 아래 끝 — 벽 아래쪽(바닥에 붙는 변)의 앞 모서리.
+    expect(left.bottomMm[0]).toBe(wall.xMm + wall.widthMm);
+    expect(left.bottomMm[1]).toBe(wall.yMm + wall.heightMm);
+
+    // 오른쪽은 거울상이다 — 한쪽만 고치면 골대가 비뚤어진다.
+    const rightWall = face('wall-right');
+    expect(right.topMm[0]).toBe(rightWall.xMm + rightWall.widthMm);
+    expect(right.bottomMm[0]).toBe(rightWall.xMm);
+    expect(right.topMm[1]).toBe(left.topMm[1]);
+    expect(right.bottomMm[1]).toBe(left.bottomMm[1]);
+
+    // 뚜껑이 바닥을 다 덮으면 사선이 설 자리가 없다 — 넘길 삼각형이 사라진다.
+    expect(GOAL.lidDepthMm).toBeLessThan(GOAL.trayDepthMm);
+  });
+
   it('면끼리 겹치지 않는다', () => {
     for (let a = 0; a < faces.length; a += 1) {
       for (let b = a + 1; b < faces.length; b += 1) {
@@ -322,14 +382,13 @@ describe('골대 전개도', () => {
 
   it('오림선과 접는선이 모두 있다', () => {
     const doc = svgOf('goals');
-    // 골접기 벌마다 여덟 — 뚜껑·뒷벽·옆벽 둘·겹 둘·모서리 탭 둘.
+    // 골접기 벌마다 열셋 — 뚜껑·뒷벽·옆벽 둘·겹 둘·모서리 탭 둘·뚜껑 귀 둘·
+    // 옆벽 사선 둘·입술.
     expect(
       doc.getElementById(MARK_STYLES['fold-valley'].layerId)!.children.length,
-    ).toBe(16);
-    // 산접기 벌마다 둘 — 뚜껑 귀뿐이다. 옆벽을 바깥에서 감싸야 들리지 않는다.
-    expect(
-      doc.getElementById(MARK_STYLES['fold-mountain'].layerId)!.children.length,
-    ).toBe(4);
+    ).toBe(26);
+    // 산접기는 없다(2026-09-08) — 귀가 안으로 들어가면서 방향이 하나가 됐다.
+    expect(doc.getElementById(MARK_STYLES['fold-mountain'].layerId)).toBeNull();
   });
 
   /**
@@ -346,12 +405,19 @@ describe('골대 전개도', () => {
     }
   });
 
-  it('골라인 밖에 놓이고 필드는 입술만 쓴다', () => {
+  it('골라인 밖에 온전히 서고 필드를 한 뼘도 덮지 않는다', () => {
     // 골문이 골 에어리어 폭 안에 있어야 골대와 선이 맞물려 보인다.
     expect(GOAL.mouthWidthMm).toBeLessThanOrEqual(FIELD_MARKS.goalAreaWidthMm);
-    // 필드 안으로 들어오는 것은 입술뿐이고, 골 에어리어 깊이를 넘지 않아야
-    // 골키퍼가 설 자리를 덮지 않는다.
-    expect(GOAL.lipDepthMm).toBeLessThan(FIELD_MARKS.goalAreaDepthMm);
+    // 입술을 안으로 접어 넣은 뒤로(2026-09-08) 필드 위로 나오는 면이 하나도
+    // 없다 — 골대의 모든 면이 앞 모서리(골라인)에서 **뒤로만** 뻗는다.
+    for (const f of faces) {
+      expect(f.yMm, `${f.id}이 앞 모서리를 넘어간다`).toBeLessThanOrEqual(
+        face('floor').yMm + face('floor').heightMm,
+      );
+    }
+    // 깊이가 종이 여백을 넘는 만큼은 책상 위에 놓인다 — 종이 → 책상은
+    // **내려가는** 단차라 공이 걸리지 않는다.
+    expect(GOAL.trayDepthMm).toBeGreaterThan(FIELD.xMm);
   });
 });
 
@@ -364,6 +430,20 @@ describe('골대 자리 눈금', () => {
     FIELD_CENTER_Y_MM - GOAL.mouthWidthMm / 2,
     FIELD_CENTER_Y_MM + GOAL.mouthWidthMm / 2,
   ];
+
+  /**
+   * 눈금 간격은 `GOAL.mouthWidthMm`에서 나오는데, 정작 맞추는 것은 **접었을 때
+   * 골대 앞 모서리의 폭**이다. 지금은 둘이 같지만 전개도를 고치다 어긋나면
+   * 눈금이 조용히 틀린 자리를 가리키게 된다 — 도안은 멀쩡해 보이고 종이에
+   * 뽑아 놓고 나서야 안 맞는다.
+   */
+  it('눈금 간격이 접었을 때 골대 앞 모서리 폭과 같다', () => {
+    const floor = goalNetFaces(0, 0).find((f) => f.id === 'floor')!;
+    expect(guideYs[1] - guideYs[0]).toBe(floor.widthMm);
+    // 앞 모서리는 바닥과 입술이 만나는 접는선이다 — 폭이 셋 다 같아야 한다.
+    const lip = goalNetFaces(0, 0).find((f) => f.id === 'lip')!;
+    expect(lip.widthMm).toBe(floor.widthMm);
+  });
 
   it('골포스트 자리와 골문 한가운데를 양 진영에 찍는다', () => {
     const lines = [...svgOf('field').querySelectorAll('line')].map((node) => ({
