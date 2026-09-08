@@ -28,9 +28,11 @@ export const BOARD = { widthMm: 210, heightMm: 297 } as const;
  * 홈플레이트 — 모든 선의 중심. **종이 아래 끝에 최대한 붙인다**(2026-09-08
  * 사용자 요청).
  *
- * 남긴 23mm는 포수가 서는 자리다 — 홈 뒤 11mm에 선 포수 마커(22mm)의 발끝이
- * 종이 끝(297mm)에 닿는다. 더 내리면 포수가 잘린다. 연필 쥔 손은 종이 밖
- * 책상 위에 놓이면 되고, 그 대신 담장까지가 그만큼 멀어진다.
+ * 남긴 23mm는 **백네트 자리**다 — 홈 중심 반지름 19mm인 호가 293mm까지
+ * 내려오고 종이 끝(297mm)까지 4mm가 남는다. 더 내리면 백네트가 잘린다.
+ * (처음에는 이 자리를 포수 마커가 정했는데, 포수를 판에서 빼면서 백네트가
+ * 하한을 물려받았다 — 2026-09-08.) 연필 쥔 손은 종이 밖 책상 위에 놓이면
+ * 되고, 그 대신 담장까지가 그만큼 멀어진다.
  */
 export const HOME = { xMm: BOARD.widthMm / 2, yMm: 274 } as const;
 
@@ -149,7 +151,12 @@ export const FIELD_MARKS = {
   batterBoxWidthMm: 7,
   batterBoxHeightMm: 13,
   batterBoxGapMm: 6,
-  /** 포수 자리. 홈 뒤에 붙는다. */
+  /**
+   * 포수 자리. 홈 뒤에 붙는다.
+   *
+   * 포수 마커를 뺀 뒤에도 **선은 남긴다**(2026-09-08) — 실제 야구장에 그어진
+   * 선이고, 홈 뒤가 비어 보이면 판이 야구장으로 읽히지 않는다.
+   */
   catcherBoxWidthMm: 11,
   catcherBoxHeightMm: 9,
   /** 백네트 — 홈 뒤로 빠진 공의 경계. 홈 중심 원호다. */
@@ -164,8 +171,9 @@ export const FIELD_MARKS = {
  * 파울 지역에 세우는 것은 규칙이 막을 일이지 도안이 막을 일이 아니라고 보고
  * 그대로 둔다.
  *
- * 아래 끝(286mm)은 **포수가 서는 자리**가 정한다. 마커 절반(11mm)을 더하면
- * 정확히 종이 끝(297mm)이다.
+ * 아래 끝(286mm)은 홈 뒤 백네트까지 열어 둔 자리다. 포수를 뺀 뒤로 여기에
+ * 세울 선수는 없지만(2026-09-08) 범위를 좁히지는 않았다 — 홈플레이트 언저리에
+ * 수비를 세우면 연필이 걸린다는 것은 위와 같은 이유로 규칙이 말할 일이다.
  */
 export const PLAY_AREA = {
   xMm: 10,
@@ -174,26 +182,23 @@ export const PLAY_AREA = {
   heightMm: 280,
 } as const;
 
-/** 타자가 설 수 있는 범위 — 두 타석과 그 사이를 덮는다. */
-export const BATTING_AREA = {
-  xMm: HOME.xMm - 22,
-  yMm: HOME.yMm - 9,
-  widthMm: 44,
-  heightMm: 23,
-} as const;
-
 /**
- * 스트라이크·볼·아웃 카운터 — 왼쪽 아래 파울 지역(2026-09-08 사용자 요청).
+ * 스트라이크·아웃 카운터 — 왼쪽 아래 파울 지역(2026-09-08 사용자 요청).
  *
- * 동그라미 수는 요청 그대로다: S 둘 · B 넷 · O 셋. 동전을 얹어 세고 타자가
- * 바뀌면 S·B를, 공수가 바뀌면 셋 다 치운다(`./rules.ts`). 인쇄물이 상태를
- * 기억하지 못하므로 **놓고 치우는 자리**만 그린다.
+ * 처음에는 S 둘 · B 넷 · O 셋이었는데, **실제로 해 보고 줄였다**(같은 날 사용자
+ * 확인): "B는 필요없고, S와 O만 있으면 되고 카운트도 2개씩만 있으면 되더라."
+ * 볼은 기본 규칙에 투구가 없어 셀 일이 없었고, 남은 둘은 **마지막 하나를 셀
+ * 필요가 없다** — 스트라이크 셋째는 아웃이고 아웃 셋째는 공수 교대라, 그 순간
+ * 칸이 통째로 비워진다. 그러니 동그라미는 둘이면 족하다.
  *
- * 자리는 파울라인(y = x + 169) 아래다. 오른쪽 위 모서리(48.5, 255)가 선에서
- * 37mm 떨어져 있고, 타자 마커(x ≥ 85)와 백네트(x ≥ 86)에 닿지 않는다.
+ * 동전을 얹어 세고 타자가 바뀌면 S를, 공수가 바뀌면 둘 다 치운다(`./rules.ts`).
+ * 인쇄물이 상태를 기억하지 못하므로 **놓고 치우는 자리**만 그린다.
+ *
+ * 자리는 파울라인(y = x + 169) 아래다. 오른쪽 위 모서리(31.7, 255)가 그 선보다
+ * 54mm 아래이고, 홈 뒤 백네트(x ≥ 86)에 닿지 않는다.
  */
 export const COUNT_PANEL = {
-  /** 글자(S·B·O) 열의 x. */
+  /** 글자(S·O) 열의 x. */
   letterXMm: 10,
   /** 첫 동그라미 중심 x. 다음 동그라미는 `dotGapMm`씩 오른쪽이다. */
   firstDotXMm: 20,
@@ -204,8 +209,7 @@ export const COUNT_PANEL = {
   rowGapMm: 11,
   rows: [
     { letter: 'S', dots: 2 },
-    { letter: 'B', dots: 4 },
-    { letter: 'O', dots: 3 },
+    { letter: 'O', dots: 2 },
   ],
 } as const;
 
@@ -234,42 +238,130 @@ export const PLAYER_MARKER = {
  */
 export const FIELDER_POSES = [
   { id: 'pitch', label: '투구' },
-  { id: 'crouch', label: '포수' },
   { id: 'field', label: '땅볼 수비' },
   { id: 'throw', label: '송구' },
   { id: 'catch', label: '뜬공' },
   { id: 'run', label: '달리기' },
 ] as const;
 
-/** 타자 자세. 수비와 세트를 따로 쓰므로 목록에서 뺐다. */
-export const BATTER_POSE = { id: 'bat', label: '타격' } as const;
-
 /**
- * 수비 아홉 자리. **순서가 곧 야구의 수비 번호**다(1 투수 … 9 우익수) —
- * 스코어북과 같은 차례라 아이가 옮겨 적을 때 헷갈리지 않는다.
+ * 판에 서는 수비 여덟 자리.
+ *
+ * **포수와 타자는 판에 세우지 않는다**(2026-09-08 사용자 요청). 둘이 서는 자리가
+ * 곧 홈플레이트 언저리인데, 거기는 공을 놓고 연필로 튕기는 자리다 — 포수를
+ * 세우면 힘없이 구른 공이 매번 포수에 맞아 아웃이 되고(`./rules.ts`의 판정),
+ * 타자를 세우면 튕기는 손이 걸린다. 그래서 그라운드에서 뺐다. 홈 뒤에 그어진
+ * 포수 자리 선과 타석 선은 그대로 남는다 — 그림은 야구장이고, 사람만 없다.
+ *
+ * `number`는 **야구의 수비 번호**다(1 투수 … 9 우익수). 포수(2번)가 빠져 자리
+ * 순서와 번호가 어긋나므로 번호를 따로 적는다 — 스코어북과 같은 번호라야 아이가
+ * 옮겨 적을 때 헷갈리지 않는다.
  *
  * 자세는 자리에 붙는다. 같은 자세를 두 자리가 나눠 쓰기도 하지만(1·3루수는
  * 땅볼 수비, 좌익수·유격수는 달리기) 이웃끼리는 엇갈리게 두어 판이 반복돼
  * 보이지 않게 했다 — 축구 게임판이 자세를 배정한 것과 같은 기준이다.
  */
 export const DEFENSE_POSITIONS = [
-  { id: 'pitcher', label: '투수', poseId: 'pitch' },
-  { id: 'catcher', label: '포수', poseId: 'crouch' },
-  { id: 'first', label: '1루수', poseId: 'field' },
-  { id: 'second', label: '2루수', poseId: 'throw' },
-  { id: 'third', label: '3루수', poseId: 'field' },
-  { id: 'shortstop', label: '유격수', poseId: 'run' },
-  { id: 'left', label: '좌익수', poseId: 'run' },
-  { id: 'center', label: '중견수', poseId: 'catch' },
-  { id: 'right', label: '우익수', poseId: 'throw' },
+  { id: 'pitcher', number: 1, label: '투수', poseId: 'pitch' },
+  { id: 'first', number: 3, label: '1루수', poseId: 'field' },
+  { id: 'second', number: 4, label: '2루수', poseId: 'throw' },
+  { id: 'third', number: 5, label: '3루수', poseId: 'field' },
+  { id: 'shortstop', number: 6, label: '유격수', poseId: 'run' },
+  { id: 'left', number: 7, label: '좌익수', poseId: 'run' },
+  { id: 'center', number: 8, label: '중견수', poseId: 'catch' },
+  { id: 'right', number: 9, label: '우익수', poseId: 'throw' },
 ] as const;
 
-/** 타석에 서는 한 명. 공격 그룹의 유일한 마커다. */
-export const BATTER_POSITION = {
-  id: 'batter',
-  label: '타자',
-  poseId: BATTER_POSE.id,
+/**
+ * 타격 자세 열 — **스탠드 카드 뒷면**이 하나씩 나눠 쓴다(2026-09-08 사용자 요청).
+ *
+ * 카드 뒷면이 서로 다른 타격 자세여야 한다는 요청이다. 뒤집어 세우면 한 줄이
+ * 그대로 타순이 되는데, 같은 자세가 둘이면 누가 몇 번인지 그림으로 갈리지
+ * 않는다. 앞 다섯은 한 스윙을 시간 순으로 자른 것이고(대기 → 준비 → 스윙 →
+ * 임팩트 → 팔로스루) 나머지 다섯은 그 밖의 순간이다.
+ *
+ * **개수는 카드 수와 같다**(`STAND_CARDS`) — 지명타자가 늘면서 아홉에서 열이
+ * 됐다. 지명타자 카드의 앞면이 쓰는 자세(`DH_CARD.poseId`)는 여기 없다. 그쪽은
+ * 뒷면 목록이 아니다.
+ *
+ * 이 자세들은 **판 마커가 되지 않는다** — 타자는 그라운드에 없다. 그래서
+ * `FIELDER_POSES`와 갈라 두었고, 스타일 세트도 아트워크 파일도 만들지 않는다.
+ */
+export const BATTER_POSES = [
+  { id: 'bat-ready', label: '대기' },
+  { id: 'bat-load', label: '준비' },
+  { id: 'bat-swing', label: '스윙' },
+  { id: 'bat-impact', label: '임팩트' },
+  { id: 'bat-follow', label: '팔로스루' },
+  { id: 'bat-bunt', label: '번트' },
+  { id: 'bat-upper', label: '퍼올리기' },
+  { id: 'bat-wait', label: '기다리기' },
+  { id: 'bat-point', label: '겨누기' },
+  { id: 'bat-dash', label: '뛰어나가기' },
+] as const;
+
+/**
+ * 포수 — **스탠드에만 있는 한 명**이다.
+ *
+ * 판에서는 뺐지만(`DEFENSE_POSITIONS`) 스탠드는 한 팀 아홉을 다 낸다(2026-09-08
+ * 사용자 요청). 뒷면이 타자라 아홉 장이 곧 타순 아홉이기도 해서, 포수가 빠지면
+ * 타순이 여덟이 된다.
+ */
+export const CATCHER_CARD = {
+  id: 'catcher',
+  number: 2,
+  label: '포수',
+  poseId: 'crouch',
 } as const;
+
+/**
+ * 지명타자 — **수비를 나가지 않는 열 번째 카드**(2026-09-08 사용자 요청,
+ * "포수 오른쪽에 지명타자도 추가해서 총 10명").
+ *
+ * 앞면 자세가 수비가 아니라 **타격**인 유일한 카드다. 이름표가 붙는 면인데
+ * 지명타자에게는 수비 자세랄 것이 없어, 배트를 어깨에 걸치고 차례를 기다리는
+ * 모습을 앞면에 둔다. 뒤집으면 치는 자세가 나오니 양면이 다 타자다.
+ *
+ * `number` 10은 수비 번호가 아니다 — 수비 번호는 아홉까지이고, 스코어북이
+ * 지명타자를 그 다음 번호로 적는 관례를 따랐다.
+ */
+export const DH_CARD = {
+  id: 'dh',
+  number: 10,
+  label: '지명타자',
+  poseId: 'bat-shoulder',
+} as const;
+
+/**
+ * 스탠드 카드 열 = 한 팀 한 벌.
+ *
+ * 순서는 사용자가 적어 준 그대로다 — 투수부터 야수 여덟, 포수, 그 오른쪽이
+ * 지명타자다. **앞면은 그 자리의 자세, 뒷면은 타격 자세**이고 카드마다 뒷면이
+ * 다르다.
+ *
+ * 타순은 이 중 아홉이다. 지명타자가 **투수 대신** 치므로 투수 카드를 빼고 짠다
+ * (`./rules.ts`) — 지명타자가 있는 이유가 그것이다.
+ */
+export const STAND_CARDS = [...DEFENSE_POSITIONS, CATCHER_CARD, DH_CARD].map(
+  (position, i) => ({
+    ...position,
+    /** 뒷면 자세. 카드 열이 타격 자세 열을 하나씩 나눠 갖는다. */
+    batterPoseId: BATTER_POSES[i].id,
+  }),
+);
+
+/**
+ * 판 마커가 되지 않고 **스탠드에만 쓰이는 자세** — 포수와 타격 아홉.
+ *
+ * 아트워크 생성기가 자세 그림을 만들 목록(`FIELDER_POSES`)과 갈라 둔다. 그림
+ * 엔진은 둘 다 알아야 하지만(`./artwork/player-markers.ts`의 `POSE_BY_ID`),
+ * 마커 파일이 나오는 것은 앞의 것뿐이다.
+ */
+export const STAND_ONLY_POSES = [
+  { id: CATCHER_CARD.poseId, label: CATCHER_CARD.label },
+  { id: DH_CARD.poseId, label: '어깨에 걸치기' },
+  ...BATTER_POSES,
+] as const;
 
 /** 자세가 쓰는 마커 스타일 세트 id. */
 export const poseStyleSetId = (poseId: string): string => `marker-${poseId}`;
@@ -281,35 +373,52 @@ export const markerArtworkId = (poseId: string, variantId: string): string =>
 /**
  * 빈 원 변형이 쓰는 아트워크 id.
  *
- * 원은 자세와 무관해 **자세 세트 전부가 파일 하나를 나눠 쓴다**. 다만 수비와
- * 타자는 갈라 둔다 — 타자 원에는 안쪽 테가 하나 더 있어 흑백으로 뽑아도
- * 공격·수비가 구분된다(축구 골키퍼 원과 같은 수법).
+ * 원은 자세와 무관해 **자세 세트 전부가 파일 하나를 나눠 쓴다**. 타자 원을
+ * 따로 두었다가 타자가 판에서 빠지면서 같이 없앴다(2026-09-08) — 판 위에 서는
+ * 것이 수비뿐이라 흑백에서 공수를 가를 표식이 필요 없어졌다.
  */
 export const FIELDER_CIRCLE_ARTWORK_ID = 'marker-circle';
-export const BATTER_CIRCLE_ARTWORK_ID = 'batter-circle';
 
 /** 부속 시트 치수. */
 export const SHEETS = {
-  /** 스코어보드 — A5 가로. 한 장에 두 경기가 든다. */
-  scoreSheet: { widthMm: 210, heightMm: 148.5 },
   /**
-   * 선수 스탠드 전개도.
+   * 스코어보드 — **A4 세로. 한 장에 다섯 경기가 든다**(2026-09-08 사용자 요청).
    *
-   * 카드 열 장이 들어갈 만큼만 잡았다. 축구 골대 시트처럼 A4를 꽉 채우지
-   * 않는 것은 **스탠드가 커질 수 없기 때문이다** — 판 위 마커 자리에 서는
-   * 물건이라 카드 폭이 마커 폭(20mm)에서 크게 벗어나면 내야에 여섯 명이
-   * 서지 못한다. 시트를 A4로 늘리면 남는 것은 빈 종이뿐이라, 종이를 아끼는
-   * 쪽을 골랐다.
+   * A5 가로에 표 두 벌이었는데, A4에 얹으면 아래 절반이 통째로 남았다. 표는
+   * 폭이 190mm로 고정이라(9이닝 + 합계 둘) 옆으로 늘릴 수 없고, 세로로만
+   * 늘어난다 — 그래서 남는 자리에 표를 세 벌 더 얹었다. 한 벌이 33mm이고
+   * 52mm 간격이라 다섯 벌이 30–271mm를 쓴다.
    */
-  stands: { widthMm: 160, heightMm: 150 },
+  scoreSheet: { widthMm: 210, heightMm: 297 },
+  /**
+   * 선수 스탠드 전개도 — **A4 가로 한 장에 두 팀 스무 명**(2026-09-08 사용자 요청).
+   *
+   * 앞서는 열 장짜리 160×150 시트를 두 벌 뽑게 했는데, A4에 얹으면 종이가
+   * 절반 넘게 남았다. **카드는 커질 수 없다** — 판 위 마커 자리에 서는 물건이라
+   * 카드 폭이 마커 폭(20mm)에서 크게 벗어나면 내야에 여섯 명이 서지 못한다.
+   * 그래서 남는 자리를 키우기가 아니라 **두 번째 팀**으로 채운다: 한 줄에 한 팀씩
+   * 늘어서고 두 줄이 두 팀이라, 뽑는 장수가 두 장에서 한 장으로 준다.
+   *
+   * 한 줄은 **열 명**이다(`STAND_CARDS`) — 판에 서는 수비 여덟에 포수와
+   * 지명타자를 더한 한 팀 전부이고, 뒷면이 모두 타자다.
+   *
+   * 287×165는 A4 가로(297×210)에 5mm를 남기고 앉는 크기다 — 인쇄 여백을
+   * 5mm까지 올려도 타일이 갈라지지 않는다.
+   */
+  stands: { widthMm: 287, heightMm: 165 },
 } as const;
 
 /** 스코어보드 표 한 벌. */
 export const SCORE_TABLE = {
   cutInsetMm: 5,
   xMm: 10,
-  /** 표 두 벌의 머리글 y. 한 장에 두 경기를 적는다. */
-  topYMm: [30, 84] as readonly number[],
+  /**
+   * 표 다섯 벌의 머리글 y. 한 장에 다섯 경기를 적는다.
+   *
+   * 간격 52mm는 표 한 벌(3줄 × 11 = 33mm)에 19mm를 띄운 값이다 — 그 사이에
+   * 다음 표의 "n번째 판" 이름표가 앉는다.
+   */
+  topYMm: [30, 82, 134, 186, 238] as readonly number[],
   rowHeightMm: 11,
   /** 팀 이름 열. 아이가 직접 쓴다. */
   teamColumnMm: 34,
@@ -332,19 +441,33 @@ export const SCORE_TABLE_WIDTH_MM =
  * 180° 돌려 그린다(`./artwork/stands.ts`) — 접어 세웠을 때 뒤쪽에서도 바로
  * 보이게 하려는 것이다.
  *
- * 열 개는 수비 아홉 + 타자 하나다. 그림이 카드마다 다르므로 어느 것이 어느
- * 포지션인지는 그림과 이름표가 말한다.
+ * 격자는 **10열 × 2행**이다. 한 줄이 곧 한 팀(`STAND_CARDS`)이라 두 줄이면 양 팀
+ * 스무 명이 한 장에 다 나온다. 줄마다 이름 띠가 붙어 어느 줄을 어느 색으로
+ * 칠할지가 종이 위에 남는다.
+ *
+ * **두 면이 서로 다른 그림이다**(2026-09-08 사용자 요청) — 아래 면은 수비 자세와
+ * 포지션 이름표, 위 면은 타격 자세다. 접어 세우면 한쪽에서는 야수가, 반대쪽에서는
+ * 타자가 보인다.
+ *
+ * 카드 폭 25mm는 열 장을 가로로 늘어놓고도 A4 가로에 여백이 남는 값이다
+ * (10×25 + 9×3 = 277). 그림 상자(20mm) 양옆에 2.5mm씩 남아 이름표가 잘리지
+ * 않는다.
  */
 export const STAND = {
-  cardWidthMm: 26,
+  cardWidthMm: 25,
   /** 한 면의 높이. 카드 전체 높이는 이것의 두 배다. */
   faceHeightMm: 30,
-  columns: 5,
+  /** 한 줄에 선수 열 명 — 한 팀 전부다(`STAND_CARDS`). */
+  columns: 10,
+  /** 줄 수가 곧 팀 수다. */
   rows: 2,
   /** 카드 사이 간격 — 가위가 지나갈 폭이다. */
   gapMm: 3,
   /** 격자 위에 붙는 제목 띠의 높이. */
   headerHeightMm: 20,
+  /** 줄마다 카드 위에 붙는 팀 이름 띠. */
+  teamBandHeightMm: 6,
+  teamFontMm: 3.4,
   /** 그림을 앉히는 상자. 카드보다 작아 이름표와 접는선을 피한다. */
   figureWidthMm: 20,
   figureHeightMm: 22,
@@ -355,12 +478,23 @@ export const STAND = {
   labelBaselineMm: 4,
 } as const;
 
+/**
+ * 줄 이름.
+ *
+ * 게임 그룹 이름(수비 팀·공격 팀)을 쓰지 않는다 — 그쪽은 공수에 따라 매 이닝
+ * 바뀌는 **역할**이고, 여기 두 줄은 경기 내내 같은 아이가 갖는 **한 벌**이다.
+ */
+export const STAND_TEAMS = ['첫 번째 팀', '두 번째 팀'] as const;
+
+/** 줄 한 칸 — 이름 띠와 그 아래 카드 한 장. */
+export const STAND_ROW_HEIGHT_MM =
+  STAND.teamBandHeightMm + STAND.faceHeightMm * 2;
+
 /** 격자 전체 크기 — 시트 안에서 가운데로 맞추는 데 쓴다. */
 export const STAND_GRID = {
   widthMm:
     STAND.columns * STAND.cardWidthMm + (STAND.columns - 1) * STAND.gapMm,
-  heightMm:
-    STAND.rows * STAND.faceHeightMm * 2 + (STAND.rows - 1) * STAND.gapMm,
+  heightMm: STAND.rows * STAND_ROW_HEIGHT_MM + (STAND.rows - 1) * STAND.gapMm,
 } as const;
 
 /**

@@ -3,31 +3,32 @@
  *
  * 축구 게임판이 쓰던 뼈대 엔진(`assets/shared/figure.ts`)을 그대로 쓴다. 관절
  * 각도만 적으면 도형이 나오므로, 야구가 새로 낸 것은 **각도표와 야구 소품**
- * 뿐이다 — 모자·글러브·배트·긴 바지가 그것이고, 이 넷이 같은 뼈대를 축구
- * 선수가 아닌 야구 선수로 보이게 한다.
+ * 뿐이다 — 모자·글러브·긴 바지가 그것이고, 이 셋이 같은 뼈대를 축구 선수가
+ * 아닌 야구 선수로 보이게 한다. 배트를 든 타자 자세도 있었으나 타자를
+ * 그라운드에서 빼면서 같이 걷어 냈다(2026-09-08 사용자 요청).
  *
  * ## 자세가 곧 포지션이다
  *
  * 마커 하나 = 스타일 세트 × 변형이다. 세트는 **자세**를 고르고(`marker-pitch` ·
- * `marker-crouch` …), 변형은 **모양**을 고른다(`circle` · `illustration` ·
- * `outline`). 자세는 슬롯에 역할로 배정된다(`../index.ts`의 `POSE_BY_POSITION`) —
- * 투수는 투구, 포수는 쪼그린 자세, 외야수는 뜬공을 쫓는다. 사용자가 고르는 것은
- * 모양뿐이라 선택 슬롯 하나가 열 자리를 동시에 바꾼다.
+ * `marker-run` …), 변형은 **모양**을 고른다(`circle` · `illustration` ·
+ * `outline`). 자세는 슬롯에 역할로 배정된다(`../index.ts`의 `DEFENSE_POSITIONS`) —
+ * 투수는 투구, 유격수는 달리기, 중견수는 뜬공을 쫓는다. 사용자가 고르는 것은
+ * 모양뿐이라 선택 슬롯 하나가 여덟 자리를 동시에 바꾼다.
  *
- * ## 흑백에서 공격과 수비를 가르는 법
+ * ## 편은 판이 아니라 스탠드에서 갈린다
  *
- * 팀 색이 명도가 비슷하면 흑백에서 구분되지 않는다. 야구는 **한쪽만 필드에
- * 서므로** 축구처럼 좌우 반전으로 편을 가를 필요가 없다. 대신 손에 든 것이
- * 편을 말한다 — 수비는 글러브, 타자는 배트다. 빈 원 변형은 손이 없으니 타자
- * 원에만 안쪽 테를 둘러 과녁 모양으로 구분한다(축구 골키퍼 원과 같은 수법).
+ * 판에 서는 것은 **수비 여덟뿐**이다(2026-09-08 포수·타자를 그라운드에서 뺐다).
+ * 그래서 축구처럼 좌우 반전으로 편을 가를 일도, 흑백에서 공수를 가를 표식도
+ * 필요 없다 — 손에 든 것은 전부 글러브이고, 빈 원도 한 가지뿐이다. 두 팀이
+ * 색으로 갈리는 자리는 오려 세우는 선수 스탠드다(`./stands.ts`).
  *
  * 등번호는 여기서 그리지 않는다. 슬롯 값이라 렌더러가 `valueFontSizeMm` 크기로
  * 얹는다(`docs/game-authoring.md` — "아트워크가 값을 직접 그려 넣지 않는다").
  * 기본값이 비어 있어 평소에는 아무것도 얹히지 않는다.
  */
 import {
-  BATTER_POSE as BATTER_POSE_META,
   FIELDER_POSES,
+  STAND_ONLY_POSES,
   markerArtworkId,
   PLAYER_MARKER,
   poseStyleSetId,
@@ -121,13 +122,6 @@ const renderCircleVariant = (title: string, ringRadiusMm?: number): string => {
 export const renderFielderMarkerCircle = (): string =>
   renderCircleVariant('야구 게임판 · 수비 마커 · 빈 원');
 
-/** 타자는 안쪽 테로 구분한다. 아이가 칠할 면은 두 테 사이에 남는다. */
-export const renderBatterMarkerCircle = (): string =>
-  renderCircleVariant(
-    '야구 게임판 · 타자 마커 · 빈 원',
-    CIRCLE_RADIUS_MM * 0.6,
-  );
-
 /* ------------------------------------------------------------------ *
  * 선수 그림 — 뼈대에서 짓는다
  * ------------------------------------------------------------------ */
@@ -182,6 +176,25 @@ const BODY = {
   gloveMm: 2.9,
   /** 글러브를 손끝에서 손목 쪽으로 물리는 길이. */
   gloveGripMm: 0.5,
+  /**
+   * 포수 보호 장비(2026-09-08 사용자 요청). 정면으로 앉은 포수만 쓴다.
+   *
+   * `maskRadiusMm`는 머리(2.55)보다 커서 머리를 덮는 헬멧이 되고, 그 위에 얹는
+   * 그물(`cage*`)이 얼굴 자리를 가린다 — 얼굴을 그리지 않는 이 그림에서 포수를
+   * 포수로 만드는 것은 **그물과 보호대의 실루엣**뿐이다.
+   */
+  maskRadiusMm: 3.05,
+  cageHalfWidthMm: 2.05,
+  cageTopMm: -0.65,
+  cageBottomMm: 2.45,
+  cageBarMm: 0.42,
+  /** 가슴 보호대 — 어깨에서 배까지 덮는다. 어깨선 밖으로 조금 나간다. */
+  chestExtraMm: 0.6,
+  chestDropMm: 1.0,
+  chestSeamMm: 0.45,
+  /** 정강이 보호대 — 무릎 덮개와 정강이 통. */
+  shinGuardWidthMm: 2.9,
+  kneeCapMm: 1.3,
   /** 배트 — 손잡이에서 배럴로 굵어진다. */
   batLengthMm: 10.5,
   batKnobMm: 1.1,
@@ -189,7 +202,7 @@ const BODY = {
   batBarrelMm: 1.75,
 } as const;
 
-/** 손에 든 것. 흑백에서 공격과 수비를 가르는 표식이다. */
+/** 손에 든 것. 글러브면 야수, 배트면 타자다. */
 type Held = 'glove' | 'bat' | 'none';
 
 /**
@@ -210,11 +223,19 @@ interface Pose {
   readonly frontHand: Held;
   readonly backHand: Held;
   /**
-   * 배트가 뻗는 방향. 팔 각도에서 유도하지 않고 따로 적는다 — 유도한 값은
-   * 어깨 위로 세운 배트가 머리를 가로질러 얼굴을 지웠다. 뒤 어깨 너머로
-   * 넘겨야 타격 자세로 읽힌다.
+   * 배트가 뻗는 방향. 팔 각도에서 유도하지 않고 **자세가 직접 적는다** — 유도한
+   * 값은 어깨 위로 세운 배트가 머리를 가로질러 얼굴을 지웠다. 타격 자세 아홉이
+   * 서로 달라 보이는 것도 대부분 이 값의 차이다.
    */
   readonly batDeg?: number;
+  /**
+   * 보호 장비. `'catcher'`면 **정면으로 앉은 포수**로 그린다 — 모자 대신 마스크,
+   * 셔츠 위에 가슴 보호대, 정강이에 보호대가 붙고 두 발이 바깥을 본다.
+   *
+   * 나머지 자세는 옆을 보고 서지만(위 주석) 포수만 정면이다. 다리·팔 각도를
+   * 좌우 대칭으로(θ와 180-θ) 적으면 같은 관절 계산이 그대로 정면 그림이 된다.
+   */
+  readonly gear?: 'catcher';
 }
 
 type PoseAngles = Omit<Pose, 'id' | 'label'>;
@@ -242,15 +263,29 @@ const POSE_ANGLES: Readonly<Record<string, PoseAngles>> = {
     frontHand: 'glove',
     backHand: 'none',
   },
-  /** 포수 — 쪼그려 앉아 미트를 앞으로 내민다. 허벅지가 눕고 정강이가 선다. */
+  /**
+   * 포수 — **정면으로 바르게 앉는다**(2026-09-08 사용자 요청).
+   *
+   * 다른 자세는 모두 오른쪽을 보고 서지만 포수만 정면이다. 옆에서 본 쪼그린
+   * 자세로는 "웅크린 야수"와 구분되지 않았는데, 정면으로 앉히고 마스크와 보호대를
+   * 씌우니 한눈에 포수가 된다 — 아이가 카드를 집어 들 때 그림만 보고 고른다.
+   *
+   * 각도는 **좌우 대칭**이다(θ와 180-θ). 허벅지가 양옆으로 벌어지고 정강이가
+   * 곧게 내려가 앉은 모양이 되며, 상체는 세운다("바른자세"라 `leanDeg`가 0이다).
+   * 미트 낀 앞팔만 올려 공 받을 자리를 만들고, 반대 팔은 무릎 쪽으로 내린다.
+   *
+   * 판 위 마커에는 쓰지 않는다(포수는 그라운드에 없다). **스탠드 카드에만**
+   * 남은 자세다 — 한 팀을 세는 데 포수가 빠질 수 없어서다.
+   */
   crouch: {
-    leanDeg: 14,
-    backArm: { upperDeg: 118, lowerDeg: 104 },
-    backLeg: { upperDeg: 168, lowerDeg: 84 },
-    frontArm: { upperDeg: 24, lowerDeg: -6 },
-    frontLeg: { upperDeg: 146, lowerDeg: 74 },
+    leanDeg: 0,
+    backArm: { upperDeg: 152, lowerDeg: 146 },
+    backLeg: { upperDeg: 152, lowerDeg: 94 },
+    frontArm: { upperDeg: 26, lowerDeg: -26 },
+    frontLeg: { upperDeg: 28, lowerDeg: 86 },
     frontHand: 'glove',
     backHand: 'none',
+    gear: 'catcher',
   },
   /** 땅볼 수비 — 무릎을 굽혀 몸을 낮추고 글러브를 땅에 붙인다. */
   field: {
@@ -292,8 +327,20 @@ const POSE_ANGLES: Readonly<Record<string, PoseAngles>> = {
     frontHand: 'glove',
     backHand: 'none',
   },
-  /** 타격 — 두 손을 뒤 어깨 위로 모아 배트를 세운다. 발은 넓게 벌린다. */
-  bat: {
+
+  /* ---- 타격 아홉 (2026-09-08) — 스탠드 카드 뒷면이 쓴다 -------------- *
+   *
+   * 스탠드 아홉 장의 뒷면이 **서로 다른 타격 자세**여야 한다는 요청에서 왔다.
+   * 한 타순이 종이 위에 늘어서는 셈이라, 같은 자세가 둘 있으면 누가 몇 번인지
+   * 그림으로 구분되지 않는다. 아홉을 가르는 것은 대부분 `batDeg`와 상체
+   * 기울기다 — 배트가 어디를 가리키느냐가 한 동작의 어느 순간인지를 말한다.
+   *
+   * 한 스윙을 시간 순으로 늘어놓았다: 대기 → 준비 → 스윙 → 임팩트 → 팔로스루.
+   * 나머지 넷(번트·퍼올리기·기다리기·뛰어나가기)은 그 밖의 순간이다.
+   */
+
+  /** 대기 — 배트를 뒤 어깨 위로 세우고 기다린다. 발은 넓게 벌린다. */
+  'bat-ready': {
     leanDeg: 6,
     backArm: { upperDeg: 202, lowerDeg: 246 },
     backLeg: { upperDeg: 104, lowerDeg: 98 },
@@ -303,6 +350,127 @@ const POSE_ANGLES: Readonly<Record<string, PoseAngles>> = {
     backHand: 'none',
     // 위·뒤 — 뒤 어깨 너머로 세운다.
     batDeg: 244,
+  },
+  /** 준비 — 손을 뒤로 더 당기고 배트를 곧추세운다. 몸이 뒤로 조금 눕는다. */
+  'bat-load': {
+    leanDeg: -7,
+    backArm: { upperDeg: 214, lowerDeg: 258 },
+    backLeg: { upperDeg: 110, lowerDeg: 98 },
+    frontArm: { upperDeg: 200, lowerDeg: 252 },
+    frontLeg: { upperDeg: 68, lowerDeg: 86 },
+    frontHand: 'bat',
+    backHand: 'none',
+    batDeg: 268,
+  },
+  /** 스윙 — 배트를 끌고 나오기 시작한다. 배트가 아직 뒤에 누워 있다. */
+  'bat-swing': {
+    leanDeg: 13,
+    backArm: { upperDeg: 172, lowerDeg: 212 },
+    backLeg: { upperDeg: 112, lowerDeg: 102 },
+    frontArm: { upperDeg: 152, lowerDeg: 196 },
+    frontLeg: { upperDeg: 58, lowerDeg: 80 },
+    frontHand: 'bat',
+    backHand: 'none',
+    batDeg: 214,
+  },
+  /** 임팩트 — 팔이 앞으로 뻗고 배트가 공을 때린다. 앞다리가 버틴다. */
+  'bat-impact': {
+    leanDeg: 10,
+    backArm: { upperDeg: 34, lowerDeg: 4 },
+    backLeg: { upperDeg: 116, lowerDeg: 106 },
+    frontArm: { upperDeg: 18, lowerDeg: -10 },
+    frontLeg: { upperDeg: 50, lowerDeg: 84 },
+    frontHand: 'bat',
+    backHand: 'none',
+    batDeg: -12,
+  },
+  /** 팔로스루 — 다 휘둘러 배트가 앞 어깨 위로 넘어간다. */
+  'bat-follow': {
+    leanDeg: 2,
+    backArm: { upperDeg: -26, lowerDeg: -64 },
+    backLeg: { upperDeg: 108, lowerDeg: 112 },
+    frontArm: { upperDeg: -40, lowerDeg: -78 },
+    frontLeg: { upperDeg: 62, lowerDeg: 86 },
+    frontHand: 'bat',
+    backHand: 'none',
+    batDeg: -62,
+  },
+  /** 번트 — 무릎을 굽히고 배트를 가로로 눕혀 갖다 댄다. */
+  'bat-bunt': {
+    leanDeg: 22,
+    backArm: { upperDeg: 72, lowerDeg: 28 },
+    backLeg: { upperDeg: 120, lowerDeg: 98 },
+    frontArm: { upperDeg: 42, lowerDeg: 4 },
+    frontLeg: { upperDeg: 54, lowerDeg: 96 },
+    frontHand: 'bat',
+    backHand: 'none',
+    batDeg: 2,
+  },
+  /** 퍼올리기 — 낮은 데서 걷어 올린다. 배트가 뒤로 처져 있다. */
+  'bat-upper': {
+    leanDeg: 18,
+    backArm: { upperDeg: 148, lowerDeg: 168 },
+    backLeg: { upperDeg: 116, lowerDeg: 104 },
+    frontArm: { upperDeg: 132, lowerDeg: 158 },
+    frontLeg: { upperDeg: 56, lowerDeg: 92 },
+    frontHand: 'bat',
+    backHand: 'none',
+    batDeg: 166,
+  },
+  /**
+   * 기다리기 — 배트 끝을 앞 땅에 짚고 선다. 타석 밖에서 차례를 기다리는 모습이다.
+   *
+   * 배트를 몸 옆으로 곧게 내리면(94°) 다리를 관통한 것처럼 보였다 — 배트는
+   * 다리보다 나중에 그려 흰 채움이 겹치는 구간을 덮지 못한다. 그래서 앞쪽으로
+   * 비스듬히(68°) 내보내 발 앞을 짚게 했다.
+   */
+  'bat-wait': {
+    leanDeg: 2,
+    backArm: { upperDeg: 92, lowerDeg: 96 },
+    backLeg: { upperDeg: 96, lowerDeg: 92 },
+    frontArm: { upperDeg: 62, lowerDeg: 74 },
+    frontLeg: { upperDeg: 82, lowerDeg: 90 },
+    frontHand: 'bat',
+    backHand: 'none',
+    batDeg: 68,
+  },
+  /** 겨누기 — 배트 끝으로 투수 쪽을 가리키고 선다. 타석에 들어서는 순간이다. */
+  'bat-point': {
+    leanDeg: -2,
+    backArm: { upperDeg: 96, lowerDeg: 82 },
+    backLeg: { upperDeg: 98, lowerDeg: 94 },
+    frontArm: { upperDeg: -14, lowerDeg: -34 },
+    frontLeg: { upperDeg: 80, lowerDeg: 90 },
+    frontHand: 'bat',
+    backHand: 'none',
+    batDeg: -40,
+  },
+  /**
+   * 어깨에 걸치기 — 배트를 뒤 어깨에 얹고 선다.
+   *
+   * 지명타자 카드의 **앞면**이 쓴다. 앞면은 이름표가 붙는 면인데 지명타자는
+   * 수비를 나가지 않으므로, 수비 자세 대신 "칠 차례를 기다리는 타자"를 그린다.
+   */
+  'bat-shoulder': {
+    leanDeg: 3,
+    backArm: { upperDeg: 156, lowerDeg: 206 },
+    backLeg: { upperDeg: 100, lowerDeg: 94 },
+    frontArm: { upperDeg: 172, lowerDeg: 220 },
+    frontLeg: { upperDeg: 78, lowerDeg: 90 },
+    frontHand: 'bat',
+    backHand: 'none',
+    batDeg: 214,
+  },
+  /** 뛰어나가기 — 치고 나서 배트를 든 채 1루로 달린다. */
+  'bat-dash': {
+    leanDeg: 15,
+    backArm: { upperDeg: 128, lowerDeg: 174 },
+    backLeg: { upperDeg: 122, lowerDeg: 154 },
+    frontArm: { upperDeg: 50, lowerDeg: 6 },
+    frontLeg: { upperDeg: 48, lowerDeg: 92 },
+    frontHand: 'bat',
+    backHand: 'none',
+    batDeg: 236,
   },
 };
 
@@ -318,8 +486,14 @@ const poseOf = (meta: {
 /** 수비 자세. 슬롯 배정은 `../index.ts`가 한다. */
 export const FIELDER_POSE_LIST: readonly Pose[] = FIELDER_POSES.map(poseOf);
 
-/** 타자 자세. */
-export const BATTER_POSE: Pose = poseOf(BATTER_POSE_META);
+/**
+ * 스탠드에만 쓰는 자세 — 포수와 타격 아홉.
+ *
+ * 마커 아트워크로는 나오지 않는다(`./index.ts`의 `ARTWORK`가 `FIELDER_POSES`만
+ * 돈다). 그림이 필요한 곳은 스탠드 카드뿐이고, 거기서는 `fittedShapes`가 자세
+ * id로 바로 찾아 쓴다.
+ */
+const STAND_ONLY_POSE_LIST: readonly Pose[] = STAND_ONLY_POSES.map(poseOf);
 
 /**
  * 야구 모자 — 머리 위 돔에 챙을 붙인 한 도형.
@@ -358,8 +532,8 @@ const capShape = (head: Pt, leanDeg: number): Shape => {
 /**
  * 배트 — 손잡이에서 배럴로 굵어지는 막대.
  *
- * 잡은 손에서 **위·뒤로** 뻗는다. 방향을 앞팔의 아래 마디 각도에서 90° 틀어
- * 얻으므로, 타격 자세의 팔 각도를 고치면 배트가 따라 돈다.
+ * 잡은 손에서 자세가 적은 방향(`batDeg`)으로 뻗는다. 손잡이 쪽에 손잡이 마디
+ * (`batKnobMm`)를 조금 남겨, 손이 배트 끝을 쥔 것으로 보이게 한다.
  */
 const batShape = (grip: Pt, deg: number): Shape => {
   const knob = step(grip, deg + 180, BODY.batKnobMm);
@@ -378,6 +552,108 @@ const batShape = (grip: Pt, deg: number): Shape => {
     roundMm: tipHalf * 0.7,
   };
 };
+
+/** 도형을 세로축 `x0`에 대해 좌우로 뒤집는다. 정면 그림의 왼쪽 몫을 만든다. */
+const mirrorX = (shape: Shape, x0: number): Shape =>
+  shape.kind === 'poly'
+    ? { ...shape, points: shape.points.map(([x, y]) => [2 * x0 - x, y] as Pt) }
+    : { ...shape, center: [2 * x0 - shape.center[0], shape.center[1]] as Pt };
+
+/** 가로로 눕는 얇은 띠 — 마스크 그물살과 보호대 이음매가 쓴다. */
+const barShape = (
+  centerXMm: number,
+  yMm: number,
+  halfWidthMm: number,
+  thickMm: number,
+): Shape => ({
+  kind: 'poly',
+  points: [
+    [centerXMm - halfWidthMm, yMm - thickMm / 2],
+    [centerXMm + halfWidthMm, yMm - thickMm / 2],
+    [centerXMm + halfWidthMm, yMm + thickMm / 2],
+    [centerXMm - halfWidthMm, yMm + thickMm / 2],
+  ],
+  roundMm: thickMm / 2,
+});
+
+/**
+ * 포수 마스크 — 머리를 덮는 헬멧 위에 그물을 얹는다.
+ *
+ * 그리는 차례가 곧 겹치는 차례다(윤곽선 변형에서 나중 도형의 흰 채움이 앞
+ * 도형을 덮는다). 헬멧이 머리를 덮고, 그물 테가 얼굴 아래쪽을 덮고, 살 둘이
+ * 그 위에 남는다 — **살이 보이는 것이 마스크로 읽히는 유일한 단서**라 굵기를
+ * 선 굵기(0.45)보다 얇게 두지 않았다.
+ */
+const catcherMaskShapes = (head: Pt): Shape[] => {
+  const [cx, cy] = head;
+  const half = BODY.cageHalfWidthMm;
+  const top = cy + BODY.cageTopMm;
+  const bottom = cy + BODY.cageBottomMm;
+  return [
+    { kind: 'disc', center: [cx, cy - 0.15], radiusMm: BODY.maskRadiusMm },
+    {
+      kind: 'poly',
+      points: [
+        [cx - half, top],
+        [cx + half, top],
+        [cx + half, bottom],
+        [cx - half, bottom],
+      ],
+      roundMm: 0.85,
+    },
+    barShape(cx, top + (bottom - top) * 0.36, half - 0.22, BODY.cageBarMm),
+    barShape(cx, top + (bottom - top) * 0.72, half - 0.34, BODY.cageBarMm),
+  ];
+};
+
+/**
+ * 가슴 보호대 — 어깨에서 배까지 덮는 한 장에 이음매 둘.
+ *
+ * 셔츠보다 나중에 그려 상체를 통째로 덮는다. 어깨선 밖으로 조금 나가야 "입은
+ * 것"으로 보인다 — 셔츠 안에 들어가면 그냥 무늬가 된다.
+ */
+const chestProtectorShapes = (
+  cxMm: number,
+  shoulderYMm: number,
+  hipYMm: number,
+): Shape[] => {
+  const topHalf = BODY.shoulderHalfMm + BODY.chestExtraMm;
+  const bottomHalf = BODY.hemHalfMm + BODY.chestExtraMm;
+  const bottomYMm = hipYMm + BODY.chestDropMm;
+  const at = (t: number) => topHalf + (bottomHalf - topHalf) * t;
+  return [
+    {
+      kind: 'poly',
+      points: [
+        [cxMm - topHalf, shoulderYMm - 0.3],
+        [cxMm + topHalf, shoulderYMm - 0.3],
+        [cxMm + bottomHalf, bottomYMm],
+        [cxMm - bottomHalf, bottomYMm],
+      ],
+      roundMm: 0.9,
+    },
+    ...[0.34, 0.68].map((t) =>
+      barShape(
+        cxMm,
+        shoulderYMm - 0.3 + (bottomYMm - shoulderYMm + 0.3) * t,
+        at(t) - 0.5,
+        BODY.chestSeamMm,
+      ),
+    ),
+  ];
+};
+
+/** 정강이 보호대 — 무릎 덮개 + 정강이 통. 양말 위에 덮어 그린다. */
+const shinGuardShapes = (knee: Pt, ankle: Pt, shinDeg: number): Shape[] => [
+  tubeShape(
+    step(knee, shinDeg, -0.2),
+    shinDeg,
+    Math.hypot(ankle[0] - knee[0], ankle[1] - knee[1]) + 0.5,
+    BODY.shinGuardWidthMm,
+    0.5,
+  ),
+  { kind: 'disc', center: knee, radiusMm: BODY.kneeCapMm },
+];
 
 /**
  * 자세 하나의 도형들 — **뒤에서 앞으로** 차례대로다.
@@ -510,7 +786,15 @@ export const figureShapes = (pose: Pose): Shape[] => {
     roundMm: 0,
   };
 
-  // 배트는 앞팔 아래 마디에 직각으로 세운다 — 손목에서 위로 뻗는 모양이다.
+  // 포수는 정면으로 앉는다 — 뒤쪽 신발만 좌우를 뒤집어야 두 발이 바깥을 본다.
+  // `shoeShape`은 정강이에 직각으로 발끝을 내므로 각도만으로는 뒤집히지 않는다.
+  const isCatcher = pose.gear === 'catcher';
+  const shoe = (tip: Pt, limb: Limb, mirror: boolean): Shape => {
+    const s = shoeShape(tip, limb.lowerDeg, BODY);
+    return mirror ? mirrorX(s, tip[0]) : s;
+  };
+
+  // 배트는 앞손에서 뻗는다. 자세가 적은 방향이 없으면 앞팔을 따라간다.
   const bat: Shape[] =
     pose.frontHand === 'bat'
       ? [batShape(frontArm.tip, pose.batDeg ?? pose.frontArm.lowerDeg)]
@@ -522,13 +806,20 @@ export const figureShapes = (pose: Pose): Shape[] => {
     hand(backArm.tip, pose.backArm, pose.backHand),
     backLeg.shape,
     sock(backLeg.tip, pose.backLeg),
-    shoeShape(backLeg.tip, pose.backLeg.lowerDeg, BODY),
+    shoe(backLeg.tip, pose.backLeg, isCatcher),
+    ...(isCatcher
+      ? shinGuardShapes(backLeg.joint, backLeg.tip, pose.backLeg.lowerDeg)
+      : []),
     frontLeg.shape,
     sock(frontLeg.tip, pose.frontLeg),
-    shoeShape(frontLeg.tip, pose.frontLeg.lowerDeg, BODY),
+    shoe(frontLeg.tip, pose.frontLeg, false),
+    ...(isCatcher
+      ? shinGuardShapes(frontLeg.joint, frontLeg.tip, pose.frontLeg.lowerDeg)
+      : []),
     pants,
     neck,
     shirt,
+    ...(isCatcher ? chestProtectorShapes(cxMm, BODY.shoulderYMm, hip[1]) : []),
     frontArm.shape,
     sleeve(frontShoulder, pose.frontArm),
     hand(
@@ -536,18 +827,18 @@ export const figureShapes = (pose: Pose): Shape[] => {
       pose.frontArm,
       pose.frontHand === 'bat' ? 'none' : pose.frontHand,
     ),
-    // 배트는 머리보다 먼저 그린다 — 뒤 어깨 너머로 넘어가므로 머리 뒤를
+    // 배트는 머리보다 먼저 그린다 — 어깨 너머로 넘어가는 자세에서 머리 뒤를
     // 지나야 하고, 윤곽선 변형에서는 나중에 그린 머리의 흰 채움이 그 구간을
     // 덮는다.
     ...bat,
     { kind: 'disc', center: head, radiusMm: BODY.headRadiusMm },
-    capShape(head, pose.leanDeg),
+    ...(isCatcher ? catcherMaskShapes(head) : [capShape(head, pose.leanDeg)]),
   ];
 };
 
-/** 자세 id → 자세. 타자도 여기 들어간다. */
+/** 자세 id → 자세. 판 마커 자세와 스탠드 전용 자세가 다 들어간다. */
 export const POSE_BY_ID: ReadonlyMap<string, Pose> = new Map(
-  [...FIELDER_POSE_LIST, BATTER_POSE].map((p) => [p.id, p]),
+  [...FIELDER_POSE_LIST, ...STAND_ONLY_POSE_LIST].map((p) => [p.id, p]),
 );
 
 const poseByIdOrThrow = (poseId: string): Pose => {
@@ -573,12 +864,11 @@ export const fittedShapes = (
 export const renderFigure = (poseId: string, mode: FigureMode): string => {
   const pose = poseByIdOrThrow(poseId);
   const shape = mode === 'illustration' ? '실루엣' : '윤곽선';
-  const who = pose.frontHand === 'bat' ? '타자' : '수비';
 
   return svgDocument({
     widthMm: ILLUSTRATION.widthMm,
     heightMm: ILLUSTRATION.heightMm,
-    title: `야구 게임판 · ${who} 마커 · ${pose.label} · ${shape}`,
+    title: `야구 게임판 · 수비 마커 · ${pose.label} · ${shape}`,
     children: [
       group({ id: ART_LAYER_ID }, [
         group(
