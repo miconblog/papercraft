@@ -431,7 +431,7 @@ export default defineGame({
       // 접는선은 전부 골접기다 — 인쇄면이 쟁반 안쪽을 향해야 그물이 안에서
       // 보이고, 겹·모서리 탭·뚜껑 귀가 모두 안으로 접힌다(2026-09-08).
       // 풀칠면은 없다(2026-09-06) — 겹으로 탭과 귀를 물어 잠근다.
-      marks: ['cut', 'fold-valley'],
+      marks: ['cut', 'fold-valley', 'fold-mountain'],
       artwork: artworkPath('goals'),
     },
   ],

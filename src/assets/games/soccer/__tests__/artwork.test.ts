@@ -154,24 +154,68 @@ describe('골대 전개도', () => {
       expect(face(id).heightMm).toBe(lid.heightMm - GOAL.lidEarInsetMm);
       // 귀가 옆벽보다 깊게 내려오면 바닥에 닿아 뚜껑이 뜬다.
       expect(face(id).widthMm).toBeLessThan(GOAL.wallHeightMm);
+      // 귀는 겹치고 난 뒤의 뚜껑에만 붙는다. 겉장까지 올라가면 포갤 때 같이
+      // 말려 들어가 옆벽에 못 닿는다.
+      expect(face(id).yMm).toBe(lid.yMm);
     }
   });
 
   /**
-   * 귀는 **바깥에서 안으로** 옮겨 왔다(2026-09-08 사용자 요청 — "안으로 넣어서
-   * 겹과 맞물려 접으면 깔끔할 것"). 겉면에 나오는 것이 없어지고 접는 방향이
-   * 골접기 하나로 통일된 대신, 귀와 모서리 탭이 **같은 옆벽 안쪽 면**을 나눠
-   * 쓰게 됐다. 둘이 겹치면 그 자리만 종이가 넉 겹이 되어 겹이 닫히지 않는다.
+   * 뚜껑을 반으로 접어 **두 겹**으로 쓴다(2026-09-08 사용자 지적 — "뚜껑이 한 겹이라
+   * 약해"). 절반만 덮게 줄일 때 남는 절반을 잘라 버렸더니 종이 한 겹짜리 천장이
+   * 되어 힘을 못 받았다. 지금은 판을 완성 깊이의 두 배로 두고 겉장을 접어 넣는다.
+   *
+   * **겹치는 접기만 산접기다.** 골접기로 포개면 인쇄면 둘이 서로 마주 본 채 갇혀
+   * 천장에 그물도 `daddyscraft.com` 표식도 남지 않는다. 이 방향은 고를 수 없다.
    */
-  it('귀와 모서리 탭이 옆벽 안쪽에서 자리를 다투지 않는다', () => {
-    // 탭은 뒷벽에서 앞으로 `cornerTabMm`만큼 뻗고, 귀는 그만큼 물러나 앉는다.
-    expect(GOAL.lidEarInsetMm).toBeGreaterThanOrEqual(GOAL.cornerTabMm);
+  it('뚜껑이 두 겹이다 — 겉장이 뚜껑과 같은 크기로 이어져 있다', () => {
+    const lid = face('lid');
+    const liner = face('lid-liner');
+    // 포갰을 때 어긋나지 않으려면 크기가 같아야 한다.
+    expect(liner.widthMm).toBe(lid.widthMm);
+    expect(liner.heightMm).toBe(lid.heightMm);
+    // 겉장은 뚜껑 **바깥쪽**에 붙는다 — 사이의 변이 겹치는 선이자 크로스바다.
+    expect(liner.yMm + liner.heightMm).toBe(lid.yMm);
+    // 전개도에서 뚜껑 자리는 그래서 완성 깊이의 두 배를 먹는다.
+    expect(lid.yMm + lid.heightMm - liner.yMm).toBe(GOAL.lidDepthMm * 2);
+    // 겉장에는 귀가 붙지 않는다. 폭이 골문 그대로여야 접었을 때 벽에 걸리지 않는다.
+    expect(liner.xMm).toBe(lid.xMm);
+  });
+
+  /**
+   * **이 잠금은 한 번 뒤집혔다.** 처음에는 귀와 탭이 서로를 피하게 짰다 — 둘 다
+   * 옆벽 안쪽 면에 붙으니 겹치면 그 자리만 종이가 넉 겹이 되어 겹이 안 닫힌다는
+   * 계산이었고, 그래서 `lidEarInsetMm = cornerTabMm`으로 딱 맞닿게 뒀다.
+   *
+   * 접어 보니 그게 헐거웠다(2026-09-08 사용자 — "겹이 탭을 물고, 귀가 탭을 물어서
+   * 서로 맞물려야 할 것 같다"). 나란히 서기만 하면 서로를 잡아 주는 것이 없어,
+   * 겹 하나가 둘을 다 감당해야 했다.
+   *
+   * 지금은 셋이 **사슬**이다 — 1번 탭을 2번 귀가 물고, 그 둘을 3번 겹이 문다.
+   * 아래 세 값이 그 사슬의 고리다. 하나라도 되돌리면 잠금이 도로 풀린다.
+   */
+  it('탭·귀·겹이 사슬처럼 맞물린다', () => {
+    // ① 귀가 탭을 **타고 넘어간다**. 물러남이 탭 길이보다 짧아야 겹치는 폭이 생긴다.
+    expect(GOAL.lidEarInsetMm).toBeLessThan(GOAL.cornerTabMm);
+    const biteMm = GOAL.cornerTabMm - GOAL.lidEarInsetMm;
+    expect(biteMm).toBeGreaterThan(0);
+
+    // ② 그런데 0까지는 못 줄인다. 물러남이 곧 귀와 탭 사이의 홈이라, 가위가
+    //    들어갈 깊이는 남겨야 한다 — 여기가 이 사슬의 하한이다.
+    expect(GOAL.lidEarInsetMm).toBeGreaterThanOrEqual(GOAL.cornerNotchMm);
     // 물러나고도 귀가 남아야 뚜껑이 잡힌다.
     expect(GOAL.lidDepthMm).toBeGreaterThan(GOAL.lidEarInsetMm);
-    // 귀는 겹(8mm) 밑으로 들어가야 물린다 — 길이가 같으면 조금만 어긋나도 빠진다.
-    expect(GOAL.lidFlapMm).toBeGreaterThan(face('hem-left').widthMm);
-    // 홈은 가위가 들어갈 깊이 이상이어야 한다. 귀 쪽은 물러남이 그 역할을 겸한다.
-    expect(GOAL.lidEarInsetMm).toBeGreaterThanOrEqual(GOAL.cornerNotchMm);
+
+    // ③ 귀는 탭을 **가로질러 내려가야** 하므로 탭 길이의 두 배다. 탭만큼만
+    //    내려오면 모서리에서 끝나 버려 벽에 닿을 것이 없다(2026-09-08 사용자).
+    expect(GOAL.lidFlapMm).toBe(GOAL.cornerTabMm * 2);
+    // 그래도 바닥에는 닿으면 안 된다 — 닿으면 뚜껑이 들린다.
+    expect(GOAL.lidFlapMm).toBeLessThan(GOAL.wallHeightMm);
+
+    // ④ 마지막으로 겹이 둘의 윗머리를 함께 덮는다. 겹보다 짧으면 물리지 않는다.
+    const hemMm = face('hem-left').widthMm;
+    expect(GOAL.lidFlapMm).toBeGreaterThan(hemMm);
+    expect(GOAL.cornerTabMm).toBeGreaterThan(hemMm);
   });
 
   /**
@@ -269,6 +313,8 @@ describe('골대 전개도', () => {
       'lid|lid-flap-left',
       'lid|lid-flap-right',
       'lid|wall-back',
+      // 뚜껑을 두 겹으로 포개는 자리. 이 도안에서 유일한 산접기다.
+      'lid|lid-liner',
       'corner-tab-left|wall-back',
       'corner-tab-right|wall-back',
       'hem-left|wall-left',
@@ -387,8 +433,11 @@ describe('골대 전개도', () => {
     expect(
       doc.getElementById(MARK_STYLES['fold-valley'].layerId)!.children.length,
     ).toBe(26);
-    // 산접기는 없다(2026-09-08) — 귀가 안으로 들어가면서 방향이 하나가 됐다.
-    expect(doc.getElementById(MARK_STYLES['fold-mountain'].layerId)).toBeNull();
+    // 산접기는 벌마다 **딱 하나** — 뚜껑을 두 겹으로 포개는 줄이다(2026-09-08).
+    // 골접기로 포개면 인쇄면 둘이 안에 갇혀 천장에 그물도 표식도 남지 않는다.
+    expect(
+      doc.getElementById(MARK_STYLES['fold-mountain'].layerId)!.children.length,
+    ).toBe(2);
   });
 
   /**
