@@ -8,7 +8,11 @@
  *
  * **표 안은 전부 비어 있다.** 축구 게임판의 점수 기록칸과 같은 규약이다
  * (2026-09-08) — 팀 이름을 아이가 직접 쓰는 자리라 색이나 이름이 미리 정해져
- * 있으면 오히려 걸린다. 한 장에 표가 두 벌 들어가 경기 두 판을 적는다.
+ * 있으면 오히려 걸린다.
+ *
+ * 한 장에 표가 **다섯 벌** 들어가 다섯 판을 적는다(2026-09-08 사용자 요청).
+ * 처음에는 A5 가로에 두 벌이었는데 A4에 얹으면 아래 절반이 남았다 — 표는 폭이
+ * 고정(190mm)이라 옆으로 못 늘리고 세로로만 늘어나므로, 남는 자리를 표로 채웠다.
  */
 import { SCORE_TABLE, SCORE_TABLE_WIDTH_MM, SHEETS } from '../dimensions.ts';
 import {
@@ -134,7 +138,7 @@ export const renderScoreSheet = (): string =>
         }),
         ...topYMm.flatMap((yMm, i) => scoreTable(yMm, i)),
         text(
-          '이닝마다 그 회에 낸 점수를 적고, 경기가 끝나면 점수와 안타를 합쳐 적는다. 표 두 벌이니 두 판을 적을 수 있다.',
+          `이닝마다 그 회에 낸 점수를 적고, 경기가 끝나면 점수와 안타를 합쳐 적는다. 표 ${topYMm.length}벌이니 ${topYMm.length}판을 적을 수 있다.`,
           xMm,
           topYMm[topYMm.length - 1] + rowHeightMm * 3 + 6,
           2.8,

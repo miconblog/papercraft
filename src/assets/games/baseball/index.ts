@@ -11,10 +11,11 @@
  * 규격이 진짜 범용인지 보려고 **구조가 다른 게임**을 골랐다(`IDE-011`). 실제로
  * 세 군데가 다르다:
  *
- * 1. **그룹이 대칭이 아니다.** 축구는 홈·원정이 똑같이 열한 명씩 필드에 서지만,
- *    야구는 한쪽만 아홉 명이 서고 반대쪽은 타석에 한 명이다. 그래서 프리셋도
- *    수비 그룹에만 있고, 마커 좌우 반전(`mirrorMarkers`)은 쓰지 않는다 — 편이
- *    위치로 갈리므로 방향으로 가를 이유가 없다.
+ * 1. **그룹이 하나다.** 축구는 홈·원정이 똑같이 열한 명씩 필드에 서지만, 야구는
+ *    판에 수비만 선다 — 그마저 포수를 뺀 여덟이고, 공격 쪽 마커는 없다(2026-09-08
+ *    사용자 요청). 그래서 프리셋도 수비 그룹에만 있고, 마커 좌우 반전
+ *    (`mirrorMarkers`)은 쓰지 않는다 — 편이 위치로 갈리므로 방향으로 가를 이유가
+ *    없다.
  * 2. **프리셋이 진영이 아니라 전술이다.** 축구의 4-3-3은 팀별로 한 벌씩
  *    필요했지만(좌우 반전) 야구의 수비 시프트는 한 벌뿐이다. `formationId`를
  *    쓰지 않는 첫 게임이라, 프리셋 UI가 `label`만으로도 읽히는지 여기서 드러난다.
@@ -26,10 +27,6 @@ import { defineGame } from '@/lib/schema';
 import { RULES } from './rules';
 import {
   artworkPath,
-  BATTER_CIRCLE_ARTWORK_ID,
-  BATTER_POSE,
-  BATTER_POSITION,
-  BATTING_AREA,
   BOARD,
   DEFENSE_POSITIONS,
   FIELDER_CIRCLE_ARTWORK_ID,
@@ -43,12 +40,11 @@ import {
 
 const FIELD_PART_ID = 'field';
 const PLAY_REGION_ID = 'fair-territory';
-const BATTING_REGION_ID = 'batting-area';
 
 const defenseSlotId = (positionId: string): string => `defense-${positionId}`;
 
 /**
- * 수비 시프트 — 아홉 명의 좌표 한 벌.
+ * 수비 시프트 — 판에 서는 여덟 명의 좌표 한 벌.
  *
  * 순서가 `DEFENSE_POSITIONS`와 같다. 좌표는 눈으로 맞춘 뒤 마커 상자(20×22mm)가
  * 서로 닿지 않는지 확인한 값이고, 그 확인은 `parseGame`이 등록 때 다시 한다 —
@@ -69,7 +65,6 @@ const SHIFTS: ReadonlyArray<{
     label: '기본 수비',
     positions: [
       [105, 210], // 투수 — 마운드
-      [105, 285], // 포수 — 발끝이 종이 끝에 닿는다
       [158, 194], // 1루수
       [145, 144], // 2루수 — 1·2루 사이 베이스라인 뒤
       [52, 194], // 3루수
@@ -84,7 +79,6 @@ const SHIFTS: ReadonlyArray<{
     label: '내야 전진',
     positions: [
       [105, 210],
-      [105, 285],
       [150, 214],
       [135, 174],
       [60, 214],
@@ -99,7 +93,6 @@ const SHIFTS: ReadonlyArray<{
     label: '장타 경계',
     positions: [
       [105, 210],
-      [105, 285],
       [165, 184],
       [140, 149],
       [45, 184],
@@ -114,7 +107,6 @@ const SHIFTS: ReadonlyArray<{
     label: '당겨치기 시프트',
     positions: [
       [105, 210],
-      [105, 285],
       [162, 199],
       [150, 154],
       [62, 184],
@@ -147,8 +139,10 @@ const defenseSlots = DEFENSE_POSITIONS.map((position, i) => {
   const [xMm, yMm] = DEFAULT_SHIFT.positions[i];
   return {
     ...numberSlotShape,
+    // 번호는 자리 순서가 아니라 야구의 수비 번호다 — 포수(2번)가 빠져 둘이
+    // 어긋난다(`./dimensions.ts`의 `DEFENSE_POSITIONS`).
+    label: `${position.number}. ${position.label}`,
     id: defenseSlotId(position.id),
-    label: `${i + 1}. ${position.label}`,
     groupId: 'defense',
     tags: [position.id],
     placements: [
@@ -157,38 +151,13 @@ const defenseSlots = DEFENSE_POSITIONS.map((position, i) => {
         mode: 'marker' as const,
         xMm,
         yMm,
-        // 세트가 곧 자세다 — 투수는 투구, 포수는 쪼그린 자세로 그려진다.
+        // 세트가 곧 자세다 — 투수는 투구, 유격수는 달리는 자세로 그려진다.
         styleSetId: poseStyleSetId(position.poseId),
         regionId: PLAY_REGION_ID,
       },
     ],
   };
 });
-
-/**
- * 타자 슬롯. 공격 그룹의 유일한 마커다.
- *
- * 이동 범위를 타석 주변(`batting-area`)으로 좁혔다. 타자가 외야까지 걸어갈 수
- * 있으면 그림이 거짓말을 한다 — 이 마커는 "지금 치는 사람"을 뜻한다.
- */
-const batterSlot = {
-  ...numberSlotShape,
-  id: BATTER_POSITION.id,
-  label: BATTER_POSITION.label,
-  help: '타순표의 몇 번 타자인지 적어 두면 차례를 놓치지 않는다.',
-  groupId: 'offense',
-  tags: ['batter'],
-  placements: [
-    {
-      partId: FIELD_PART_ID,
-      mode: 'marker' as const,
-      xMm: 95.5,
-      yMm: 267,
-      styleSetId: poseStyleSetId(BATTER_POSITION.poseId),
-      regionId: BATTING_REGION_ID,
-    },
-  ],
-};
 
 /**
  * 마커 스타일 세트 — **자세 하나 = 세트 하나**다.
@@ -198,15 +167,16 @@ const batterSlot = {
  * 세트를 동시에 바꾼다), 세트는 슬롯에 배정된 자세다. 스키마가 "선택 슬롯의
  * 선택지 = 변형 id 목록"을 강제하므로 세트마다 변형 구성이 같아야 한다.
  *
- * 빈 원은 자세와 무관해 **파일 하나를 여러 세트가 나눠 쓴다** — 다만 수비와
- * 타자는 갈라 둔다. 타자 원에만 안쪽 테가 있어 흑백에서 공수가 구분된다.
+ * 빈 원은 자세와 무관해 **세트 전부가 파일 하나를 나눠 쓴다**. 타자 원을 따로
+ * 두었다가 타자가 판에서 빠지면서 없앴다(2026-09-08) — 판에 서는 것이 수비뿐이라
+ * 흑백에서 공수를 가를 표식이 필요 없다.
  */
-const markerStyleSet = (
-  pose: { readonly id: string; readonly label: string },
-  isBatter: boolean,
-) => ({
+const markerStyleSet = (pose: {
+  readonly id: string;
+  readonly label: string;
+}) => ({
   id: poseStyleSetId(pose.id),
-  label: `${isBatter ? '타자' : '수비'} 마커 · ${pose.label}`,
+  label: `수비 마커 · ${pose.label}`,
   selectorSlotId: 'marker-style',
   variants: [
     {
@@ -218,9 +188,7 @@ const markerStyleSet = (
       // 속을 채우지 않는다 — 아이가 칠할 면이다. 팀 색은 테두리로 받고,
       // 등번호도 흰 배경 위라 팀 색으로 찍힌다.
       filled: false,
-      artwork: artworkPath(
-        isBatter ? BATTER_CIRCLE_ARTWORK_ID : FIELDER_CIRCLE_ARTWORK_ID,
-      ),
+      artwork: artworkPath(FIELDER_CIRCLE_ARTWORK_ID),
     },
     {
       id: 'illustration',
@@ -244,9 +212,15 @@ const markerStyleSet = (
   ],
 });
 
+/**
+ * 그룹은 **하나뿐**이다 — 판에 서는 것이 수비 여덟뿐이라서다(2026-09-08 포수·타자를
+ * 그라운드에서 뺐다). 공격 팀 그룹과 그 색 슬롯은 마커가 없어 함께 없앴다.
+ *
+ * 두 팀이 색으로 갈리는 자리는 이제 판이 아니라 **선수 스탠드**다 — 윤곽선으로만
+ * 뽑아 두 줄을 아이가 서로 다른 색으로 칠한다(`./artwork/stands.ts`).
+ */
 const TEAMS = [
   { id: 'defense', label: '수비 팀', defaultColor: '#1d4ed8' },
-  { id: 'offense', label: '공격 팀', defaultColor: '#dc2626' },
 ] as const;
 
 /**
@@ -313,16 +287,6 @@ export default defineGame({
             heightMm: PLAY_AREA.heightMm,
           },
         },
-        {
-          id: BATTING_REGION_ID,
-          label: '타석',
-          rect: {
-            xMm: BATTING_AREA.xMm,
-            yMm: BATTING_AREA.yMm,
-            widthMm: BATTING_AREA.widthMm,
-            heightMm: BATTING_AREA.heightMm,
-          },
-        },
       ],
     },
     {
@@ -330,10 +294,10 @@ export default defineGame({
       kind: 'cutout',
       title: '스코어보드',
       description:
-        '이닝마다 낸 점수를 적는 칸. 한 장에 표가 두 벌 있어 두 판을 적는다.',
+        '이닝마다 낸 점수를 적는 칸. 한 장에 표가 다섯 벌 있어 다섯 판을 적는다.',
       widthMm: SHEETS.scoreSheet.widthMm,
       heightMm: SHEETS.scoreSheet.heightMm,
-      orientation: 'landscape',
+      orientation: 'portrait',
       // 합계 열 이름(3.4mm)이 하한을 정한다.
       minScale: 0.7,
       maxScale: 2,
@@ -345,11 +309,12 @@ export default defineGame({
       kind: 'buildable',
       title: '선수 스탠드',
       description:
-        '오려 접어 야구장에 세우는 선수 열 명(수비 아홉 + 타자). 카드 가운데를 ' +
-        '산 모양으로 한 번 접으면 혼자 선다 — 풀도 칼도 탭도 쓰지 않는다. ' +
-        '앞뒤 두 면에 같은 그림이 있어 어느 쪽에서 봐도 선수가 바로 서 있다. ' +
-        '세워야 타구가 부딪혀 아웃이 된다. 두 팀이 한 벌씩 뽑아 서로 다른 색으로 ' +
-        '칠해 두면 공수를 바꿀 때 헷갈리지 않는다.',
+        '오려 접어 야구장에 세우는 선수 스무 명 — 한 줄이 한 팀 열(투수부터 야수 ' +
+        '여덟에 포수와 지명타자)이라 한 장에 양 팀이 다 있다. 카드 가운데를 산 ' +
+        '모양으로 한 번 접으면 혼자 선다 — 풀도 칼도 탭도 쓰지 않는다. 한 면은 그 ' +
+        '자리의 수비 자세, 반대 면은 방망이를 든 타자이고 타격 자세가 열 다 다르다 — ' +
+        '돌려 세우면 그대로 타순이 된다. 세워야 타구가 부딪혀 아웃이 된다. ' +
+        '줄마다 다른 색으로 칠해 두면 공수를 바꿀 때 헷갈리지 않는다.',
       widthMm: SHEETS.stands.widthMm,
       heightMm: SHEETS.stands.heightMm,
       orientation: 'landscape',
@@ -357,8 +322,8 @@ export default defineGame({
       minScale: 0.8,
       maxScale: 2,
       marks: ['cut', 'fold-mountain'],
-      // 두 팀이 한 벌씩 갖는다. 작고 잘 잃어버리는 부속이기도 하다.
-      defaultCopies: 2,
+      // 한 장에 두 팀이 다 들어간다 — 두 벌 뽑을 이유가 없어졌다.
+      defaultCopies: 1,
       artwork: artworkPath('stands'),
     },
   ],
@@ -372,10 +337,7 @@ export default defineGame({
     // 이미 편을 말한다.
   })),
 
-  styleSets: [
-    ...FIELDER_POSES.map((pose) => markerStyleSet(pose, false)),
-    markerStyleSet(BATTER_POSE, true),
-  ],
+  styleSets: [...FIELDER_POSES.map((pose) => markerStyleSet(pose))],
 
   slots: [
     {
@@ -394,7 +356,6 @@ export default defineGame({
     },
     ...teamColorSlots,
     ...defenseSlots,
-    batterSlot,
   ],
 
   presets: SHIFTS.map((shift) => ({
