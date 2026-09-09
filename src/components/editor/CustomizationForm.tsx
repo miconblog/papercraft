@@ -39,16 +39,35 @@ import { FormationPicker } from './FormationPicker';
  */
 
 /**
+ * 판 아래 패널이 대신 그리는 슬롯들. 폼이 또 그리면 같은 값의 입력이 화면에
+ * 둘이 되고, 둘 중 하나에만 보이는 안내(점 개수 상한)가 갈린다.
+ *
+ * 지금은 윤곽 슬롯이 가리키는 개수 슬롯뿐이다(IDE-020) — 넣을 수 있는 최대치가
+ * 윤곽선의 길이에서 나와 사진 옆에 있어야 뜻이 통한다.
+ */
+export const panelOwnedSlotIds = (game: GameDefinition): Set<string> =>
+  new Set(
+    game.slots.flatMap((slot) =>
+      slot.kind === 'outline' && slot.countSlotId ? [slot.countSlotId] : [],
+    ),
+  );
+
+/**
  * 이 파트에서 폼에 낼 수 있는 슬롯. **마커 슬롯은 늘 뺀다** — 그 편집은
  * 미리보기에서 끌어 놓는 것이다.
  */
 // 목록 슬롯은 한 줄 입력이 아니라 판 아래 패널이고(`ListSlotPanel`), 윤곽
 // 슬롯은 사진에서 생성돼 손으로 칠 칸이 없다(IDE-019).
-const formSlots = (game: GameDefinition, partId?: string): Slot[] =>
-  (partId ? slotsAffectingPart(game, partId) : game.slots).filter(
+const formSlots = (game: GameDefinition, partId?: string): Slot[] => {
+  const owned = panelOwnedSlotIds(game);
+  return (partId ? slotsAffectingPart(game, partId) : game.slots).filter(
     (slot) =>
-      !slotMarker(slot) && slot.kind !== 'list' && slot.kind !== 'outline',
+      !slotMarker(slot) &&
+      slot.kind !== 'list' &&
+      slot.kind !== 'outline' &&
+      !owned.has(slot.id),
   );
+};
 
 /** 이 파트에서 그릴 것이 남는 그룹. 빈 그룹은 제목만 남아 줄을 먹는다. */
 export const formGroupsFor = (

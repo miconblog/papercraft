@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { GameSchemaError, parseGame } from '../game';
+import { validateSlotValue } from '../slots';
 import { makeGame, makeGameWithMarkers, slotOf } from './fixtures';
 import type { GameDefinitionInput } from '../game';
 
@@ -696,6 +697,8 @@ describe('윤곽 슬롯과 크기가 고정인 동적 파트 (IDE-019)', () => {
       minPoints: number;
       maxPoints: number;
       dynamic: unknown;
+      box: unknown;
+      countSlotId: unknown;
     }> = {},
   ): GameDefinitionInput => {
     const base = makeGame();
@@ -717,6 +720,16 @@ describe('윤곽 슬롯과 크기가 고정인 동적 파트 (IDE-019)', () => {
           minPoints: patch.minPoints ?? 3,
           maxPoints: patch.maxPoints ?? 2000,
           default: (patch.default ?? square) as number[],
+          box: (patch.box ?? {
+            partId,
+            xMm: 0,
+            yMm: 0,
+            widthMm: 200,
+            heightMm: 280,
+          }) as never,
+          ...('countSlotId' in patch
+            ? { countSlotId: patch.countSlotId as never }
+            : {}),
           placements: [{ partId, mode: 'control' }],
         },
         {
@@ -791,5 +804,286 @@ describe('윤곽 슬롯과 크기가 고정인 동적 파트 (IDE-019)', () => {
     expect(issuesOf(noControl)).toContain(
       'control 배치를 가진 슬롯이 하나도 없다',
     );
+  });
+});
+
+describe('윤곽 슬롯이 가리키는 것들 (IDE-020)', () => {
+  const square = [10, 10, 40, 10, 40, 40, 10, 40];
+
+  /** 상자와 개수 슬롯까지 갖춘 윤곽 슬롯. 도안 하나가 통째로 나온다. */
+  const withOutline = (
+    patch: Partial<{ box: unknown; countSlotId: unknown }> = {},
+  ): GameDefinitionInput => {
+    const base = makeGame();
+    const partId = base.parts[0].id;
+    return makeGame({
+      parts: [
+        { ...base.parts[0], dynamic: {} as never },
+        ...base.parts.slice(1),
+      ],
+      slots: [
+        ...base.slots,
+        {
+          id: 'outline',
+          kind: 'outline',
+          label: '윤곽선',
+          default: square,
+          box: (patch.box ?? {
+            partId,
+            xMm: 5,
+            yMm: 5,
+            widthMm: 100,
+            heightMm: 100,
+          }) as never,
+          countSlotId: ('countSlotId' in patch
+            ? patch.countSlotId
+            : 'dot-count') as never,
+          placements: [{ partId, mode: 'control' }],
+        },
+        {
+          id: 'dot-count',
+          kind: 'number',
+          label: '점 개수',
+          min: 5,
+          max: 100,
+          integer: true,
+          default: 20,
+          placements: [{ partId, mode: 'control' }],
+        },
+      ],
+    });
+  };
+
+  it('상자와 개수 슬롯이 맞으면 통과한다', () => {
+    expect(() => parseGame(withOutline())).not.toThrow();
+  });
+
+  it('상자가 파트 밖으로 나가면 걸러진다', () => {
+    expect(
+      issuesOf(
+        withOutline({
+          box: {
+            partId: 'board',
+            xMm: 5,
+            yMm: 5,
+            widthMm: 400,
+            heightMm: 100,
+          },
+        }),
+      ),
+    ).toContain('밖으로 나간다');
+  });
+
+  it('상자가 없는 파트를 가리키면 걸러진다', () => {
+    expect(
+      issuesOf(
+        withOutline({
+          box: {
+            partId: 'ghost-part',
+            xMm: 0,
+            yMm: 0,
+            widthMm: 100,
+            heightMm: 100,
+          },
+        }),
+      ),
+    ).toContain('없는 파트를 가리킨다');
+  });
+
+  it('기본값이 상자를 벗어나면 걸러진다 — 사진 한 장에 조용히 제자리로 온다', () => {
+    expect(
+      issuesOf(
+        withOutline({
+          box: { partId: 'board', xMm: 0, yMm: 0, widthMm: 20, heightMm: 20 },
+        }),
+      ),
+    ).toContain('box 밖으로 나간다');
+  });
+
+  it('개수 슬롯은 숫자여야 하고 같은 파트에 control 배치가 있어야 한다', () => {
+    expect(issuesOf(withOutline({ countSlotId: 'headline' }))).toContain(
+      '개수 슬롯은 number여야 한다',
+    );
+    expect(issuesOf(withOutline({ countSlotId: 'not-there' }))).toContain(
+      '없는 슬롯을 가리킨다',
+    );
+  });
+
+  it('개수 슬롯은 없어도 된다 — 윤곽만 쓰는 도안도 있다', () => {
+    expect(() =>
+      parseGame(withOutline({ countSlotId: undefined })),
+    ).not.toThrow();
+  });
+});
+
+describe('세부 선 짝 (IDE-021)', () => {
+  const square = [10, 10, 40, 10, 40, 40, 10, 40];
+  const box = { partId: 'board', xMm: 0, yMm: 0, widthMm: 100, heightMm: 100 };
+
+  const withDetail = (
+    patch: Partial<{ detailSlotId: unknown; detail: unknown }> = {},
+  ): GameDefinitionInput => {
+    const base = makeGame();
+    return makeGame({
+      parts: [
+        { ...base.parts[0], dynamic: {} as never },
+        ...base.parts.slice(1),
+      ],
+      slots: [
+        ...base.slots,
+        {
+          id: 'outline',
+          kind: 'outline',
+          label: '윤곽선',
+          default: square,
+          box: box as never,
+          detailSlotId: ('detailSlotId' in patch
+            ? patch.detailSlotId
+            : 'detail') as never,
+          placements: [{ partId: 'board', mode: 'control' }],
+        },
+        ((patch.detail as object | undefined) ?? {
+          id: 'detail',
+          kind: 'outline',
+          label: '세부 선',
+          default: [square],
+          maxRings: 6,
+          box,
+          placements: [{ partId: 'board', mode: 'control' }],
+        }) as never,
+      ],
+    });
+  };
+
+  it('고리를 여럿 담는 짝이면 통과한다', () => {
+    const game = parseGame(withDetail());
+    const detail = game.slots.find((s) => s.id === 'detail')!;
+    expect(detail.kind).toBe('outline');
+    if (detail.kind !== 'outline') return;
+    expect(detail.maxRings).toBe(6);
+    expect(detail.default).toEqual([square]);
+  });
+
+  it('고리가 하나뿐인 슬롯은 세부가 될 수 없다', () => {
+    expect(
+      issuesOf(
+        withDetail({
+          detail: {
+            id: 'detail',
+            kind: 'outline',
+            label: '세부 선',
+            default: square,
+            box,
+            placements: [{ partId: 'board', mode: 'control' }],
+          },
+        }),
+      ),
+    ).toContain('고리를 여럿 담아야 한다');
+  });
+
+  it('상자가 다르면 걸러진다 — 같은 사진에서 나온 선이 어긋난다', () => {
+    expect(
+      issuesOf(
+        withDetail({
+          detail: {
+            id: 'detail',
+            kind: 'outline',
+            label: '세부 선',
+            default: [square],
+            maxRings: 6,
+            box: { ...box, xMm: 5 },
+            placements: [{ partId: 'board', mode: 'control' }],
+          },
+        }),
+      ),
+    ).toContain('상자가 다르다');
+  });
+
+  it('세부가 또 세부를 가리키면 걸러진다', () => {
+    expect(
+      issuesOf(
+        withDetail({
+          detail: {
+            id: 'detail',
+            kind: 'outline',
+            label: '세부 선',
+            default: [square],
+            maxRings: 6,
+            box,
+            detailSlotId: 'outline',
+            placements: [{ partId: 'board', mode: 'control' }],
+          },
+        }),
+      ),
+    ).toContain('또 세부 슬롯을 가리킨다');
+  });
+
+  it('고리가 여럿인 슬롯의 값은 고리의 목록이다', () => {
+    const game = parseGame(withDetail());
+    const detail = game.slots.find((s) => s.id === 'detail')!;
+    // 납작한 좌표 배열 하나는 이제 모양이 틀린 값이다.
+    expect(validateSlotValue(detail, square)).not.toBeNull();
+    expect(validateSlotValue(detail, [square, square])).toBeNull();
+    // 하나도 없는 것은 어긋난 값이 아니다 — 세부를 끈 도안이 그렇다.
+    expect(validateSlotValue(detail, [])).toBeNull();
+    expect(
+      validateSlotValue(detail, [
+        square,
+        square,
+        square,
+        square,
+        square,
+        square,
+        square,
+      ]),
+    ).toContain('6개를 넘는다');
+  });
+});
+
+describe('숫자 슬롯의 값 단추 (IDE-020)', () => {
+  const withPresets = (presets: unknown): GameDefinitionInput =>
+    makeGame({
+      slots: [
+        ...makeGame().slots,
+        {
+          id: 'dot-count',
+          kind: 'number',
+          label: '점 개수',
+          min: 5,
+          max: 100,
+          integer: true,
+          default: 20,
+          presets: presets as never,
+          placements: [
+            { partId: 'board', mode: 'text', xMm: 20, yMm: 40, fontSizeMm: 4 },
+          ],
+        },
+      ],
+    });
+
+  it('범위 안의 값이면 통과한다', () => {
+    expect(() =>
+      parseGame(withPresets([{ value: 10, label: '10개', help: '만 3~4세' }])),
+    ).not.toThrow();
+  });
+
+  it('제 슬롯이 못 받는 값은 걸러진다 — 눌러도 오류만 나는 단추다', () => {
+    expect(issuesOf(withPresets([{ value: 300, label: '300개' }]))).toContain(
+      '5–100 사이여야 한다',
+    );
+    expect(issuesOf(withPresets([{ value: 12.5, label: '12.5개' }]))).toContain(
+      '정수를 입력한다',
+    );
+  });
+
+  it('같은 값이 두 번 나오면 걸러진다', () => {
+    expect(
+      issuesOf(
+        withPresets([
+          { value: 10, label: '10개' },
+          { value: 10, label: '열 개' },
+        ]),
+      ),
+    ).toContain('값 단추가 중복된다');
   });
 });

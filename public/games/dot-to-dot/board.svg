@@ -5,6 +5,9 @@
 <g id="pc-art" fill="#1a1a1a" stroke="none">
 <line x1="26" y1="20" x2="164" y2="20" stroke="#6b7280" stroke-width="0.3" />
 <text x="95" y="27.5" font-size="3.4" dominant-baseline="central" text-anchor="middle" fill="#6b7280">1번부터 번호를 차례로 이어 보세요.</text>
+<path d="M 63.771 96.386 L 62.912 99.208 L 60.505 101.472 L 57.027 102.728 L 53.166 102.728 L 49.688 101.472 L 47.281 99.208 L 46.422 96.386 L 47.281 93.563 L 49.688 91.299 L 53.166 90.043 L 57.027 90.043 L 60.505 91.299 L 62.912 93.563 Z" fill="none" stroke="#1a1a1a" stroke-width="0.45" stroke-linejoin="round" />
+<path d="M 110.614 96.386 L 109.755 99.208 L 107.348 101.472 L 103.870 102.728 L 100.009 102.728 L 96.531 101.472 L 94.124 99.208 L 93.265 96.386 L 94.124 93.563 L 96.531 91.299 L 100.009 90.043 L 103.870 90.043 L 107.348 91.299 L 109.755 93.563 Z" fill="none" stroke="#1a1a1a" stroke-width="0.45" stroke-linejoin="round" />
+<path d="M 70.711 110.265 L 86.325 110.265 L 78.518 118.940 Z" fill="none" stroke="#1a1a1a" stroke-width="0.45" stroke-linejoin="round" />
 <circle cx="43.819" cy="49.542" r="0.9" fill="#1a1a1a" />
 <circle cx="54.229" cy="74.699" r="0.9" fill="#1a1a1a" />
 <circle cx="62.904" cy="69.494" r="0.9" fill="#1a1a1a" />

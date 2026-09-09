@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import {
   applyPreset,
   defaultCustomization,
@@ -14,7 +14,13 @@ import {
   type SlotValue,
 } from '@/lib/schema';
 import { movedPoint } from '@/lib/customization/movement';
-import { saveCustomization } from '@/lib/customization/storage';
+import {
+  getSaveFailure,
+  getServerSaveFailure,
+  saveCustomization,
+  subscribeSaveFailure,
+  SAVE_FAILURE_MESSAGE,
+} from '@/lib/customization/storage';
 import { useHydrated } from '@/lib/customization/useHydrated';
 import { useStoredCustomization } from '@/lib/customization/useStoredCustomization';
 import { PrintDialog } from '@/components/print/PrintDialog';
@@ -25,6 +31,7 @@ import {
 } from './CustomizationForm';
 import { BoardPreview } from './BoardPreview';
 import { ListSlotPanel } from './ListSlotPanel';
+import { OutlineSlotPanel } from './OutlineSlotPanel';
 
 /**
  * 커스터마이즈 에디터 진입점 (IDE-006)
@@ -79,6 +86,21 @@ function EditorForm({
         matchingPresetId(game, initial, group.id),
       ]),
     ),
+  );
+
+  /**
+   * 저장에 실패해 있으면 그 사유(IDE-020). 값은 메모리에 멀쩡히 있고 인쇄도
+   * 되지만 "다음에 다시 여는 것"만 못 한다 — 그 말을 한 자리에서 한 번만 한다.
+   *
+   * 저장소 쪽이 실패한 키를 들고 있고 여기서는 구독만 한다. 효과 안에서 곧장
+   * `setState`를 부르지 않으려는 것이기도 하고(`useHydrated` 참고), 사진을
+   * 남기는 것도 같은 저장소를 쓰므로(윤곽 패널) 두 자리에서 같은 경고가
+   * 나오지 않게 하려는 것이기도 하다.
+   */
+  const saveIssue = useSyncExternalStore(
+    subscribeSaveFailure,
+    getSaveFailure,
+    getServerSaveFailure,
   );
 
   // 값이 바뀔 때마다 로컬 저장소에 동기화한다 — 새로고침해도 남아야 한다는
@@ -159,8 +181,20 @@ function EditorForm({
   const visibleGroups = formGroupsFor(game, currentPart.id);
   // 목록 슬롯(세계일주의 도시 목록)은 판 아래에 패널로 놓는다 — 항목이 백 개가
   // 넘어 한 줄 입력에 들어가지 않고, 판과 나란히 보여야 켜고 끈 결과가 읽힌다.
-  const listSlots = slotsAffectingPart(game, currentPart.id).filter(
-    (slot) => slot.kind === 'list',
+  const partSlots = slotsAffectingPart(game, currentPart.id);
+  const listSlots = partSlots.filter((slot) => slot.kind === 'list');
+  // 윤곽 슬롯(점 잇기의 사진)도 판 아래 패널이다 — 사진 넣기·밝기·돌리기와
+  // 점 개수가 한 자리에 모여야 "왜 개수가 여기서 멈추는지"가 보인다(IDE-020).
+  //
+  // 세부 선 슬롯은 제 패널을 갖지 않는다(IDE-021) — 같은 사진에서 같은 조작으로
+  // 나오므로 윤곽 슬롯의 패널이 함께 그린다. 안 걸러 내면 사진 넣는 상자가 둘이 된다.
+  const detailSlotIds = new Set(
+    game.slots.flatMap((s) =>
+      s.kind === 'outline' && s.detailSlotId ? [s.detailSlotId] : [],
+    ),
+  );
+  const outlineSlots = partSlots.filter(
+    (slot) => slot.kind === 'outline' && !detailSlotIds.has(slot.id),
   );
 
   const formProps = {
@@ -239,6 +273,11 @@ function EditorForm({
           빨간 글씨로 표시된 값을 고쳐야 인쇄물이 정확하다.
         </p>
       )}
+      {saveIssue && (
+        <p role="alert" className="mt-2 text-sm text-destructive">
+          {SAVE_FAILURE_MESSAGE[saveIssue]}
+        </p>
+      )}
 
       {/* 파트를 바꾸면 미리보기가 통째로 바뀐다 — 화면으로는 보이지만
           스크린리더는 놓치기 쉬워 이름을 소리로도 알린다. */}
@@ -268,6 +307,34 @@ function EditorForm({
           />
         ) : null,
       )}
+
+      {outlineSlots.map((slot) => {
+        if (slot.kind !== 'outline') return null;
+        // 개수 슬롯은 **지금 보는 파트에 쓰일 때만** 함께 낸다. 점 잇기의 완성
+        // 그림 부속에는 점이 없어, 거기서 개수를 물으면 안 그려질 값을 묻는 것이다.
+        const countSlot = partSlots.find(
+          (s) => s.id === slot.countSlotId && s.kind === 'number',
+        );
+        // 세부 슬롯은 파트를 가리지 않는다 — 판에도 완성 그림에도 그려진다.
+        const detailSlot = game.slots.find(
+          (s) => s.id === slot.detailSlotId && s.kind === 'outline',
+        );
+        return (
+          <OutlineSlotPanel
+            key={slot.id}
+            slot={slot}
+            value={customization.values[slot.id]}
+            error={errors[slot.id] ?? null}
+            gameId={game.id}
+            countSlot={countSlot?.kind === 'number' ? countSlot : undefined}
+            countValue={countSlot && customization.values[countSlot.id]}
+            countError={countSlot ? (errors[countSlot.id] ?? null) : null}
+            detailSlot={detailSlot?.kind === 'outline' ? detailSlot : undefined}
+            detailValue={detailSlot && customization.values[detailSlot.id]}
+            onChange={handleChange}
+          />
+        );
+      })}
 
       {/* 팀 줄 — 그룹(팀)마다 제목·색·대형이 한 줄이다. 축구 게임판이라면 홈과
           원정이 나란히 서고, 폭이 모자라면 원정이 아랫줄로 내려간다. 게임을

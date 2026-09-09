@@ -39,6 +39,7 @@ const numberSlot: Slot = {
     },
   ],
   kind: 'number',
+  presets: [],
   min: 1,
   max: 99,
   integer: true,

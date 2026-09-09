@@ -17,7 +17,9 @@ import {
  * 가 슬롯 배열을 순회하며 이 컴포넌트를 늘어놓는다.
  *
  * 나머지 둘은 여기서 그리지 않는다 — 목록(`list`)은 판 아래 패널이, 윤곽
- * (`outline`)은 사진 넣기 화면이 맡는다.
+ * (`outline`)은 사진 넣기 패널이 맡는다. 다만 **숫자 슬롯 하나는 그 사진 패널
+ * 안에서 이 컴포넌트로 그려진다**(점 잇기의 점 개수) — 넣을 수 있는 최대치가
+ * 윤곽선의 길이에서 나와 사진 옆에 있어야 뜻이 통하기 때문이다(IDE-020).
  */
 export interface SlotFieldProps {
   slot: Slot;
@@ -129,8 +131,8 @@ function SlotInput({
         />
       );
 
-    case 'number':
-      return (
+    case 'number': {
+      const field = (
         <input
           id={fieldId}
           type="number"
@@ -140,7 +142,12 @@ function SlotInput({
           step={slot.integer ? 1 : 'any'}
           aria-invalid={invalid}
           aria-describedby={invalid ? errorId : undefined}
-          className={commonClassName}
+          // 값 단추가 옆에 서면 입력 칸은 두세 자리만 받으면 된다.
+          className={
+            slot.presets.length > 0
+              ? commonClassName.replace('w-40 ', 'w-24 ')
+              : commonClassName
+          }
           onChange={(e) => {
             const parsed = slot.integer
               ? Number.parseInt(e.target.value, 10)
@@ -149,6 +156,41 @@ function SlotInput({
           }}
         />
       );
+      if (slot.presets.length === 0) return field;
+      // 자주 쓰는 값 단추(IDE-020). 입력 칸을 대신하지 않고 옆에 선다 — 목록
+      // 슬롯의 묶음 단추와 같은 모양이라 화면에서 같은 것으로 읽힌다.
+      return (
+        <div className="flex flex-wrap items-center gap-2">
+          {field}
+          <div
+            className="flex flex-wrap gap-1.5"
+            role="group"
+            aria-label={`${slot.label} 자주 쓰는 값`}
+          >
+            {slot.presets.map((preset) => (
+              <button
+                key={preset.value}
+                type="button"
+                aria-pressed={value === preset.value}
+                aria-label={
+                  preset.help ? `${preset.label} — ${preset.help}` : undefined
+                }
+                title={preset.help}
+                onClick={() => onChange(preset.value)}
+                className={
+                  'rounded-full px-3 py-1 text-xs font-medium outline-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current ' +
+                  (value === preset.value
+                    ? 'bg-primary text-primary-foreground'
+                    : 'border border-border hover:border-primary')
+                }
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    }
 
     case 'color':
       return (
@@ -189,7 +231,8 @@ function SlotInput({
 
     case 'outline':
       // 윤곽 슬롯의 값은 사진에서 생성된다(IDE-019). 사진을 넣고 다시 따는
-      // 조작은 `IDE-020`이 만든다 — 좌표 배열을 손으로 칠 칸은 없다.
+      // 조작은 판 아래 패널(`OutlineSlotPanel`)이 맡는다 — 좌표 배열을 손으로
+      // 칠 칸은 없다.
       return null;
 
     case 'choice':

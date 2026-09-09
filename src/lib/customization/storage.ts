@@ -117,19 +117,123 @@ export function readStoredCustomizationSnapshot(
   return value;
 }
 
-export function saveCustomization(customization: GameCustomization): void {
-  if (typeof window === 'undefined') return;
+/**
+ * 저장 결과 — **실패를 삼키지 않는다**(IDE-020).
+ *
+ * 오래도록 `try {} catch {}` 한 줄이었다. 값이 슬롯 몇 개짜리 글자·색이라
+ * 한도에 닿을 일이 없었기 때문인데, 점 잇기가 줄인 사진을 함께 남기면서
+ * `localStorage`가 꽉 차는 경우가 처음 생겼다. 조용히 넘기면 사용자는 창을
+ * 닫고 나서야 도안이 사라진 것을 안다.
+ *
+ * 에디터는 그래도 계속 동작한다 — 메모리 상태는 멀쩡하고, 못 하는 것은
+ * "다음에 다시 여는 것"뿐이다. 그 말을 그대로 화면에 적는다.
+ */
+export type SaveResult =
+  { readonly ok: true } | { readonly ok: false; readonly reason: SaveFailure };
+
+/** `quota`는 한도 초과, `blocked`는 저장소 자체를 못 쓰는 경우(사생활 보호 모드). */
+export type SaveFailure = 'quota' | 'blocked';
+
+/**
+ * 사용자에게 그대로 보이는 문장. **무엇을 잃는지**를 적는다 — "저장 실패"만
+ * 적으면 지금 만들던 것이 사라진 줄 알고 다시 시작한다.
+ */
+export const SAVE_FAILURE_MESSAGE: Record<SaveFailure, string> = {
+  quota:
+    '브라우저 저장 공간이 가득 차 이 도안을 남기지 못했다. 지금 화면에서는 그대로 쓰고 인쇄할 수 있지만, 창을 닫으면 사라진다.',
+  blocked:
+    '이 브라우저에서는 도안을 남길 수 없다(사생활 보호 모드일 수 있다). 지금 화면에서는 그대로 쓰고 인쇄할 수 있지만, 창을 닫으면 사라진다.',
+};
+
+const OK: SaveResult = { ok: true };
+
+/**
+ * 지금 **저장에 실패해 있는 키**들. 화면의 경고가 이 집합을 읽는다.
+ *
+ * "마지막 저장 결과" 하나로는 안 된다 — 사진(수백 KB)이 한도에 걸려 실패한
+ * 직후에 값(몇 KB)은 멀쩡히 들어가므로, 마지막 결과만 보면 경고가 곧바로
+ * 사라진다. 사진은 여전히 안 남았는데 화면은 괜찮다고 말하게 된다.
+ */
+const failedKeys = new Map<string, SaveFailure>();
+const listeners = new Set<() => void>();
+
+const notify = () => {
+  for (const listener of listeners) listener();
+};
+
+/** `useSyncExternalStore`용. 하나라도 실패해 있으면 그 사유를 준다. */
+export const getSaveFailure = (): SaveFailure | null =>
+  failedKeys.values().next().value ?? null;
+
+/** 서버에는 저장소가 없다 — 서버 스냅샷은 늘 "실패 없음"이다. */
+export const getServerSaveFailure = (): SaveFailure | null => null;
+
+export function subscribeSaveFailure(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+/** 테스트 전용 — 모듈 레벨 상태는 테스트 파일 안에서도 이어진다. */
+export function __resetSaveFailuresForTests(): void {
+  failedKeys.clear();
+}
+
+const record = (key: string, reason: SaveFailure | null) => {
+  const before = failedKeys.get(key) ?? null;
+  if (before === reason) return;
+  if (reason === null) failedKeys.delete(key);
+  else failedKeys.set(key, reason);
+  notify();
+};
+
+/**
+ * 한도 초과인지 가린다. 브라우저마다 이름·코드가 달라 셋을 다 본다 — Chrome은
+ * `QuotaExceededError`, Firefox는 `NS_ERROR_DOM_QUOTA_REACHED`(코드 1014),
+ * 옛 Safari는 이름 없이 코드 22만 준다.
+ */
+const isQuota = (error: unknown): boolean => {
+  if (!(error instanceof Error)) return false;
+  const code = (error as DOMException).code;
+  return (
+    error.name === 'QuotaExceededError' ||
+    error.name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
+    code === 22 ||
+    code === 1014
+  );
+};
+
+/** 문자열 하나를 남긴다. 사진 저장(`./photo.ts`)도 같은 판정을 쓴다. */
+export function writeStorage(key: string, value: string): SaveResult {
+  if (typeof window === 'undefined') return OK;
   try {
-    window.localStorage.setItem(
-      storageKey(customization.gameId),
-      JSON.stringify(customization),
-    );
-  } catch {
-    // 저장 용량 초과 등은 무시한다 — 에디터 자체는 메모리 상태로 계속 동작한다.
+    window.localStorage.setItem(key, value);
+    record(key, null);
+    return OK;
+  } catch (error) {
+    const reason: SaveFailure = isQuota(error) ? 'quota' : 'blocked';
+    record(key, reason);
+    return { ok: false, reason };
   }
 }
 
-export function clearCustomization(gameId: string): void {
+/** 지운 키는 더 이상 실패해 있지 않다 — 경고도 함께 걷힌다. */
+export function removeStorage(key: string): void {
+  record(key, null);
   if (typeof window === 'undefined') return;
-  window.localStorage.removeItem(storageKey(gameId));
+  window.localStorage.removeItem(key);
+}
+
+export function saveCustomization(
+  customization: GameCustomization,
+): SaveResult {
+  return writeStorage(
+    storageKey(customization.gameId),
+    JSON.stringify(customization),
+  );
+}
+
+export function clearCustomization(gameId: string): void {
+  removeStorage(storageKey(gameId));
 }

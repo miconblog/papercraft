@@ -342,6 +342,100 @@ export const gameDefinition = z
       }
     }
 
+    // 윤곽 슬롯이 가리키는 것들 — 값이 앉을 상자와, 그 위에 몇 개를 놓을지
+    // 정하는 숫자 슬롯(IDE-020).
+    for (const [i, s] of g.slots.entries()) {
+      if (s.kind !== 'outline') continue;
+      const boxPart = partById.get(s.box.partId);
+      if (!boxPart) {
+        push(
+          ['slots', i, 'box', 'partId'],
+          `없는 파트를 가리킨다: ${s.box.partId}`,
+        );
+      } else {
+        if (!s.placements.some((pl) => pl.partId === boxPart.id)) {
+          push(
+            ['slots', i, 'box', 'partId'],
+            `슬롯이 파트 '${boxPart.id}'에 배치를 갖지 않는다 — 값의 좌표계가 될 수 없다`,
+          );
+        }
+        const partRect = {
+          xMm: 0,
+          yMm: 0,
+          widthMm: boxPart.widthMm,
+          heightMm: boxPart.heightMm,
+        };
+        if (!rectContainsRect(partRect, s.box)) {
+          push(
+            ['slots', i, 'box'],
+            `상자가 파트 '${boxPart.id}'(${boxPart.widthMm}×${boxPart.heightMm}mm) 밖으로 나간다`,
+          );
+        }
+      }
+      // 세부 선 짝 — 같은 사진에서 같은 변환으로 나오므로 상자가 같아야 하고,
+      // 고리를 여럿 담을 수 있어야 한다(IDE-021).
+      if (s.detailSlotId) {
+        const detail = slotById.get(s.detailSlotId);
+        if (!detail) {
+          push(
+            ['slots', i, 'detailSlotId'],
+            `없는 슬롯을 가리킨다: ${s.detailSlotId}`,
+          );
+        } else if (detail.kind !== 'outline') {
+          push(
+            ['slots', i, 'detailSlotId'],
+            `세부 슬롯은 outline이어야 한다 (현재 ${detail.kind})`,
+          );
+        } else if (detail.maxRings < 2) {
+          push(
+            ['slots', i, 'detailSlotId'],
+            `세부 슬롯 '${detail.id}'는 고리를 여럿 담아야 한다 (maxRings ${detail.maxRings})`,
+          );
+        } else if (
+          detail.box.partId !== s.box.partId ||
+          detail.box.xMm !== s.box.xMm ||
+          detail.box.yMm !== s.box.yMm ||
+          detail.box.widthMm !== s.box.widthMm ||
+          detail.box.heightMm !== s.box.heightMm
+        ) {
+          push(
+            ['slots', i, 'detailSlotId'],
+            `세부 슬롯 '${detail.id}'의 상자가 다르다 — 같은 사진에서 나온 선이 서로 어긋난다`,
+          );
+        } else if (detail.detailSlotId) {
+          push(
+            ['slots', i, 'detailSlotId'],
+            `세부 슬롯 '${detail.id}'가 또 세부 슬롯을 가리킨다`,
+          );
+        }
+      }
+
+      if (!s.countSlotId) continue;
+      const count = slotById.get(s.countSlotId);
+      if (!count) {
+        push(
+          ['slots', i, 'countSlotId'],
+          `없는 슬롯을 가리킨다: ${s.countSlotId}`,
+        );
+      } else if (count.kind !== 'number') {
+        push(
+          ['slots', i, 'countSlotId'],
+          `개수 슬롯은 number여야 한다 (현재 ${count.kind})`,
+        );
+      } else if (
+        !count.placements.some(
+          (pl) => pl.mode === 'control' && pl.partId === s.box.partId,
+        )
+      ) {
+        // 개수는 윤곽 패널이 그린다. 그 패널은 상자가 가리키는 파트에서 뜨므로,
+        // 거기에 control 배치가 없으면 사용자가 개수를 만질 자리가 사라진다.
+        push(
+          ['slots', i, 'countSlotId'],
+          `슬롯 '${count.id}'가 파트 '${s.box.partId}'에 control 배치를 갖지 않는다`,
+        );
+      }
+    }
+
     for (const [i, grp] of g.groups.entries()) {
       const checkGroupSlot = (
         field: 'nameSlotId' | 'colorSlotId',

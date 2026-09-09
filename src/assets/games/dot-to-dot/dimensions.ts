@@ -16,9 +16,11 @@
  * 작도 근거는 [docs/dot-to-dot-artwork.md](../../../../docs/dot-to-dot-artwork.md)에 있다.
  */
 import {
+  applyFit,
   DOT_METRICS,
-  fitOutline,
+  fitTransform,
   toFlat,
+  type Point,
 } from '../../../lib/dot-to-dot/index.ts';
 
 /**
@@ -185,7 +187,52 @@ const catPoints = (): Array<{ x: number; y: number }> => {
   return [...right, bottom, ...left];
 };
 
+/**
+ * 보기 그림의 **세부 선** — 눈 둘과 코 하나 (IDE-021).
+ *
+ * 아이가 잇지 않고 판에 미리 그려 두는 선이다. 사진을 넣기 전의 소개 페이지와
+ * 카탈로그 썸네일에서 **이 놀이가 무엇인지**를 보이게 하는 것이 여기 있는 이유다
+ * — 실루엣만 있으면 고양이인지 무엇인지 알 수 없다.
+ *
+ * 좌표계는 몸통과 같다. 얼굴은 대략 y −1.0~−0.3, x ±0.64 사이에 있다.
+ */
+const ellipse = (
+  cx: number,
+  cy: number,
+  rx: number,
+  ry: number,
+  steps = 14,
+): Point[] =>
+  Array.from({ length: steps }, (_, i) => {
+    const angle = (Math.PI * 2 * i) / steps;
+    return { x: cx + Math.cos(angle) * rx, y: cy + Math.sin(angle) * ry };
+  });
+
+const catDetail = (): Point[][] => [
+  ellipse(-0.27, -0.66, 0.1, 0.075),
+  ellipse(0.27, -0.66, 0.1, 0.075),
+  // 코 — 아래로 뾰족한 세모. 눈만 있으면 얼굴이 비어 보인다.
+  [
+    { x: -0.09, y: -0.5 },
+    { x: 0.09, y: -0.5 },
+    { x: 0, y: -0.4 },
+  ],
+];
+
+/**
+ * 보기 그림을 판에 앉히는 변환. **몸통이 정한다** — 세부(눈·코)에도 같은 것을
+ * 먹여야 얼굴이 제자리에 온다. 각각 따로 맞춰 넣으면 눈이 판을 가득 채운다.
+ */
+const SAMPLE_FIT = fitTransform(catPoints(), OUTLINE_BOX);
+
+const place = (points: Point[]): number[] =>
+  toFlat(points.map((p) => applyFit(SAMPLE_FIT, p.x, p.y)));
+
 /** 판에 앉힌 보기 그림. 도안 정의의 기본값이자 아트워크 산출의 입력이다. */
-export const SAMPLE_OUTLINE: number[] = toFlat(
-  fitOutline(catPoints(), OUTLINE_BOX),
-);
+export const SAMPLE_OUTLINE: number[] = place(catPoints());
+
+/** 보기 그림의 세부 선. 같은 변환으로 앉혔다. */
+export const SAMPLE_DETAIL: number[][] = catDetail().map(place);
+
+/** 세부 선의 굵기. 윤곽선(답)보다 가늘어 그림을 알려 주되 답이 되지 않는다. */
+export const DETAIL_STROKE_MM = 0.45;

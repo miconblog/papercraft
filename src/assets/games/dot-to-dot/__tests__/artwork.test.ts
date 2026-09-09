@@ -101,15 +101,19 @@ describe('도안 구조', () => {
     }
   });
 
-  it('그림을 바꾸는 슬롯이 판에 셋, 완성 그림에 하나다', () => {
+  it('그림을 바꾸는 슬롯이 판에 넷, 완성 그림에 둘이다', () => {
     expect(
       dynamicSourceSlots(game, board.id)
         .map((s) => s.id)
         .sort(),
-    ).toEqual(['dot-count', 'guide-line', 'outline']);
-    expect(dynamicSourceSlots(game, answer.id).map((s) => s.id)).toEqual([
-      'outline',
-    ]);
+    ).toEqual(['detail', 'dot-count', 'guide-line', 'outline']);
+    // 완성 그림에도 세부가 온다 — 어른이 볼 그림이라 눈·코가 있어야 사진을
+    // 제대로 땄는지 확인이 된다(IDE-021).
+    expect(
+      dynamicSourceSlots(game, answer.id)
+        .map((s) => s.id)
+        .sort(),
+    ).toEqual(['detail', 'outline']);
   });
 
   it('커밋된 SVG가 생성기와 같다', () => {
@@ -129,8 +133,9 @@ describe('도안 구조', () => {
     }
   });
 
-  it('슬롯이 넷이고 점 개수는 5~100 정수다', () => {
+  it('슬롯이 다섯이고 점 개수는 5~100 정수다', () => {
     expect(game.slots.map((s) => s.id).sort()).toEqual([
+      'detail',
       'dot-count',
       'guide-line',
       'outline',
@@ -172,6 +177,47 @@ describe('판 그리기', () => {
         Array.from({ length: count }, (_, i) => i + 1),
       );
     }
+  });
+
+  it('세부 선은 그려지되 점도 번호도 받지 않는다 (IDE-021)', () => {
+    const eye = [80, 90, 95, 90, 95, 105, 80, 105];
+    const bare = parse(
+      renderBoard({ outline: SAMPLE_OUTLINE, dotCount: 20, guide: false }),
+    );
+    const withDetail = parse(
+      renderBoard({
+        outline: SAMPLE_OUTLINE,
+        detail: [eye],
+        dotCount: 20,
+        guide: false,
+      }),
+    );
+    // 선 하나가 늘었을 뿐 — 점과 번호는 그대로다. 아이가 잇는 선은 여전히 하나라
+    // 연필을 뗄 자리가 없다.
+    expect(withDetail.querySelectorAll('path')).toHaveLength(
+      bare.querySelectorAll('path').length + 1,
+    );
+    expect(withDetail.querySelectorAll('circle')).toHaveLength(
+      bare.querySelectorAll('circle').length,
+    );
+    expect(withDetail.querySelectorAll('text')).toHaveLength(
+      bare.querySelectorAll('text').length,
+    );
+  });
+
+  it('세부를 주지 않으면 세부가 없던 판과 똑같다', () => {
+    const bare = renderBoard({
+      outline: SAMPLE_OUTLINE,
+      dotCount: 20,
+      guide: false,
+    });
+    const empty = renderBoard({
+      outline: SAMPLE_OUTLINE,
+      detail: [],
+      dotCount: 20,
+      guide: false,
+    });
+    expect(empty).toBe(bare);
   });
 
   it('시작 화살표와 "1로" 안내가 있다', () => {
@@ -343,14 +389,49 @@ describe('사진 한 장에서 종이 한 장까지', () => {
     // 없다 — 규격을 넓히면 여기서 걸린다.
     expect(serialized).not.toContain('data:image');
     expect(serialized).not.toContain('base64');
+    const numbersOnly = (v: unknown): boolean =>
+      typeof v === 'number' ||
+      (Array.isArray(v) && v.every(numbersOnly)) ||
+      typeof v === 'string';
     for (const value of Object.values(parsed.values)) {
-      if (!Array.isArray(value)) continue;
-      expect(value.every((v) => typeof v === 'number')).toBe(true);
+      expect(numbersOnly(value)).toBe(true);
     }
     // 좌표 배열이 그대로 살아 왔는가.
     expect(parsed.values.outline).toEqual(traced.outline);
-    // 점 100개짜리 윤곽도 몇 킬로바이트다.
+    // 점 100개짜리 윤곽에 세부 선까지 붙어도 몇 킬로바이트다.
     expect(serialized.length).toBeLessThan(30_000);
+  });
+
+  it('세부 선이 판과 완성 그림에 함께 실려 간다 (IDE-021)', () => {
+    const eye = [80, 90, 95, 90, 95, 105, 80, 105];
+    const customization = withValues({ detail: [eye] });
+    expect(validateCustomization(game, customization)).toEqual([]);
+
+    for (const part of game.parts) {
+      const svg = renderDynamicArtwork(
+        game,
+        resolvePart(game, part, customization),
+        customization,
+      );
+      // 세부 굵기(0.45mm)로 그어진 선이 정확히 하나다.
+      expect(svg.match(/stroke-width="0.45"/g) ?? []).toHaveLength(1);
+      // 크기는 그대로다 — 세부가 붙었다고 종이가 커지지 않는다.
+      const measured = parseArtwork(svg);
+      expect(measured.widthMm).toBe(part.widthMm);
+      expect(measured.heightMm).toBe(part.heightMm);
+    }
+  });
+
+  it('세부를 비우면 판에 세부 선이 하나도 없다', () => {
+    const customization = withValues({ detail: [] });
+    for (const part of game.parts) {
+      const svg = renderDynamicArtwork(
+        game,
+        resolvePart(game, part, customization),
+        customization,
+      );
+      expect(svg).not.toContain('stroke-width="0.45"');
+    }
   });
 
   it('배경이 복잡한 사진에서 빈 판이 아니라 사유가 나온다', () => {

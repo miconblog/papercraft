@@ -245,6 +245,8 @@ export const customizationBody = z.object({
       // 윤곽 슬롯(IDE-019)이 먼저다 — 납작한 수 배열은 목록 값의 모양이기도
       // 해서, 순서를 바꾸면 좌표가 "id 문자열의 목록"으로 읽히려다 걸린다.
       z.array(z.number()),
+      // 고리가 여럿인 윤곽 — 세부 선이다(IDE-021).
+      z.array(z.array(z.number())),
       z.array(z.union([z.string(), listItem])),
     ]),
   ),
