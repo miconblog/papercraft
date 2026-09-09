@@ -91,13 +91,15 @@ daddys_craft.run_daily_maintenance()` 로 언제든 손으로 돌릴 수 있다.
 
 ## 무엇을 저장하고 무엇을 버리는가
 
-| 저장한다                                     | 저장하지 않는다               |
-| -------------------------------------------- | ----------------------------- |
-| `visitor_id` — 그날치 salt 로 만든 해시      | IP 원본                       |
-| `ua_browser` · `ua_os` · `ua_device`         | 전체 User-Agent 문자열        |
-| `referrer_host` — 호스트만                   | referrer 전체 URL(검색어까지) |
-| `path` — 물음표 앞까지                       | 쿼리 문자열                   |
-| `utm_source` · `utm_medium` · `utm_campaign` | 쿠키(하나도 심지 않는다)      |
+| 저장한다                                     | 저장하지 않는다                    |
+| -------------------------------------------- | ---------------------------------- |
+| `visitor_id` — 그날치 salt 로 만든 해시      | IP 원본                            |
+| `ua_browser` · `ua_os` · `ua_device`         | 전체 User-Agent 문자열             |
+| `referrer_host` — 호스트만                   | referrer 전체 URL(검색어까지)      |
+| `path` — 물음표 앞까지                       | 쿼리 문자열                        |
+| `utm_source` · `utm_medium` · `utm_campaign` | 쿠키(하나도 심지 않는다)           |
+| `lang` — 언어 코드 하나(`ko` · `de`)         | 지역과 언어 목록(`de-AT,en;q=0.8`) |
+| `bot_score` · `bot_reason` — 봇 신호와 근거  | 판정에 쓴 헤더 원본                |
 
 `visitor_id = HMAC(그날의 salt, IP + UA + 도메인)` 이고 salt 는 자정(KST)에
 바뀐다. 되돌릴 수 없고, 날이 바뀌면 같은 사람이라도 다른 값이 된다.
@@ -125,6 +127,43 @@ daddys_craft.run_daily_maintenance()` 로 언제든 손으로 돌릴 수 있다.
 수집은 **응답을 절대 붙잡지 않는다.** Supabase 가 죽어 있어도, 키가 없어도,
 스키마가 노출돼 있지 않아도 페이지와 PDF 는 그대로 나가고 서버 로그에 경고만
 남는다.
+
+## 봇은 두 겹으로 거른다
+
+| 겹                       | 무엇을 보나                                    | 처분                            |
+| ------------------------ | ---------------------------------------------- | ------------------------------- |
+| `request.ts`의 UA 정규식 | `bot` · `crawl` · `spider` 처럼 스스로 밝힌 것 | **줄을 안 만든다**              |
+| `bot.ts`의 점수          | 사람인 척하는 자동화의 신호                    | 줄은 남기고 **집계에서만 뺀다** |
+
+두 번째 겹의 처분이 다른 이유는 판정이 확률적이기 때문이다. 같은 방식으로 줄을
+지우면 **진짜 사람을 조용히 지워 놓고 알아채지 못한다.** 점수를 남겨 두면
+원본에서 무엇이 걸렸는지 보이고, 기준을 고쳐 `rollup_daily` 를 다시 돌리는 것만으로
+지난 날짜까지 새 기준으로 따라온다.
+
+| 신호                 | 점수 | 왜                                                                    |
+| -------------------- | ---- | --------------------------------------------------------------------- |
+| `no-accept-language` | 2    | 진짜 브라우저는 늘 보낸다. 없으면 HTTP 클라이언트를 손으로 짠 것이다  |
+| `no-client-hints`    | 1    | UA 는 Chrome 인데 `sec-ch-ua` 가 없다 — 위장 신호. **아래 주의 참고** |
+| `bad-fetch-metadata` | 3    | 우리 페이지의 `fetch` 라면 `same-origin`/`cors` 여야 한다             |
+
+문턱은 **2**다. 앱(`BOT_THRESHOLD`)과 SQL(`rollup_daily` 의 기본 인자) 두 곳에
+같은 값이 있다 — 앱은 참고용이고 **실제로 거르는 것은 SQL 쪽**이다.
+
+> ⚠️ `no-client-hints` 에 1점만 준 것은 **`sec-ch-ua` 가 브라우저의 `fetch`
+> 요청에도 실리는지 실물로 확인하지 않았기 때문**이다. 가정이 틀렸다면 이
+> 신호 하나로 Chrome 사용자 전부가 봇이 되므로, 혼자서는 문턱을 못 넘게 뒀다.
+> 실제 방문이 쌓이면 `bot_reason` 을 세어 확인하고 가중치를 정한다.
+
+```sql
+-- 무엇이 봇으로 걸렸나 (대시보드 SQL Editor 에서)
+select bot_score, bot_reason, ua_browser, ua_os, country, lang, count(*)
+from daddys_craft.events
+where day >= current_date - 7
+group by 1,2,3,4,5,6 order by count(*) desc;
+
+-- 기준을 바꿔 다시 집계한다
+select daddys_craft.rollup_daily(current_date - 30, current_date, 3::smallint);
+```
 
 ## 보기
 

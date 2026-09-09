@@ -14,7 +14,7 @@
 | `todo`    | 2    |
 | `doing`   | 0    |
 | `blocked` | 4    |
-| `review`  | 6    |
+| `review`  | 7    |
 | `done`    | 11   |
 
 **지금 할 것** — [IDE-007](IDE-007-print-and-pdf-export.md)(인쇄·PDF 내보내기)은
@@ -220,12 +220,13 @@ OpenCV.js는 8MB라 첫 화면보다 크다. 사진 픽셀에서 A4 PDF 한 장�
 | [IDE-020](IDE-020-dot-to-dot-editor.md)                    | 점 잇기 에디터 — 사진 넣기와 도안 간직      | frontend | P1   | 3d   | `done`    |
 | [IDE-021](IDE-021-dot-to-dot-interior-detail.md)           | 점 잇기 세부 선 — 눈·코·입이 있는 그림      | content  | P1   | 2d   | `done`    |
 
-## M3 — 운영: 예약 공개와 제작일지 (022–030)
+## M3 — 운영: 예약 공개 · 제작일지 · 수집 다듬기 (022–030)
 
-| ID                                           | 제목                                         | 영역     | 우선 | 추정 | 상태   |
-| -------------------------------------------- | -------------------------------------------- | -------- | ---- | ---- | ------ |
-| [IDE-022](IDE-022-scheduled-game-publish.md) | 게임 예약 공개 — 관리자 화면에서 오픈일 지정 | backend  | P1   | 3d   | `todo` |
-| [IDE-023](IDE-023-devlog-blog.md)            | 제작일지 — 관리자 화면에서 쓰고 게시하는 글  | frontend | P2   | 4d   | `todo` |
+| ID                                              | 제목                                                | 영역     | 우선 | 추정 | 상태     |
+| ----------------------------------------------- | --------------------------------------------------- | -------- | ---- | ---- | -------- |
+| [IDE-022](IDE-022-scheduled-game-publish.md)    | 게임 예약 공개 — 관리자 화면에서 오픈일 지정        | backend  | P1   | 3d   | `todo`   |
+| [IDE-023](IDE-023-devlog-blog.md)               | 제작일지 — 관리자 화면에서 쓰고 게시하는 글         | frontend | P2   | 4d   | `todo`   |
+| [IDE-024](IDE-024-bot-signals-and-exclusion.md) | 봇 신호와 집계 제외 — 사람인 척하는 자동화 가려내기 | backend  | P1   | 2d   | `review` |
 
 ---
 

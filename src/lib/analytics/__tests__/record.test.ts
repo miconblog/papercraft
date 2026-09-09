@@ -40,6 +40,38 @@ beforeEach(() => {
 });
 
 describe('recordEvent', () => {
+  it('언어와 봇 점수를 함께 실어 보낸다', async () => {
+    await recordEvent({
+      type: 'pageview',
+      url: '/',
+      headers: headers({
+        'accept-language': 'de-AT,de;q=0.9',
+        'sec-ch-ua': '"Chromium";v="141"',
+        'sec-fetch-site': 'same-origin',
+        'sec-fetch-mode': 'cors',
+      }),
+    });
+
+    expect(lastArgs()).toMatchObject({
+      p_lang: 'de',
+      p_bot_score: 0,
+      p_bot_reason: null,
+    });
+  });
+
+  it('봇으로 매겨도 줄은 나간다 — 집계에서만 빠진다', async () => {
+    const result = await recordEvent({
+      type: 'pageview',
+      url: '/',
+      headers: headers(),
+    });
+
+    // 헤더 묶음에 accept-language 가 없다.
+    expect(result).toEqual({ recorded: true, channel: 'direct' });
+    expect(lastArgs().p_bot_score).toBeGreaterThanOrEqual(2);
+    expect(lastArgs().p_bot_reason).toContain('no-accept-language');
+  });
+
   it('관리자 화면은 세지 않는다 — 숫자를 보러 갈 때마다 숫자가 늘면 안 된다', async () => {
     for (const url of [
       '/admin',
