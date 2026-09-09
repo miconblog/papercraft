@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { cookies, headers } from 'next/headers';
 import { ShareLinkBuilder } from '@/components/analytics/ShareLinkBuilder';
+import { logout } from '@/app/admin/login/actions';
 import { adminPassword } from '@/lib/analytics/config';
 import { ADMIN_COOKIE, isValidSession } from '@/lib/analytics/session';
 import { daysAgo, loadReport, type DailyTraffic } from '@/lib/analytics/report';
@@ -112,9 +113,30 @@ export default async function AnalyticsPage() {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
-      <h1 className="text-3xl font-bold tracking-tight">방문 통계</h1>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">방문 통계</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            최근 {WINDOW_DAYS}일 · 자체 수집 · 제3자에게 넘기지 않습니다.
+          </p>
+        </div>
+
+        {/* 제외를 끄는 유일한 자리다 — 눌러야 이 브라우저가 다시 세어진다. */}
+        <form action={logout}>
+          <button
+            type="submit"
+            className="rounded-full border border-border px-3 py-1.5 text-xs whitespace-nowrap transition-colors outline-none hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
+          >
+            로그아웃
+          </button>
+        </form>
+      </div>
+
+      {/* 이 안내를 빼면 왜 내 방문이 안 잡히는지 나중에 스스로 헷갈린다. */}
       <p className="mt-2 text-sm text-muted-foreground">
-        최근 {WINDOW_DAYS}일 · 자체 수집 · 제3자에게 넘기지 않습니다.
+        로그인한 이 브라우저는{' '}
+        <strong>사이트 어디를 열어도 집계되지 않습니다.</strong> 다시 세려면
+        로그아웃하세요.
       </p>
 
       {!report.available ? (

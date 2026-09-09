@@ -72,6 +72,28 @@ describe('recordEvent', () => {
     expect(lastArgs().p_bot_reason).toContain('no-accept-language');
   });
 
+  it('제외 쿠키가 있으면 사이트 어디를 열어도 세지 않는다 (IDE-026)', async () => {
+    for (const url of ['/', '/games/soccer']) {
+      const result = await recordEvent({
+        type: 'pageview',
+        url,
+        headers: headers({ cookie: 'theme=dark; dc_nocount=1' }),
+      });
+
+      expect(result).toEqual({ recorded: false, reason: 'opted-out' });
+    }
+
+    // 다운로드도 마찬가지다 — 서버가 직접 세는 쪽이라 더 중요하다.
+    await recordEvent({
+      type: 'download',
+      url: '/games/soccer/print',
+      headers: headers({ cookie: 'dc_nocount=1' }),
+      gameId: 'soccer',
+    });
+
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
   it('관리자 화면은 세지 않는다 — 숫자를 보러 갈 때마다 숫자가 늘면 안 된다', async () => {
     for (const url of [
       '/admin',
