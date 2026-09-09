@@ -81,8 +81,13 @@ describe('주인 표시 쿠키 (IDE-026 · IDE-027)', () => {
     expect(sessionCookie('x').httpOnly).toBe(true);
   });
 
-  it('인증 쿠키는 여전히 /admin 안에만 머문다', () => {
-    expect(sessionCookie('x').path).toBe('/admin');
+  it('인증 쿠키는 사이트 전체에 실린다 — 예약 공개 미리보기 때문이다 (IDE-022)', () => {
+    // `/admin` 안에만 두면 `/games/...` 와 `/api/games/...` 요청에 안 실려,
+    // 관리자가 오픈 전 게임을 실물로 볼 방법이 없다. 자격을 하나 더 만드는
+    // 대신 있는 것을 넓혔다 — 둘이 되면 로그아웃이 하나를 빠뜨린다.
+    expect(sessionCookie('x').path).toBe('/');
+    // 넓혔어도 브라우저가 읽지는 못한다. 그 성질까지 놓치면 안 된다.
+    expect(sessionCookie('x').httpOnly).toBe(true);
   });
 
   it('쿠키가 있으면 세지 않는다', () => {

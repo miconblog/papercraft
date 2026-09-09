@@ -9,17 +9,31 @@ import {
   ScissorsIcon,
 } from 'lucide-react';
 import { GameCard } from '@/components/GameCard';
-import { GAMES } from '@/lib/games';
+import { openGames } from '@/lib/games/open';
 import { boardOf } from '@/lib/games/format';
 import { formatPlayers, SUPPORTED_PAPER_SIZE } from '@/lib/games/format';
 
 /**
  * 랜딩 — 처음 온 사람에게 이게 무엇이고 왜 만드는지를 먼저 말한다 (IDE-005).
  *
- * 히어로 → 왜 하는지 → 만드는 순서 → 게임 목록. 목록은 여전히 `GAMES`(등록소)만
- * 읽으므로 게임이 늘어도 이 파일은 손대지 않는다. 히어로에 세우는 그림도
- * 등록소의 첫 게임을 그대로 쓴다 — 여기에 게임 이름을 적어 두지 않는다.
+ * 히어로 → 왜 하는지 → 만드는 순서 → 게임 목록. 목록은 등록소만 읽으므로 게임이
+ * 늘어도 이 파일은 손대지 않는다. 히어로에 세우는 그림도 목록의 첫 게임을 그대로
+ * 쓴다 — 여기에 게임 이름을 적어 두지 않는다.
+ *
+ * 오픈 전 게임은 빠진다(IDE-022). `openGames` 안의 `fetch` 에 재검증이 걸려 있어
+ * **이 페이지는 정적인 채로** 60초마다 다시 그려진다 — 오픈 시각이 지나면 사람이
+ * 아무것도 하지 않아도 카드가 붙는다.
  */
+
+/**
+ * 60초마다 다시 그린다 — `RENDER_REVALIDATE_S` 와 같은 값이다(리터럴이어야 해서
+ * 상수를 못 쓴다).
+ *
+ * `openGames` 안의 `fetch` 에도 같은 재검증이 걸려 있지만, 여기에도 적어 둔다.
+ * 그쪽은 **키가 있을 때만** 실제로 돌아서, 키 없이 빌드하면 이 페이지가 영영
+ * 정적으로 굳는다 — 그러면 오픈 시각이 지나도 목록에 카드가 붙지 않는다.
+ */
+export const revalidate = 60;
 
 /** 부모에게 하는 약속. 문구는 사용자가 직접 정했다(2026-09-07). */
 const VALUES = [
@@ -59,9 +73,10 @@ const STEPS = [
   },
 ] as const;
 
-export default function Home() {
-  // 히어로에 세울 그림. 등록소가 비어 있어도 페이지는 서야 한다.
-  const featured = GAMES[0];
+export default async function Home() {
+  const games = await openGames();
+  // 히어로에 세울 그림. 열린 게임이 하나도 없어도 페이지는 서야 한다.
+  const featured = games[0];
 
   return (
     <div className="w-full">
@@ -201,11 +216,11 @@ export default function Home() {
           프린터로 원하는 크기에 맞춰 뽑는다.
         </p>
 
-        {GAMES.length === 0 ? (
+        {games.length === 0 ? (
           <p className="mt-8 text-muted-foreground">아직 등록된 게임이 없다.</p>
         ) : (
           <ul className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {GAMES.map((game) => (
+            {games.map((game) => (
               <GameCard key={game.id} game={game} />
             ))}
           </ul>

@@ -22,8 +22,26 @@ type Env = Record<string, string | undefined>;
 
 const trimmed = (value: string | undefined): string => value?.trim() ?? '';
 
+/** 같은 Supabase 를 쓰지만 수집과 무관한 것들이 읽는 몫. */
+export type SupabaseConnection = Omit<AnalyticsConfig, 'hashSalt'>;
+
 /**
- * 켜져 있으면 설정을, 아니면 `null`.
+ * Supabase 연결만. **`ANALYTICS_ENABLED` 를 보지 않는다** (IDE-022).
+ *
+ * 그 스위치는 "방문을 세지 않는다"는 뜻이지 "이 DB 를 안 쓴다"는 뜻이 아니다.
+ * 예약 공개(`lib/games/release.ts`)가 그 스위치에 묶여 있으면, 수집을 끄는
+ * 순간 **잡아 둔 오픈일이 전부 풀려 게임이 세상에 열린다.**
+ */
+export function supabaseConnection(
+  env: Env = process.env,
+): SupabaseConnection | null {
+  const url = trimmed(env.SUPABASE_URL);
+  const serviceRoleKey = trimmed(env.SUPABASE_SERVICE_ROLE_KEY);
+  return url && serviceRoleKey ? { url, serviceRoleKey } : null;
+}
+
+/**
+ * 수집이 켜져 있으면 설정을, 아니면 `null`.
  *
  * `ANALYTICS_ENABLED` 는 키가 다 있어도 끌 수 있는 스위치다. 비워 두면
  * "키가 다 있으면 켠다"로 읽는다 — 배포 환경에 키를 넣는 것만으로 켜진다.
@@ -34,12 +52,11 @@ export function analyticsConfig(
   const enabled = trimmed(env.ANALYTICS_ENABLED).toLowerCase();
   if (enabled === '0' || enabled === 'false' || enabled === 'off') return null;
 
-  const url = trimmed(env.SUPABASE_URL);
-  const serviceRoleKey = trimmed(env.SUPABASE_SERVICE_ROLE_KEY);
+  const connection = supabaseConnection(env);
   const hashSalt = trimmed(env.ANALYTICS_HASH_SALT);
-  if (!url || !serviceRoleKey || !hashSalt) return null;
+  if (!connection || !hashSalt) return null;
 
-  return { url, serviceRoleKey, hashSalt };
+  return { ...connection, hashSalt };
 }
 
 /** `/admin/analytics` 비밀번호. 없으면 그 경로는 존재하지 않는다(404). */

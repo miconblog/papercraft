@@ -40,11 +40,15 @@ describe('login', () => {
       'REDIRECT:/admin/analytics',
     );
 
-    const cookie = set.mock.calls[0][0];
+    // 첫 줄은 옛 경로에 심긴 것을 지우는 쿠키다 (IDE-022). 진짜는 `/` 짜리다.
+    const cookie = set.mock.calls
+      .map(([c]) => c)
+      .find((c) => c.name === 'dc_admin' && c.maxAge > 0);
     expect(cookie).toMatchObject({
       name: 'dc_admin',
       httpOnly: true,
       sameSite: 'lax',
+      path: '/',
     });
     expect(isValidSession(cookie.value, PASSWORD)).toBe(true);
   });
@@ -88,8 +92,16 @@ describe('주인 표시 쿠키 (IDE-026 · IDE-027)', () => {
       'REDIRECT:',
     );
 
-    const names = set.mock.calls.map(([cookie]) => cookie.name);
-    expect(names).toEqual([ADMIN_COOKIE, OWNER_COOKIE]);
+    // 첫 줄은 옛 경로(`/admin`)에 심긴 인증 쿠키를 지우는 것이다 (IDE-022) —
+    // 남겨 두면 같은 이름이 둘 실려 어느 쪽이 읽힐지 브라우저가 정한다.
+    expect(
+      set.mock.calls.map(([cookie]) => [cookie.name, cookie.path]),
+    ).toEqual([
+      [ADMIN_COOKIE, '/admin'],
+      [ADMIN_COOKIE, '/'],
+      [OWNER_COOKIE, '/'],
+    ]);
+    expect(set.mock.calls[0][0].maxAge).toBe(0);
 
     // 주인 쿠키는 사이트 어디에나 실려야 하고, 헤더가 읽어야 한다.
     const owner = set.mock.calls.find(
@@ -99,13 +111,15 @@ describe('주인 표시 쿠키 (IDE-026 · IDE-027)', () => {
     expect(owner.httpOnly).toBe(false);
   });
 
-  it('로그아웃은 셋을 함께 지운다 — 하나만 지우면 어긋난다', async () => {
+  it('로그아웃은 남김없이 지운다 — 하나만 지우면 어긋난다', async () => {
     await expect(logout()).rejects.toThrow('REDIRECT:/');
 
     // 옛 이름(IDE-026)도 지운다. 안 지우면 그 브라우저가 영영 빠진 채 남는다.
+    // 인증 쿠키는 지금 경로(`/`)와 옛 경로(`/admin`) 둘 다 지운다 (IDE-022).
     expect(
       set.mock.calls.map(([cookie]) => [cookie.name, cookie.path]),
     ).toEqual([
+      [ADMIN_COOKIE, '/'],
       [ADMIN_COOKIE, '/admin'],
       [OWNER_COOKIE, '/'],
       [LEGACY_NOCOUNT_COOKIE, '/'],
