@@ -66,7 +66,7 @@ function Sparkbars({ days }: { days: DailyTraffic[] }) {
         return (
           <li
             key={day}
-            title={`${day} · PV ${pageviews} · 일간 UV ${row?.visitors ?? 0}`}
+            title={`${day} · 순 PV ${pageviews} · 일간 UV ${row?.visitors ?? 0}`}
             // 0 인 날도 한 줄은 남긴다 — 아예 비면 그날이 있었는지도 안 보인다.
             className="min-h-px flex-1 rounded-t-xs bg-primary/70"
             style={{ height: `${Math.round((pageviews / peak) * 100)}%` }}
@@ -126,7 +126,7 @@ export default async function AnalyticsPage() {
       ) : (
         <>
           <dl className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Stat label="페이지뷰" value={sum((d) => d.pageviews)} />
+            <Stat label="순 페이지뷰" value={sum((d) => d.pageviews)} />
             <Stat label="세션" value={sum((d) => d.sessions)} />
             <Stat label="PDF 다운로드" value={sum((d) => d.downloads)} />
             <Stat label="일간 UV 합" value={sum((d) => d.visitors)} />
@@ -139,12 +139,20 @@ export default async function AnalyticsPage() {
             &ldquo;일간 UV 합&rdquo;은 기간 순방문자가 아니라 대략치입니다.
           </p>
 
+          {/* 이 한 줄을 빼면 다른 도구의 PV 와 견주다 낮다고 오해한다. */}
+          <p className="mt-1 text-xs text-muted-foreground">
+            PV 는 <strong>순</strong> 페이지뷰입니다. 한 세션에서 같은 경로는 몇
+            번을 새로고침해도 1 로 셉니다 — 다른 화면으로 옮겨 간 것은 그대로
+            더해지므로, 이 숫자는 &ldquo;얼마나 눌렀나&rdquo;가 아니라
+            &ldquo;얼마나 둘러봤나&rdquo;에 가깝습니다.
+          </p>
+
           <section className="mt-8">
-            <h2 className="text-lg font-semibold">일자별 페이지뷰</h2>
+            <h2 className="text-lg font-semibold">일자별 순 페이지뷰</h2>
             <Sparkbars days={report.days} />
             <table className="mt-4 w-full text-sm">
               <caption className="sr-only">
-                일자별 페이지뷰·일간 UV·세션
+                일자별 순 페이지뷰·일간 UV·세션
               </caption>
               <thead>
                 <tr className="border-b border-border text-left">
