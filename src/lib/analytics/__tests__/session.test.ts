@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   ADMIN_COOKIE,
-  NOCOUNT_COOKIE,
+  LEGACY_NOCOUNT_COOKIE,
+  OWNER_COOKIE,
   expiredCookie,
-  hasNoCountCookie,
+  isOwnerBrowser,
   issueSession,
   isValidSession,
-  noCountCookie,
+  ownerCookie,
   safeEqual,
   sessionCookie,
 } from '../session';
@@ -67,11 +68,17 @@ describe('세션 쿠키', () => {
   });
 });
 
-describe('제외 쿠키 (IDE-026)', () => {
+describe('주인 표시 쿠키 (IDE-026 · IDE-027)', () => {
   it('사이트 어디에나 실리도록 경로가 / 다', () => {
     // `/admin` 으로 잠그면 수집 API(`/api/...`)에 안 실려 아무 소용이 없다.
-    expect(noCountCookie().path).toBe('/');
-    expect(noCountCookie().name).toBe(NOCOUNT_COOKIE);
+    expect(ownerCookie().path).toBe('/');
+    expect(ownerCookie().name).toBe(OWNER_COOKIE);
+  });
+
+  it('브라우저가 읽을 수 있어야 한다 — 헤더의 관리자 링크가 이걸 본다', () => {
+    // 서버가 읽으면 루트 레이아웃이 쿠키를 만져 정적 렌더링이 통째로 깨진다.
+    expect(ownerCookie().httpOnly).toBe(false);
+    expect(sessionCookie('x').httpOnly).toBe(true);
   });
 
   it('인증 쿠키는 여전히 /admin 안에만 머문다', () => {
@@ -79,26 +86,34 @@ describe('제외 쿠키 (IDE-026)', () => {
   });
 
   it('쿠키가 있으면 세지 않는다', () => {
-    const headers = new Headers({ cookie: `${NOCOUNT_COOKIE}=1` });
-    expect(hasNoCountCookie(headers)).toBe(true);
+    expect(isOwnerBrowser(new Headers({ cookie: `${OWNER_COOKIE}=1` }))).toBe(
+      true,
+    );
+  });
+
+  it('옛 이름으로 심긴 브라우저도 계속 알아본다', () => {
+    // IDE-026 이 잠깐 쓴 이름이다. 못 알아보면 그 브라우저가 다시 세어진다.
+    expect(
+      isOwnerBrowser(new Headers({ cookie: `${LEGACY_NOCOUNT_COOKIE}=1` })),
+    ).toBe(true);
   });
 
   it('다른 쿠키에 섞여 있어도 찾는다', () => {
     const headers = new Headers({
-      cookie: `theme=dark; ${NOCOUNT_COOKIE}=1; other=2`,
+      cookie: `theme=dark; ${OWNER_COOKIE}=1; other=2`,
     });
-    expect(hasNoCountCookie(headers)).toBe(true);
+    expect(isOwnerBrowser(headers)).toBe(true);
   });
 
   it('이름이 겹치는 남의 쿠키에 걸리지 않는다', () => {
-    for (const raw of [`x${NOCOUNT_COOKIE}=1`, `${NOCOUNT_COOKIE}x=1`]) {
-      expect(hasNoCountCookie(new Headers({ cookie: raw }))).toBe(false);
+    for (const raw of [`x${OWNER_COOKIE}=1`, `${OWNER_COOKIE}x=1`]) {
+      expect(isOwnerBrowser(new Headers({ cookie: raw }))).toBe(false);
     }
   });
 
   it('쿠키가 아예 없으면 센다', () => {
-    expect(hasNoCountCookie(new Headers())).toBe(false);
-    expect(hasNoCountCookie(new Headers({ cookie: 'theme=dark' }))).toBe(false);
+    expect(isOwnerBrowser(new Headers())).toBe(false);
+    expect(isOwnerBrowser(new Headers({ cookie: 'theme=dark' }))).toBe(false);
   });
 });
 
@@ -110,6 +125,6 @@ describe('지우는 쿠키', () => {
       maxAge: 0,
       value: '',
     });
-    expect(expiredCookie(NOCOUNT_COOKIE, '/').path).toBe('/');
+    expect(expiredCookie(OWNER_COOKIE, '/').path).toBe('/');
   });
 });

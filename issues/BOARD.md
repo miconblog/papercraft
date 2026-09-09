@@ -14,7 +14,7 @@
 | `todo`    | 2    |
 | `doing`   | 0    |
 | `blocked` | 4    |
-| `review`  | 9    |
+| `review`  | 10   |
 | `done`    | 11   |
 
 **지금 할 것** — [IDE-007](IDE-007-print-and-pdf-export.md)(인쇄·PDF 내보내기)은
@@ -229,6 +229,7 @@ OpenCV.js는 8MB라 첫 화면보다 크다. 사진 픽셀에서 A4 PDF 한 장�
 | [IDE-024](IDE-024-bot-signals-and-exclusion.md) | 봇 신호와 집계 제외 — 사람인 척하는 자동화 가려내기           | backend  | P1   | 2d   | `review` |
 | [IDE-025](IDE-025-unique-pageviews.md)          | 순 페이지뷰 — 한 세션에서 같은 경로는 한 번만                 | backend  | P1   | 1d   | `review` |
 | [IDE-026](IDE-026-admin-optout-cookie.md)       | 관리자 브라우저를 통계에서 빼기 — 제외 쿠키와 명시적 로그아웃 | backend  | P1   | 1d   | `review` |
+| [IDE-027](IDE-027-admin-nav-and-index.md)       | 헤더의 관리자 메뉴 · /admin 404 고치기                        | frontend | P2   | 1d   | `review` |
 
 ---
 

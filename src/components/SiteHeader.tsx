@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { AdminLink } from '@/components/AdminLink';
 import { BrandMark } from '@/components/BrandMark';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -23,7 +24,12 @@ export function SiteHeader() {
           <BrandMark className="size-7 shrink-0" />
           아빠 뭐해?, 아빠 공방
         </Link>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          {/* 로그인한 브라우저에만 나온다. 서버는 이 판단을 하지 않는다 —
+              헤더에서 쿠키를 읽으면 사이트 전체가 정적 렌더링에서 빠진다. */}
+          <AdminLink />
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );

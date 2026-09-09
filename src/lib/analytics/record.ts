@@ -23,7 +23,7 @@ import {
 } from './request';
 import { botVerdict, primaryLanguage } from './bot';
 import { isExcludedPath } from './excluded';
-import { hasNoCountCookie } from './session';
+import { isOwnerBrowser } from './session';
 import { analyticsDay, clientIp, visitorId } from './visitor';
 
 export type EventType = 'pageview' | 'download';
@@ -67,7 +67,7 @@ export async function recordEvent(input: RecordInput): Promise<RecordResult> {
 
     // 관리자로 로그인한 브라우저는 사이트 어디를 열어도 세지 않는다 (IDE-026).
     // 경로보다 먼저 본다 — 이 판단에는 경로가 필요 없다.
-    if (hasNoCountCookie(input.headers))
+    if (isOwnerBrowser(input.headers))
       return { recorded: false, reason: 'opted-out' };
 
     const host = input.headers.get('host') ?? '';

@@ -15,7 +15,7 @@ vi.mock('next/headers', () => ({ cookies: async () => ({ set }) }));
 vi.mock('next/navigation', () => ({ redirect, notFound }));
 
 const { login, logout } = await import('../actions');
-const { isValidSession, ADMIN_COOKIE, NOCOUNT_COOKIE } =
+const { isValidSession, ADMIN_COOKIE, OWNER_COOKIE, LEGACY_NOCOUNT_COOKIE } =
   await import('@/lib/analytics/session');
 
 const PASSWORD = 'admin-password-for-tests';
@@ -82,30 +82,33 @@ describe('login', () => {
   });
 });
 
-describe('제외 쿠키 (IDE-026)', () => {
-  it('로그인하면 인증 쿠키와 제외 쿠키를 함께 심는다', async () => {
+describe('주인 표시 쿠키 (IDE-026 · IDE-027)', () => {
+  it('로그인하면 인증 쿠키와 주인 쿠키를 함께 심는다', async () => {
     await expect(login({ error: null }, form(PASSWORD))).rejects.toThrow(
       'REDIRECT:',
     );
 
     const names = set.mock.calls.map(([cookie]) => cookie.name);
-    expect(names).toEqual([ADMIN_COOKIE, NOCOUNT_COOKIE]);
+    expect(names).toEqual([ADMIN_COOKIE, OWNER_COOKIE]);
 
-    // 제외 쿠키는 사이트 어디에나 실려야 한다.
-    const nocount = set.mock.calls.find(
-      ([cookie]) => cookie.name === NOCOUNT_COOKIE,
+    // 주인 쿠키는 사이트 어디에나 실려야 하고, 헤더가 읽어야 한다.
+    const owner = set.mock.calls.find(
+      ([cookie]) => cookie.name === OWNER_COOKIE,
     )?.[0];
-    expect(nocount.path).toBe('/');
+    expect(owner.path).toBe('/');
+    expect(owner.httpOnly).toBe(false);
   });
 
-  it('로그아웃은 둘을 함께 지운다 — 하나만 지우면 어긋난다', async () => {
+  it('로그아웃은 셋을 함께 지운다 — 하나만 지우면 어긋난다', async () => {
     await expect(logout()).rejects.toThrow('REDIRECT:/');
 
+    // 옛 이름(IDE-026)도 지운다. 안 지우면 그 브라우저가 영영 빠진 채 남는다.
     expect(
       set.mock.calls.map(([cookie]) => [cookie.name, cookie.path]),
     ).toEqual([
       [ADMIN_COOKIE, '/admin'],
-      [NOCOUNT_COOKIE, '/'],
+      [OWNER_COOKIE, '/'],
+      [LEGACY_NOCOUNT_COOKIE, '/'],
     ]);
     for (const [cookie] of set.mock.calls) expect(cookie.maxAge).toBe(0);
   });

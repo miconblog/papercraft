@@ -9,6 +9,14 @@
  * 무효가 된다. 로그아웃을 따로 만들 필요가 없다는 뜻이기도 하다.
  */
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import {
+  LEGACY_NOCOUNT_COOKIE,
+  OWNER_COOKIE,
+} from '@/lib/analytics/cookieNames';
+
+// 이름은 `cookieNames.ts` 가 주인이다 — 브라우저(`AdminLink`)도 그 파일을
+// 읽는다. 서버 쪽은 지금까지처럼 이 파일 하나만 보면 되도록 다시 내보낸다.
+export { LEGACY_NOCOUNT_COOKIE, OWNER_COOKIE };
 
 export const ADMIN_COOKIE = 'dc_admin';
 
@@ -73,30 +81,40 @@ export const sessionCookie = (value: string) => ({
 });
 
 /**
- * "나는 세지 마라" 쿠키 (IDE-026)
+ * 주인 표시 쿠키 (IDE-026 · IDE-027)
  *
  * 관리자가 자기 사이트를 둘러보는 것은 방문이 아니다. `/admin` 경로는
  * `excluded.ts` 가 이미 빼지만, 홈과 게임 페이지를 열어 보는 것은 못 뺀다.
  *
  * **인증 쿠키를 넓히지 않고 따로 심는다.** 넓히면 인증 쿠키가 모든 요청에
- * 실리고, 세션이 끝나면 제외도 함께 끝난다. 이쪽은 비밀이 아니라서 값이
- * 새어도 잃을 것이 없다 — 할 수 있는 일이 **자기를 통계에서 빼는 것**뿐이고,
- * 남의 수치를 부풀리지는 못한다.
+ * 실리고, 세션이 끝나면 제외도 함께 끝난다.
  *
- * 그래서 서명하지 않는다. 있으면 세지 않는다, 그것뿐이다.
+ * 하는 일이 둘이다.
+ *
+ * 1. 이 브라우저의 방문은 세지 않는다(`record.ts`).
+ * 2. 헤더에 관리자 메뉴를 보인다(`AdminLink`).
+ *
+ * **`httpOnly` 가 아니다.** 2번 때문이다 — 헤더에서 이것을 서버가 읽으면
+ * 루트 레이아웃이 쿠키를 만지게 되고, 그 순간 **사이트 전체가 정적 렌더링에서
+ * 빠진다.** `PageViews` 가 `useSearchParams` 를 피한 것과 같은 이유다.
+ *
+ * 비밀이 아니라서 열어 두어도 잃을 것이 없다. 이 쿠키를 손으로 만들어 넣어도
+ * 할 수 있는 일은 **자기를 통계에서 빼고 링크 하나를 보는 것**뿐이고, 그 링크
+ * 끝에는 비밀번호를 묻는 화면이 있다. 문지기는 `proxy.ts` 와 페이지가 한다.
+ *
+ * 1년을 간다. 로그아웃 말고는 지우지 않기로 했다(2026-09-09 사용자 결정).
  */
-export const NOCOUNT_COOKIE = 'dc_nocount';
+const OWNER_TTL_MS = 365 * 24 * 60 * 60 * 1000;
 
-/** 1년. 로그아웃 말고는 지우지 않기로 했다(2026-09-09 사용자 결정). */
-const NOCOUNT_TTL_MS = 365 * 24 * 60 * 60 * 1000;
-
-export const noCountCookie = () => ({
+export const ownerCookie = () => ({
   ...base,
-  name: NOCOUNT_COOKIE,
+  // 위 주석의 이유로 브라우저가 읽을 수 있어야 한다.
+  httpOnly: false,
+  name: OWNER_COOKIE,
   value: '1',
   // 사이트 어디를 열어도 실려야 한다 — 수집 API 는 `/api` 아래에 있다.
   path: '/',
-  maxAge: NOCOUNT_TTL_MS / 1000,
+  maxAge: OWNER_TTL_MS / 1000,
 });
 
 /**
@@ -114,16 +132,17 @@ export const expiredCookie = (name: string, path: string) => ({
 });
 
 /**
- * 이 요청을 세지 않아야 하는가.
+ * 주인의 브라우저인가 — 세지 않아야 하는가.
  *
- * `includes('dc_nocount=')` 로 보면 `xdc_nocount=` 같은 남의 쿠키에 걸린다.
+ * `includes('dc_owner=')` 로 보면 `xdc_owner=` 같은 남의 쿠키에 걸린다.
  * 이름을 통째로 견준다.
  */
-export function hasNoCountCookie(headers: Headers): boolean {
+export function isOwnerBrowser(headers: Headers): boolean {
   const raw = headers.get('cookie');
   if (!raw) return false;
 
   return raw
     .split(';')
-    .some((part) => part.trim().split('=')[0] === NOCOUNT_COOKIE);
+    .map((part) => part.trim().split('=')[0])
+    .some((name) => name === OWNER_COOKIE || name === LEGACY_NOCOUNT_COOKIE);
 }
