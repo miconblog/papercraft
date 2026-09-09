@@ -15,9 +15,11 @@ import {
 import {
   ART_AREA,
   BOARD,
+  DETAIL_STROKE_MM,
   GUIDE_COLOR,
   GUIDE_STROKE_MM,
   METRICS,
+  SAMPLE_DETAIL,
   SAMPLE_OUTLINE,
   TYPE,
 } from '../dimensions.ts';
@@ -46,7 +48,34 @@ export interface BoardInput {
   readonly dotCount: number;
   /** 옅은 안내선을 깔 것인가. 만 3~4세는 있어야 선을 따라간다. */
   readonly guide: boolean;
+  /**
+   * 미리 그려 두는 세부 선 (IDE-021). 눈·입·머리카락 경계 같은 것이다.
+   *
+   * **점도 번호도 붙지 않는다** — 아이가 잇는 선은 여전히 윤곽 하나뿐이라
+   * 연필을 뗄 자리가 없다. 없으면 지금까지와 똑같은 판이 나온다.
+   */
+  readonly detail?: ReadonlyArray<readonly number[]>;
 }
+
+/**
+ * 세부 선 — 윤곽선보다 가늘게 긋는다.
+ *
+ * 답(윤곽)이 아니라 그림의 일부이므로 있어야 하지만, 굵으면 아이가 이을 선과
+ * 헷갈린다. 이을 선은 아직 종이에 없고 세부만 있는 상태가 이 판의 첫 모습이다.
+ */
+const detailLayer = (
+  detail: ReadonlyArray<readonly number[]> | undefined,
+): string[] =>
+  (detail ?? [])
+    .filter((ring) => ring.length >= 6)
+    .map((ring) =>
+      path(outlinePath(ring), {
+        fill: 'none',
+        stroke: INK_COLOR,
+        'stroke-width': DETAIL_STROKE_MM,
+        'stroke-linejoin': 'round',
+      }),
+    );
 
 /** 닫힌 폴리라인의 `d`. 직선뿐이라 M·L·Z 세 명령이면 된다. */
 export const outlinePath = (outline: readonly number[]): string => {
@@ -161,6 +190,7 @@ export const renderBoard = (input: BoardInput): string => {
         }),
 
         ...guideLayer,
+        ...detailLayer(input.detail),
 
         ...dots.map((dot) =>
           circle(dot.xMm, dot.yMm, METRICS.dotDiameterMm / 2, {
@@ -199,6 +229,7 @@ export const renderBoard = (input: BoardInput): string => {
 export const renderDefaultBoard = (): string =>
   renderBoard({
     outline: SAMPLE_OUTLINE,
+    detail: SAMPLE_DETAIL,
     dotCount: DEFAULT_DOT_COUNT,
     guide: false,
   });

@@ -12,7 +12,7 @@
  * 좌표까지 사용자 편집 대상이고, 이동 범위는 `regionId`가 가리키는 영역이다.
  */
 import { z } from 'zod';
-import { mmCoord, mmLength, hexColor, slug } from './units';
+import { mmCoord, mmLength, hexColor, rectMm, slug } from './units';
 
 export const textAlign = z.enum(['start', 'center', 'end']);
 
@@ -99,6 +99,21 @@ export const textSlot = z.strictObject({
   placeholder: z.string().max(60).optional(),
 });
 
+/**
+ * 숫자 슬롯의 **자주 쓰는 값 단추**. 입력 칸을 대신하지 않고 옆에 붙는다.
+ *
+ * 점 잇기의 점 개수가 처음 쓴다(IDE-020) — 10·20·30·50·100이고, 어느 나이대가
+ * 어느 값인지가 `help`에 붙는다. 범위가 5~100이라 입력 칸만 두면 사용자가
+ * "몇 개가 우리 아이에게 맞나"를 스스로 정해야 한다.
+ */
+export const numberPreset = z.strictObject({
+  value: z.number(),
+  label: z.string().min(1).max(24),
+  /** 어느 때 고르는 값인지. 단추의 도움말과 스크린리더 이름에 붙는다. */
+  help: z.string().max(60).optional(),
+});
+export type NumberPreset = z.infer<typeof numberPreset>;
+
 export const numberSlot = z.strictObject({
   ...slotBase,
   kind: z.literal('number'),
@@ -106,6 +121,7 @@ export const numberSlot = z.strictObject({
   max: z.number(),
   integer: z.boolean().default(true),
   default: z.number(),
+  presets: z.array(numberPreset).default([]),
 });
 
 export const colorSlot = z.strictObject({
@@ -186,6 +202,22 @@ export const listSlot = z.strictObject({
 });
 
 /**
+ * 윤곽이 앉는 자리 — **어느 파트의 어느 사각형에 비율 그대로 맞춰 넣는가**.
+ *
+ * 값이 파트 로컬 mm이므로 그것을 계산하는 쪽(사진을 다루는 에디터)이 이 상자를
+ * 알아야 한다(IDE-020). 파트 전체를 쓸 수 없는 것은 제목·놀이 방법·번호가 갈
+ * 자리를 비워 둬야 하기 때문이다.
+ *
+ * 슬롯이 여러 파트에 놓여도 상자는 하나다 — 값은 **한 파트의 좌표계**로만
+ * 저장되고, 다른 파트는 제 상자에 다시 맞춰 그린다(점 잇기의 완성 그림 부속).
+ */
+export const outlineBox = z.strictObject({
+  partId: slug,
+  ...rectMm.shape,
+});
+export type OutlineBox = z.infer<typeof outlineBox>;
+
+/**
  * 윤곽 슬롯 — **사용자 입력에서 생성된 기하 데이터**다 (IDE-019).
  *
  * 점 잇기가 처음 쓴다. 앞선 슬롯들과 다른 점은 **도안이 후보를 미리 선언해
@@ -204,11 +236,49 @@ export const listSlot = z.strictObject({
 export const outlineSlot = z.strictObject({
   ...slotBase,
   kind: z.literal('outline'),
-  /** 이보다 꼭짓점이 적으면 이을 형태가 아니다. */
+  /** 값이 어느 파트의 어느 사각형에 맞춰 들어가는가. */
+  box: outlineBox,
+  /**
+   * 고리를 몇 개까지 담나 (IDE-021).
+   *
+   * **1이면 값이 `number[]`, 2 이상이면 `number[][]`다.** 한 슬롯이 두 모양을
+   * 갖는 것이 반갑지는 않지만, 고리 하나짜리가 늘 `[[…]]`로 한 겹 싸이면
+   * 점 잇기 판이 쓰는 모든 자리가 그 겹을 벗기는 코드를 갖게 된다. 읽는 쪽은
+   * `outlineRings(slot, value)`를 거치면 개수를 몰라도 된다.
+   *
+   * 점 잇기는 슬롯을 둘 쓴다 — 아이가 잇는 `outline`(1)과 미리 그려 두는
+   * `detail`(여럿)이다.
+   */
+  maxRings: z.number().int().positive().default(1),
+  /**
+   * 같은 사진에서 딴 **세부 선**을 담을 다른 윤곽 슬롯의 id (IDE-021).
+   *
+   * 눈·입·머리카락 경계처럼 아이가 잇지 않고 판에 미리 그려 두는 선이다.
+   * 점 잇기는 한 붓 그리기라 선이 여럿이면 연필을 떼야 하는데, 그 표시를
+   * 도안에 넣는 일은 이 놀이를 처음 하는 나이대에 이르다.
+   *
+   * 가리키는 슬롯은 `maxRings`가 2 이상인 윤곽 슬롯이어야 하고, 같은 상자·같은
+   * 파트를 써야 한다 — 사진 하나에서 같은 변환으로 나온 것이라야 서로 맞는다.
+   */
+  detailSlotId: slug.optional(),
+  /** 이보다 꼭짓점이 적으면 이을 형태가 아니다. 고리 **하나**의 기준이다. */
   minPoints: z.number().int().min(3).default(3),
-  /** 이보다 많으면 저장이 커지고 단순화가 덜 된 것이다. */
+  /** 이보다 많으면 저장이 커지고 단순화가 덜 된 것이다. 고리 하나의 기준이다. */
   maxPoints: z.number().int().positive().default(2000),
-  default: z.array(z.number()),
+  /**
+   * 이 윤곽선 **위에 몇 개를 놓을지** 정하는 숫자 슬롯의 id.
+   *
+   * 두 값이 붙어 다녀야 하는 것은 **넣을 수 있는 개수가 윤곽선의 길이에서
+   * 나오기** 때문이다(IDE-019의 `dotCapacity`). 짧은 윤곽에 100개를 넣으면
+   * 번호가 서로 겹쳐 읽을 수 없으므로, 개수를 고치는 자리와 윤곽을 만드는
+   * 자리가 같아야 사용자가 "왜 68개에서 멈추는지"를 그 자리에서 안다.
+   *
+   * `part.dynamic.listSlotId`와 같은 규약이다 — 슬롯이 슬롯을 가리킬 때는
+   * `<쓰임>SlotId`로 적는다. 적으면 그 숫자 슬롯은 폼의 한 줄 입력에서 빠지고
+   * 윤곽 패널이 대신 그린다.
+   */
+  countSlotId: slug.optional(),
+  default: z.union([z.array(z.number()), z.array(z.array(z.number()))]),
 });
 
 export const slot = z
@@ -256,6 +326,29 @@ export const slot = z
           path: ['default'],
           message: '정수 슬롯인데 기본값이 정수가 아니다',
         });
+      }
+      // 값 단추는 입력 칸이 받는 값만 낼 수 있다 — 눌렀는데 곧장 오류가 되는
+      // 단추는 사용자가 무엇이 잘못됐는지 알 길이 없다.
+      const seenPresets = new Set<number>();
+      for (const [i, preset] of s.presets.entries()) {
+        const reason = validateNumberValue(s, preset.value);
+        if (reason) {
+          ctx.issues.push({
+            code: 'custom',
+            input: s,
+            path: ['presets', i, 'value'],
+            message: `값 단추 '${preset.label}'이 제 슬롯의 제약을 어긴다: ${reason}`,
+          });
+        }
+        if (seenPresets.has(preset.value)) {
+          ctx.issues.push({
+            code: 'custom',
+            input: s,
+            path: ['presets', i, 'value'],
+            message: `값 단추가 중복된다: ${preset.value}`,
+          });
+        }
+        seenPresets.add(preset.value);
       }
     }
     if (s.kind === 'color' && s.palette && !s.palette.includes(s.default)) {
@@ -389,6 +482,16 @@ export const slot = z
           path: ['default'],
           message: `기본값이 제 제약을 어긴다: ${reason}`,
         });
+      } else if (!outlineFitsBox(s.box, outlineRings(s, s.default))) {
+        // 기본값은 상자에 맞춰 넣은 결과여야 한다(`fitOutline`). 벗어나 있으면
+        // 사진을 넣기 전 첫 화면에서만 그림이 판 밖으로 나가, 사진을 한 장
+        // 넣는 순간 조용히 제자리로 돌아온다 — 원인을 찾기 어려운 종류다.
+        ctx.issues.push({
+          code: 'custom',
+          input: s,
+          path: ['default'],
+          message: '기본값이 box 밖으로 나간다 — fitOutline으로 맞춰 넣는다',
+        });
       }
     }
 
@@ -435,8 +538,13 @@ export type SlotKind = Slot['kind'];
  */
 export type ListEntry = string | ListItem;
 export type ListValue = ListEntry[];
-/** 윤곽 슬롯의 값 — `[x0, y0, x1, y1, …]` 납작한 mm 좌표(IDE-019). */
-export type OutlineValue = number[];
+/**
+ * 윤곽 슬롯의 값 — `[x0, y0, x1, y1, …]` 납작한 mm 좌표(IDE-019).
+ *
+ * 고리를 여럿 담는 슬롯(`maxRings > 1`)에서는 그 배열의 배열이다(IDE-021).
+ */
+export type OutlineRing = number[];
+export type OutlineValue = OutlineRing | OutlineRing[];
 export type SlotValue = string | number | ListValue | OutlineValue;
 
 export const listEntryId = (entry: ListEntry): string =>
@@ -450,6 +558,30 @@ export const listEntryLabel = (
   typeof entry === 'string'
     ? (s.options.find((o) => o.value === entry)?.label ?? entry)
     : entry.label;
+
+/**
+ * 윤곽 값을 **늘 고리의 목록으로** 읽는다. 슬롯이 고리 하나짜리든 여럿이든
+ * 읽는 쪽은 같은 코드를 쓴다.
+ *
+ * 값이 모양을 어겼으면 빈 목록이다 — 여기서 걸러 두면 렌더러가 `NaN`을 SVG의
+ * `d`에 흘려 판이 통째로 비는 일이 없다.
+ */
+export function outlineRings(
+  s: Extract<Slot, { kind: 'outline' }>,
+  value: unknown,
+): OutlineRing[] {
+  if (!Array.isArray(value)) return [];
+  if (s.maxRings <= 1) {
+    return value.every((v) => typeof v === 'number')
+      ? [value as OutlineRing]
+      : [];
+  }
+  return value.every(
+    (ring) => Array.isArray(ring) && ring.every((v) => typeof v === 'number'),
+  )
+    ? (value as OutlineRing[])
+    : [];
+}
 
 /** 이 슬롯이 나타나는 파트 id 집합. 선언 순서를 유지한다. */
 export const slotPartIds = (s: Slot): string[] => [
@@ -474,14 +606,8 @@ export function validateSlotValue(s: Slot, value: unknown): string | null {
       if (value.length > s.maxLength) return `${s.maxLength}자 이내로 입력한다`;
       return null;
     }
-    case 'number': {
-      if (typeof value !== 'number' || Number.isNaN(value))
-        return '숫자를 입력한다';
-      if (s.integer && !Number.isInteger(value)) return '정수를 입력한다';
-      if (value < s.min || value > s.max)
-        return `${s.min}–${s.max} 사이여야 한다`;
-      return null;
-    }
+    case 'number':
+      return validateNumberValue(s, value);
     case 'color': {
       if (typeof value !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(value))
         return '#RRGGBB 형식의 색이어야 한다';
@@ -528,6 +654,40 @@ export function validateSlotValue(s: Slot, value: unknown): string | null {
   }
 }
 
+/** 숫자 하나가 숫자 슬롯의 제약을 지키는지. 기본값·값 단추·사용자 입력이 함께 쓴다. */
+function validateNumberValue(
+  s: Extract<Slot, { kind: 'number' }>,
+  value: unknown,
+): string | null {
+  if (typeof value !== 'number' || Number.isNaN(value))
+    return '숫자를 입력한다';
+  if (s.integer && !Number.isInteger(value)) return '정수를 입력한다';
+  if (value < s.min || value > s.max) return `${s.min}–${s.max} 사이여야 한다`;
+  return null;
+}
+
+/**
+ * 윤곽이 제 상자 안에 들어 있는지. 맞춰 넣은 결과라 딱 맞게 닿으므로 부동소수
+ * 오차만큼(0.01mm) 봐준다.
+ */
+function outlineFitsBox(box: OutlineBox, rings: OutlineRing[]): boolean {
+  return rings.every((ring) => ringFitsBox(box, ring));
+}
+
+function ringFitsBox(box: OutlineBox, flat: readonly number[]): boolean {
+  const slack = 0.01;
+  for (let i = 0; i + 1 < flat.length; i += 2) {
+    if (flat[i] < box.xMm - slack || flat[i] > box.xMm + box.widthMm + slack)
+      return false;
+    if (
+      flat[i + 1] < box.yMm - slack ||
+      flat[i + 1] > box.yMm + box.heightMm + slack
+    )
+      return false;
+  }
+  return true;
+}
+
 /**
  * 윤곽 값 검사 (IDE-019).
  *
@@ -540,10 +700,28 @@ function validateOutlineValue(
   value: unknown,
 ): string | null {
   if (!Array.isArray(value)) return '좌표의 배열이어야 한다';
-  if (value.some((v) => typeof v !== 'number' || !Number.isFinite(v)))
+  if (s.maxRings <= 1) return validateRing(s, value);
+  // 고리가 여럿인 슬롯(IDE-021). 하나도 없는 것은 어긋난 값이 아니다 —
+  // 세부를 끈 도안이 그렇다.
+  if (value.length > s.maxRings)
+    return `선이 ${s.maxRings}개를 넘는다 (현재 ${value.length}개)`;
+  for (const ring of value) {
+    if (!Array.isArray(ring)) return '선 하나하나가 좌표의 배열이어야 한다';
+    const reason = validateRing(s, ring);
+    if (reason) return reason;
+  }
+  return null;
+}
+
+/** 고리 하나. 짝·유한·개수를 본다. */
+function validateRing(
+  s: Extract<Slot, { kind: 'outline' }>,
+  ring: unknown[],
+): string | null {
+  if (ring.some((v) => typeof v !== 'number' || !Number.isFinite(v)))
     return '좌표가 모두 유한한 수여야 한다';
-  if (value.length % 2 !== 0) return 'x·y가 짝을 이뤄야 한다';
-  const points = value.length / 2;
+  if (ring.length % 2 !== 0) return 'x·y가 짝을 이뤄야 한다';
+  const points = ring.length / 2;
   if (points < s.minPoints) return `점이 ${s.minPoints}개 이상이어야 한다`;
   if (points > s.maxPoints) return `점이 ${s.maxPoints}개를 넘는다`;
   return null;

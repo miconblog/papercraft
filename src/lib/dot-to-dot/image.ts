@@ -146,8 +146,9 @@ export function gaussianBlur(image: GrayImage, sigma = 1.4): GrayImage {
 /**
  * Otsu 자동 임계값. 두 무리로 갈랐을 때 무리 사이 분산이 가장 커지는 값이다.
  *
- * 사용자가 임계값을 미는 것은 `IDE-020`이다 — 여기서는 자동으로 정하고,
- * 실패하면 `traceOutline`이 사유로 알린다.
+ * 사용자는 이 값을 지우지 않고 **민다**(`thresholdOffset`, IDE-020) — 자동으로
+ * 정한 자리가 가운데고 거기서 밝은 쪽·어두운 쪽으로 옮긴다. 절대값을 슬라이더에
+ * 걸면 사진마다 쓸 만한 구간이 달라 같은 손놀림이 다른 결과를 낸다.
  */
 export function otsuThreshold(image: GrayImage): number {
   const histogram = new Float64Array(256);
@@ -217,14 +218,51 @@ export function binarize(image: GrayImage, threshold: number): Mask {
   return { width, height, data };
 }
 
-/** 사진 하나를 마스크까지. 중간 단계를 따로 부를 일은 테스트에만 있다. */
-export function toMask(
+/**
+ * Otsu 값을 밀 수 있는 한계. 이보다 밀면 마스크가 통째로 켜지거나 꺼져 딸
+ * 윤곽이 없어지고, 그것은 슬라이더가 아니라 다른 사진으로 풀 문제다.
+ */
+export const MAX_THRESHOLD_OFFSET = 60;
+
+const clampThreshold = (value: number): number =>
+  Math.min(255, Math.max(0, Math.round(value)));
+
+export interface PrepareOptions {
+  maxSide?: number;
+  sigma?: number;
+  threshold?: number;
+  thresholdOffset?: number;
+}
+
+/**
+ * 사진 하나를 **회색조와 마스크 둘 다**로. 줄이기·흐리기·이진화가 한 번에 끝난다.
+ *
+ * 마스크만 돌려주던 것을(`toMask`) 회색조까지 함께 내게 넓힌 것은 세부 선
+ * 때문이다(IDE-021) — 피사체 **안쪽 밝기**를 다시 갈라야 하는데, 그러려면
+ * 이진화 전의 회색조가 필요하다. 이진화를 두 번 하지 않으려면 같은 자리에서
+ * 둘 다 나와야 한다.
+ */
+export function prepareImage(
   image: RgbaImage,
-  options: { maxSide?: number; sigma?: number; threshold?: number } = {},
-): Mask {
+  options: PrepareOptions = {},
+): { gray: GrayImage; mask: Mask; threshold: number } {
   const gray = gaussianBlur(
     downscale(toGray(image), options.maxSide ?? MAX_SIDE_PX),
     options.sigma ?? 1.4,
   );
-  return binarize(gray, options.threshold ?? otsuThreshold(gray));
+  // 절대값을 준 쪽이 이긴다 — 밀기는 어디까지나 자동으로 정한 값에 대한 것이라
+  // 둘을 함께 주면 뜻이 겹친다.
+  const threshold = clampThreshold(
+    options.threshold ??
+      otsuThreshold(gray) +
+        Math.max(
+          -MAX_THRESHOLD_OFFSET,
+          Math.min(MAX_THRESHOLD_OFFSET, options.thresholdOffset ?? 0),
+        ),
+  );
+  return { gray, mask: binarize(gray, threshold), threshold };
 }
+
+/** 사진 하나를 마스크까지. 중간 단계를 따로 부를 일은 테스트에만 있다. */
+export const toMask = (image: RgbaImage, options: PrepareOptions = {}): Mask =>
+  prepareImage(image, options).mask;

@@ -9,11 +9,12 @@
  * 세계일주와 다른 점은 **크기가 바뀌지 않는다**는 것이다. 사진이 무엇이든 판은
  * 190×277 한 장이고, 바뀌는 것은 그 위의 점과 번호뿐이다.
  *
- * 읽는 값: `outline`(윤곽 슬롯 — 판 좌표 mm) · `dot-count` · `guide-line`.
+ * 읽는 값: `outline`(윤곽 슬롯 — 판 좌표 mm) · `detail`(세부 선, 고리 여럿) ·
+ * `dot-count` · `guide-line`.
  */
 import { renderAnswer } from './answer.ts';
 import { DEFAULT_DOT_COUNT, renderBoard } from './board.ts';
-import { SAMPLE_OUTLINE } from '../dimensions.ts';
+import { SAMPLE_DETAIL, SAMPLE_OUTLINE } from '../dimensions.ts';
 
 /**
  * 스키마 모듈을 끌어오지 않는다 — 아트워크 코드는 `npm run artwork`가 Node로
@@ -24,6 +25,7 @@ export interface DynamicValues {
 }
 
 export const OUTLINE_SLOT_ID = 'outline';
+export const DETAIL_SLOT_ID = 'detail';
 export const DOT_COUNT_SLOT_ID = 'dot-count';
 export const GUIDE_SLOT_ID = 'guide-line';
 export const BOARD_PART_ID = 'board';
@@ -50,6 +52,27 @@ export const outlineFromValues = (
   return value as number[];
 };
 
+/**
+ * 값에서 세부 선을 꺼낸다. 고리의 목록이고, 모양이 틀린 고리는 조용히 뺀다 —
+ * 세부는 그림을 돕는 것이라 하나가 깨졌다고 판 전체를 포기할 이유가 없다.
+ *
+ * 값이 아예 없으면 **보기 그림의 눈·코**로 되돌린다(윤곽과 같은 규칙이다).
+ */
+export const detailFromValues = (
+  customization: DynamicValues,
+): ReadonlyArray<readonly number[]> => {
+  const value = customization.values[DETAIL_SLOT_ID];
+  if (value === undefined) return SAMPLE_DETAIL;
+  if (!Array.isArray(value)) return [];
+  return value.filter(
+    (ring): ring is number[] =>
+      Array.isArray(ring) &&
+      ring.length >= 6 &&
+      ring.length % 2 === 0 &&
+      ring.every((v) => typeof v === 'number' && Number.isFinite(v)),
+  );
+};
+
 const dotCountFromValues = (customization: DynamicValues): number => {
   const value = customization.values[DOT_COUNT_SLOT_ID];
   return typeof value === 'number' && Number.isFinite(value)
@@ -62,13 +85,15 @@ export const renderDotToDotArtwork = (
   customization: DynamicValues,
 ): string | null => {
   const outline = outlineFromValues(customization);
+  const detail = detailFromValues(customization);
   if (partId === BOARD_PART_ID) {
     return renderBoard({
       outline,
+      detail,
       dotCount: dotCountFromValues(customization),
       guide: customization.values[GUIDE_SLOT_ID] === GUIDE_ON,
     });
   }
-  if (partId === ANSWER_PART_ID) return renderAnswer({ outline });
+  if (partId === ANSWER_PART_ID) return renderAnswer({ outline, detail });
   return null;
 };

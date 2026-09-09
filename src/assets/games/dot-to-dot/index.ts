@@ -17,16 +17,24 @@
  * 4. **생성된 기하 데이터를 담는 첫 슬롯**(`outline`)이 있다. 도안이 후보를
  *    미리 선언해 둘 수 없는 값이라 목록 슬롯(IDE-016)으로는 안 된다 —
  *    거기는 여전히 "고르는 것"이고 이쪽은 "계산되는 것"이다.
+ * 5. **인쇄물에 아이가 잇지 않는 선이 있다**(`detail`, IDE-021). 눈·입 같은
+ *    세부는 미리 그려 두고 아이는 윤곽 하나만 잇는다 — 한 붓 그리기가 그대로
+ *    유지되면서 다 이었을 때 그림이 살아난다.
  *
- * 사진을 넣고 다시 따는 조작은 `IDE-020`이 만든다. 지금 만들기 화면에서 고칠
- * 수 있는 것은 제목·점 개수·안내선 셋이고, 윤곽은 보기 그림에 머문다.
+ * 사진을 넣고 다시 따는 조작은 `IDE-020`이 만들었다. 만들기 화면에서 고칠 수
+ * 있는 것은 제목·안내선과, 사진 패널이 함께 그리는 사진·점 개수다 — 윤곽
+ * 슬롯이 `box`(값이 앉을 자리)와 `countSlotId`(그 위에 몇 개를 놓나)로 그
+ * 패널에 필요한 것을 마저 적는다.
  */
 import { defineGame } from '@/lib/schema';
+import { DETAIL_MAX_RINGS } from '@/lib/dot-to-dot';
 import { DEFAULT_DOT_COUNT } from './artwork/board';
 import {
   ANSWER,
   ANSWER_BOX,
   BOARD,
+  OUTLINE_BOX,
+  SAMPLE_DETAIL,
   SAMPLE_OUTLINE,
   TYPE,
   artworkPath,
@@ -140,6 +148,20 @@ export default defineGame({
       max: DOT_COUNT_RANGE.max,
       integer: true,
       default: DEFAULT_DOT_COUNT,
+      // 나이대가 곧 개수다. 단추를 두는 것은 5~100 사이 아무 수나 고르라고 하면
+      // 부모가 "우리 아이에게 몇 개가 맞나"를 스스로 정해야 하기 때문이다.
+      // 손으로 치는 칸은 그대로 남는다(IDE-020).
+      presets: [
+        { value: 10, label: '10개', help: '만 3~4세 — 처음 잡는 연필' },
+        { value: 20, label: '20개', help: '만 3~4세' },
+        { value: 30, label: '30개', help: '만 5세' },
+        { value: 50, label: '50개', help: '만 6세 이상' },
+        {
+          value: 100,
+          label: '100개',
+          help: '만 6세 이상 — 윤곽이 길어야 다 들어간다',
+        },
+      ],
       // 값이 글자로 찍히는 게 아니라 판 전체를 다시 그리게 한다 — `number`
       // 슬롯에 `control` 배치를 쓰는 첫 자리다(IDE-019).
       placements: [{ partId: BOARD_PART_ID, mode: 'control' }],
@@ -166,6 +188,45 @@ export default defineGame({
       default: SAMPLE_OUTLINE,
       minPoints: 3,
       maxPoints: 2000,
+      // 값의 좌표계는 판이다. 완성 그림 부속은 같은 값을 제 상자에 다시 맞춰
+      // 그린다(`renderAnswer`) — 그래서 상자는 하나뿐이다.
+      box: {
+        partId: BOARD_PART_ID,
+        xMm: OUTLINE_BOX.x,
+        yMm: OUTLINE_BOX.y,
+        widthMm: OUTLINE_BOX.width,
+        heightMm: OUTLINE_BOX.height,
+      },
+      // 점 개수는 이 윤곽선 위에 놓이는 것이라, 넣을 수 있는 최대치가 윤곽선의
+      // 길이에서 나온다. 그래서 개수 입력을 사진 패널이 함께 그린다(IDE-020).
+      countSlotId: 'dot-count',
+      // 같은 사진에서 딴 세부 선. 아이가 잇지 않고 미리 그려 둔다(IDE-021).
+      detailSlotId: 'detail',
+      placements: [
+        { partId: BOARD_PART_ID, mode: 'control' },
+        { partId: ANSWER_PART_ID, mode: 'control' },
+      ],
+    },
+    {
+      id: 'detail',
+      kind: 'outline',
+      label: '세부 선',
+      help: '눈·입·머리카락 경계처럼 판에 미리 그려 두는 선이다. 아이는 이 선을 잇지 않는다 — 잇는 선은 여전히 윤곽 하나뿐이라 연필을 뗄 자리가 없다.',
+      // 보기 그림의 눈 둘과 코. 실루엣만 있으면 고양이인지 알 수 없다.
+      default: SAMPLE_DETAIL,
+      // 고리가 여럿인 첫 슬롯이다. 상한은 세부 따기가 쓰는 값과 같아야 하고
+      // (`DETAIL_MAX_RINGS`), 넘으면 검증이 막아 그림이 아니라 오류가 뜬다.
+      maxRings: DETAIL_MAX_RINGS,
+      // 세 점짜리 세모(코)도 선이다. 윤곽과 달리 이을 필요가 없어 낮게 잡는다.
+      minPoints: 3,
+      maxPoints: 400,
+      box: {
+        partId: BOARD_PART_ID,
+        xMm: OUTLINE_BOX.x,
+        yMm: OUTLINE_BOX.y,
+        widthMm: OUTLINE_BOX.width,
+        heightMm: OUTLINE_BOX.height,
+      },
       placements: [
         { partId: BOARD_PART_ID, mode: 'control' },
         { partId: ANSWER_PART_ID, mode: 'control' },
