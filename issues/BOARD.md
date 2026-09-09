@@ -14,7 +14,7 @@
 | `todo`    | 2    |
 | `doing`   | 0    |
 | `blocked` | 4    |
-| `review`  | 8    |
+| `review`  | 9    |
 | `done`    | 11   |
 
 **지금 할 것** — [IDE-007](IDE-007-print-and-pdf-export.md)(인쇄·PDF 내보내기)은
@@ -222,12 +222,13 @@ OpenCV.js는 8MB라 첫 화면보다 크다. 사진 픽셀에서 A4 PDF 한 장�
 
 ## M3 — 운영: 예약 공개 · 제작일지 · 수집 다듬기 (022–030)
 
-| ID                                              | 제목                                                | 영역     | 우선 | 추정 | 상태     |
-| ----------------------------------------------- | --------------------------------------------------- | -------- | ---- | ---- | -------- |
-| [IDE-022](IDE-022-scheduled-game-publish.md)    | 게임 예약 공개 — 관리자 화면에서 오픈일 지정        | backend  | P1   | 3d   | `todo`   |
-| [IDE-023](IDE-023-devlog-blog.md)               | 제작일지 — 관리자 화면에서 쓰고 게시하는 글         | frontend | P2   | 4d   | `todo`   |
-| [IDE-024](IDE-024-bot-signals-and-exclusion.md) | 봇 신호와 집계 제외 — 사람인 척하는 자동화 가려내기 | backend  | P1   | 2d   | `review` |
-| [IDE-025](IDE-025-unique-pageviews.md)          | 순 페이지뷰 — 한 세션에서 같은 경로는 한 번만       | backend  | P1   | 1d   | `review` |
+| ID                                              | 제목                                                          | 영역     | 우선 | 추정 | 상태     |
+| ----------------------------------------------- | ------------------------------------------------------------- | -------- | ---- | ---- | -------- |
+| [IDE-022](IDE-022-scheduled-game-publish.md)    | 게임 예약 공개 — 관리자 화면에서 오픈일 지정                  | backend  | P1   | 3d   | `todo`   |
+| [IDE-023](IDE-023-devlog-blog.md)               | 제작일지 — 관리자 화면에서 쓰고 게시하는 글                   | frontend | P2   | 4d   | `todo`   |
+| [IDE-024](IDE-024-bot-signals-and-exclusion.md) | 봇 신호와 집계 제외 — 사람인 척하는 자동화 가려내기           | backend  | P1   | 2d   | `review` |
+| [IDE-025](IDE-025-unique-pageviews.md)          | 순 페이지뷰 — 한 세션에서 같은 경로는 한 번만                 | backend  | P1   | 1d   | `review` |
+| [IDE-026](IDE-026-admin-optout-cookie.md)       | 관리자 브라우저를 통계에서 빼기 — 제외 쿠키와 명시적 로그아웃 | backend  | P1   | 1d   | `review` |
 
 ---
 

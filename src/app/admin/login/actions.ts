@@ -8,7 +8,11 @@ import { redirect } from 'next/navigation';
 import { notFound } from 'next/navigation';
 import { adminPassword } from '@/lib/analytics/config';
 import {
+  ADMIN_COOKIE,
+  NOCOUNT_COOKIE,
+  expiredCookie,
   issueSession,
+  noCountCookie,
   safeEqual,
   sessionCookie,
 } from '@/lib/analytics/session';
@@ -40,6 +44,26 @@ export async function login(
     return { error: '비밀번호가 맞지 않습니다.' };
   }
 
-  (await cookies()).set(sessionCookie(issueSession(password)));
+  const jar = await cookies();
+  jar.set(sessionCookie(issueSession(password)));
+  // 로그인한 브라우저는 사이트 어디를 열어도 세지 않는다 (IDE-026).
+  jar.set(noCountCookie());
   redirect(safeNext(form.get('next')));
+}
+
+/**
+ * 로그아웃 (IDE-026)
+ *
+ * 여기가 **제외를 끄는 유일한 자리**다(2026-09-09 사용자 결정). 둘을 함께
+ * 지운다 — 하나만 지우면 로그인은 풀렸는데 통계에서는 계속 빠지거나, 그 반대가
+ * 된다.
+ *
+ * 심을 때 쓴 경로를 그대로 줘야 지워진다. 인증 쿠키는 `/admin`, 제외 쿠키는
+ * `/` 다.
+ */
+export async function logout(): Promise<void> {
+  const jar = await cookies();
+  jar.set(expiredCookie(ADMIN_COOKIE, '/admin'));
+  jar.set(expiredCookie(NOCOUNT_COOKIE, '/'));
+  redirect('/');
 }

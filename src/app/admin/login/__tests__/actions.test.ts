@@ -14,8 +14,9 @@ const notFound = vi.fn(() => {
 vi.mock('next/headers', () => ({ cookies: async () => ({ set }) }));
 vi.mock('next/navigation', () => ({ redirect, notFound }));
 
-const { login } = await import('../actions');
-const { isValidSession } = await import('@/lib/analytics/session');
+const { login, logout } = await import('../actions');
+const { isValidSession, ADMIN_COOKIE, NOCOUNT_COOKIE } =
+  await import('@/lib/analytics/session');
 
 const PASSWORD = 'admin-password-for-tests';
 
@@ -78,5 +79,34 @@ describe('login', () => {
     await expect(login({ error: null }, form('아무거나'))).rejects.toThrow(
       'NOT_FOUND',
     );
+  });
+});
+
+describe('제외 쿠키 (IDE-026)', () => {
+  it('로그인하면 인증 쿠키와 제외 쿠키를 함께 심는다', async () => {
+    await expect(login({ error: null }, form(PASSWORD))).rejects.toThrow(
+      'REDIRECT:',
+    );
+
+    const names = set.mock.calls.map(([cookie]) => cookie.name);
+    expect(names).toEqual([ADMIN_COOKIE, NOCOUNT_COOKIE]);
+
+    // 제외 쿠키는 사이트 어디에나 실려야 한다.
+    const nocount = set.mock.calls.find(
+      ([cookie]) => cookie.name === NOCOUNT_COOKIE,
+    )?.[0];
+    expect(nocount.path).toBe('/');
+  });
+
+  it('로그아웃은 둘을 함께 지운다 — 하나만 지우면 어긋난다', async () => {
+    await expect(logout()).rejects.toThrow('REDIRECT:/');
+
+    expect(
+      set.mock.calls.map(([cookie]) => [cookie.name, cookie.path]),
+    ).toEqual([
+      [ADMIN_COOKIE, '/admin'],
+      [NOCOUNT_COOKIE, '/'],
+    ]);
+    for (const [cookie] of set.mock.calls) expect(cookie.maxAge).toBe(0);
   });
 });

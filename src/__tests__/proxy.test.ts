@@ -45,7 +45,9 @@ describe('proxy', () => {
   it('위조하거나 만료된 쿠키는 되돌려보낸다', () => {
     vi.stubEnv('ANALYTICS_ADMIN_PASSWORD', PASSWORD);
 
-    const expired = issueSession(PASSWORD, new Date(Date.now() - 86_400_000));
+    // TTL 은 90일이다(IDE-026). 하루 전 것은 아직 살아 있다.
+    const ago = 91 * 24 * 60 * 60 * 1000;
+    const expired = issueSession(PASSWORD, new Date(Date.now() - ago));
     for (const cookie of [
       'dc_admin=99999999999.deadbeef',
       `dc_admin=${expired}`,
