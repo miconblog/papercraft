@@ -1,13 +1,11 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { cookies, headers } from 'next/headers';
-import { ShareLinkBuilder } from '@/components/analytics/ShareLinkBuilder';
-import { logout } from '@/app/admin/login/actions';
+import { cookies } from 'next/headers';
 import { adminPassword } from '@/lib/analytics/config';
 import { ADMIN_COOKIE, isValidSession } from '@/lib/analytics/session';
 import { daysAgo, loadReport, type DailyTraffic } from '@/lib/analytics/report';
 import { analyticsDay } from '@/lib/analytics/visitor';
-import { GAMES, getGame } from '@/lib/games';
+import { getGame } from '@/lib/games';
 
 export const metadata: Metadata = {
   title: '방문 통계',
@@ -26,23 +24,6 @@ const CHANNEL_LABEL: Record<string, string> = {
 };
 
 const WINDOW_DAYS = 30;
-
-/**
- * 공유 링크의 앞부분.
- *
- * `NEXT_PUBLIC_SITE_URL` 을 먼저 본다 — 미리보기 배포에서 어드민을 열고 링크를
- * 만들면 **미리보기 주소를 세상에 뿌리게 된다.** 그 값이 없을 때만 지금 보고
- * 있는 호스트로 떨어진다(로컬에서 쓰라는 뜻이다).
- */
-async function shareOrigin(): Promise<string> {
-  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (configured) return configured.replace(/\/+$/, '');
-
-  const incoming = await headers();
-  const host = incoming.get('host') ?? 'localhost:3000';
-  const proto = host.startsWith('localhost') ? 'http' : 'https';
-  return `${proto}://${host}`;
-}
 
 /**
  * 하루 한 칸짜리 막대. 라이브러리를 들이지 않는다 — 눈금 하나 없는 추이
@@ -99,44 +80,22 @@ export default async function AnalyticsPage() {
   }
 
   const report = await loadReport(WINDOW_DAYS);
-  const origin = await shareOrigin();
-  // 게임이 늘면 보낼 곳도 같이 는다 — 여기에 이름을 적어 두지 않는다.
-  const shareTargets = [
-    { path: '/', label: '랜딩' },
-    ...GAMES.map((game) => ({
-      path: `/games/${game.id}`,
-      label: game.title,
-    })),
-  ];
   const sum = (pick: (d: DailyTraffic) => number) =>
     report.days.reduce((total, day) => total + pick(day), 0);
 
+  // 바깥 틀과 메뉴·로그아웃은 `(shell)/layout.tsx` 가 그린다 — 여기는 통계만.
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">방문 통계</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            최근 {WINDOW_DAYS}일 · 자체 수집 · 제3자에게 넘기지 않습니다.
-          </p>
-        </div>
-
-        {/* 제외를 끄는 유일한 자리다 — 눌러야 이 브라우저가 다시 세어진다. */}
-        <form action={logout}>
-          <button
-            type="submit"
-            className="rounded-full border border-border px-3 py-1.5 text-xs whitespace-nowrap transition-colors outline-none hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
-          >
-            로그아웃
-          </button>
-        </form>
-      </div>
+    <div className="w-full max-w-3xl">
+      <h1 className="text-3xl font-bold tracking-tight">방문 통계</h1>
+      <p className="mt-2 text-sm text-muted-foreground">
+        최근 {WINDOW_DAYS}일 · 자체 수집 · 제3자에게 넘기지 않습니다.
+      </p>
 
       {/* 이 안내를 빼면 왜 내 방문이 안 잡히는지 나중에 스스로 헷갈린다. */}
       <p className="mt-2 text-sm text-muted-foreground">
         로그인한 이 브라우저는{' '}
         <strong>사이트 어디를 열어도 집계되지 않습니다.</strong> 다시 세려면
-        로그아웃하세요.
+        왼쪽에서 로그아웃하세요.
       </p>
 
       {!report.available ? (
@@ -301,10 +260,6 @@ export default async function AnalyticsPage() {
           </section>
         </>
       )}
-
-      {/* 집계와 무관하게 늘 보인다 — 수집이 아직 안 켜졌어도 링크는 미리
-          만들어 둘 수 있어야 한다. */}
-      <ShareLinkBuilder origin={origin} targets={shareTargets} />
     </div>
   );
 }

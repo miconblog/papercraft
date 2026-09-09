@@ -9,6 +9,7 @@
  * 무효가 된다. 로그아웃을 따로 만들 필요가 없다는 뜻이기도 하다.
  */
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { adminPassword } from '@/lib/analytics/config';
 import {
   LEGACY_NOCOUNT_COOKIE,
   OWNER_COOKIE,
@@ -70,15 +71,36 @@ const base = {
   secure: process.env.NODE_ENV === 'production',
 };
 
+/**
+ * 인증 쿠키를 심는 경로.
+ *
+ * `/admin` 이었다. **IDE-022 가 `/` 로 넓혔다** — 예약 공개를 관리자가 미리
+ * 보려면 `/games/...` 와 `/api/games/...` 에서도 이 쿠키가 보여야 하는데,
+ * `/admin` 에 갇혀 있으면 그 요청에는 실리지 않는다.
+ *
+ * 넓히지 않는 길도 있었다. 서명한 쿠키를 하나 더 심는 것인데, 그러면 같은
+ * 비밀에서 나온 자격이 둘이 되고 로그아웃이 둘 다 지워야 한다 — 하나를 빠뜨리면
+ * 조용히 남는다. 자격은 하나로 둔다.
+ *
+ * `IDE-026` 이 "인증 쿠키를 넓히지 않는다"고 적어 둔 것은 **제외 쿠키**
+ * (`dc_owner`) 이야기다. 그쪽은 세션이 끝나도 제외가 남아야 해서 따로 심었고,
+ * 이쪽은 반대로 **세션이 끝나면 미리보기도 함께 끝나야 한다.**
+ */
+const ADMIN_COOKIE_PATH = '/';
+
 export const sessionCookie = (value: string) => ({
   ...base,
   name: ADMIN_COOKIE,
   value,
-  // `/admin` 밖으로 내보내지 않는다. 인증 쿠키가 사이트의 모든 요청에 딸려
-  // 다닐 이유가 없다.
-  path: '/admin',
+  path: ADMIN_COOKIE_PATH,
   maxAge: TTL_MS / 1000,
 });
+
+/** 로그아웃이 지울 때 쓴다. 심은 경로를 그대로 줘야 지워진다. */
+export { ADMIN_COOKIE_PATH };
+
+/** 넓히기 전에 심긴 쿠키의 경로. 로그인·로그아웃이 이것도 함께 지운다. */
+export const LEGACY_ADMIN_COOKIE_PATH = '/admin';
 
 /**
  * 주인 표시 쿠키 (IDE-026 · IDE-027)
@@ -132,17 +154,44 @@ export const expiredCookie = (name: string, path: string) => ({
 });
 
 /**
- * 주인의 브라우저인가 — 세지 않아야 하는가.
+ * `Cookie` 헤더에서 이름 하나를 뽑는다.
  *
  * `includes('dc_owner=')` 로 보면 `xdc_owner=` 같은 남의 쿠키에 걸린다.
  * 이름을 통째로 견준다.
  */
-export function isOwnerBrowser(headers: Headers): boolean {
+export function cookieValue(
+  headers: Headers,
+  name: string,
+): string | undefined {
   const raw = headers.get('cookie');
-  if (!raw) return false;
+  if (!raw) return undefined;
 
-  return raw
-    .split(';')
-    .map((part) => part.trim().split('=')[0])
-    .some((name) => name === OWNER_COOKIE || name === LEGACY_NOCOUNT_COOKIE);
+  for (const part of raw.split(';')) {
+    const trimmed = part.trim();
+    const eq = trimmed.indexOf('=');
+    const key = eq === -1 ? trimmed : trimmed.slice(0, eq);
+    if (key === name) return eq === -1 ? '' : trimmed.slice(eq + 1);
+  }
+  return undefined;
+}
+
+/** 주인의 브라우저인가 — 세지 않아야 하는가. */
+export const isOwnerBrowser = (headers: Headers): boolean =>
+  cookieValue(headers, OWNER_COOKIE) !== undefined ||
+  cookieValue(headers, LEGACY_NOCOUNT_COOKIE) !== undefined;
+
+/**
+ * 이 요청이 관리자인가 (IDE-022)
+ *
+ * 비밀번호가 설정돼 있지 않으면 **아무도 관리자가 아니다.** 그래야 예약 공개가
+ * "비밀번호를 안 넣으면 아무나 통과"로 뒤집히지 않는다.
+ *
+ * 문지기(`proxy.ts`)와 API 라우트가 같은 잣대를 쓰게 하려고 여기 둔다.
+ */
+export function hasAdminSession(
+  token: string | undefined | null,
+  now: Date = new Date(),
+): boolean {
+  const password = adminPassword();
+  return password ? isValidSession(token, password, now) : false;
 }

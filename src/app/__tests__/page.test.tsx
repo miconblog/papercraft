@@ -4,13 +4,20 @@ import Page from '../page';
 import { GAMES } from '@/lib/games';
 import { boardOf } from '@/lib/games/format';
 
-test('목록 페이지가 h1 헤딩을 렌더링한다', () => {
-  render(<Page />);
+/**
+ * 목록이 오픈 시각을 읽게 되면서(IDE-022) 페이지가 async 가 됐다. 키가 없는
+ * 테스트 환경에서는 **전부 공개**로 읽히므로 등록소 그대로가 나온다 — 그것이
+ * "Supabase 를 꺼도 게임 다섯이 전부 보인다"이기도 하다.
+ */
+const renderPage = async () => render(await Page());
+
+test('목록 페이지가 h1 헤딩을 렌더링한다', async () => {
+  await renderPage();
   expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
 });
 
-test('등록소의 게임마다 카드와 상세 페이지 링크가 나온다 — 게임을 추가해도 이 페이지는 손대지 않는다', () => {
-  render(<Page />);
+test('등록소의 게임마다 카드와 상세 페이지 링크가 나온다 — 게임을 추가해도 이 페이지는 손대지 않는다', async () => {
+  await renderPage();
   expect(GAMES.length).toBeGreaterThan(0);
   for (const game of GAMES) {
     expect(screen.getByText(game.title)).toBeInTheDocument();
@@ -26,8 +33,8 @@ test('등록소의 게임마다 카드와 상세 페이지 링크가 나온다 �
  * 담으므로(`object-contain`) 어떤 비율이 와도 줄이 늘어나거나 그림이 찌그러지지
  * 않는다. 그 규약이 지켜지는지 **그림의 실제 치수로** 확인한다.
  */
-test('판 방향이 달라도 썸네일이 찌그러지지 않는다 — 도안 비율 그대로 담긴다', () => {
-  render(<Page />);
+test('판 방향이 달라도 썸네일이 찌그러지지 않는다 — 도안 비율 그대로 담긴다', async () => {
+  await renderPage();
   for (const game of GAMES) {
     const board = boardOf(game);
     const image = screen.getByAltText(`${game.title} 미리보기`);

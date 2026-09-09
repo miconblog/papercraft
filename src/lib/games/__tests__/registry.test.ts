@@ -238,3 +238,14 @@ describe('축구 게임판 — 전술 대형 프리셋', () => {
     expect(() => parseGame(broken)).toThrow(/영역 'playable-field' 밖이다/);
   });
 });
+
+/**
+ * 문지기가 오픈 전 게임을 되돌려보내는 곳 (IDE-022)
+ *
+ * `proxy.ts` 는 `/games/__closed` 로 rewrite 해서 상세 페이지가 `notFound()`
+ * 를 내게 한다. 언젠가 이 이름을 가진 게임이 등록되면 그 게임이 늘 404 가
+ * 되므로, 여기서 미리 잡는다.
+ */
+it('`__closed` 는 게임 id 로 쓸 수 없다 — 문지기가 그 이름을 404 로 쓴다', () => {
+  expect(gameIds()).not.toContain('__closed');
+});
