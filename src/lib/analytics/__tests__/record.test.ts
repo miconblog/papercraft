@@ -40,6 +40,24 @@ beforeEach(() => {
 });
 
 describe('recordEvent', () => {
+  it('관리자 화면은 세지 않는다 — 숫자를 보러 갈 때마다 숫자가 늘면 안 된다', async () => {
+    for (const url of [
+      '/admin',
+      '/admin/analytics',
+      '/admin/analytics?days=30',
+    ]) {
+      const result = await recordEvent({
+        type: 'pageview',
+        url,
+        headers: headers(),
+      });
+
+      expect(result).toEqual({ recorded: false, reason: 'excluded' });
+    }
+
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
   it('페이지를 열면 이벤트 한 줄이 나간다', async () => {
     const result = await recordEvent({
       type: 'pageview',
