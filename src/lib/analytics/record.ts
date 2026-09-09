@@ -21,6 +21,7 @@ import {
   normalizePath,
   summarizeUa,
 } from './request';
+import { botVerdict, primaryLanguage } from './bot';
 import { isExcludedPath } from './excluded';
 import { analyticsDay, clientIp, visitorId } from './visitor';
 
@@ -75,6 +76,13 @@ export async function recordEvent(input: RecordInput): Promise<RecordResult> {
     const channel = classifyChannel(utm, fromHost, selfHost);
     const ua = summarizeUa(userAgent);
     const day = analyticsDay(input.now);
+    // 페이지뷰만 브라우저의 `fetch` 로 들어온다. 다운로드는 링크를 누른 이동이라
+    // `sec-fetch-*` 기대값이 달라서, 같은 잣대를 대면 전부 봇이 된다.
+    const bot = botVerdict({
+      headers: input.headers,
+      userAgent: userAgent ?? '',
+      fromBrowserFetch: input.type === 'pageview',
+    });
 
     const { error } = await supabase.rpc('record_event', {
       p_day: day,
@@ -96,6 +104,9 @@ export async function recordEvent(input: RecordInput): Promise<RecordResult> {
       p_ua_os: ua.os,
       p_ua_device: ua.device,
       p_country: countryOf(input.headers),
+      p_lang: primaryLanguage(input.headers),
+      p_bot_score: bot.score,
+      p_bot_reason: bot.reason,
     });
 
     if (error) {
