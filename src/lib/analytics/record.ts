@@ -21,6 +21,7 @@ import {
   normalizePath,
   summarizeUa,
 } from './request';
+import { isExcludedPath } from './excluded';
 import { analyticsDay, clientIp, visitorId } from './visitor';
 
 export type EventType = 'pageview' | 'download';
@@ -48,7 +49,7 @@ const parseUrl = (url: string, host: string): URL => {
 
 export type RecordResult =
   | { recorded: true; channel: Channel }
-  | { recorded: false; reason: 'disabled' | 'bot' | 'error' };
+  | { recorded: false; reason: 'disabled' | 'bot' | 'excluded' | 'error' };
 
 export async function recordEvent(input: RecordInput): Promise<RecordResult> {
   try {
@@ -65,6 +66,10 @@ export async function recordEvent(input: RecordInput): Promise<RecordResult> {
     const selfHost = host.split(':')[0].toLowerCase();
     const url = parseUrl(input.url, host);
     const path = normalizePath(url.pathname);
+    // 관리자 화면은 세지 않는다. 설정보다 앞이 아니라 **경로를 알아낸 직후**에
+    // 판단한다 — 클라이언트가 보낸 원본 문자열이 아니라 정규화된 경로로 봐야
+    // `/admin/` 이나 `/admin?x=1` 같은 변형이 새어 나가지 않는다.
+    if (isExcludedPath(path)) return { recorded: false, reason: 'excluded' };
     const utm = readUtm(url.searchParams);
     const fromHost = referrerHost(input.referrer);
     const channel = classifyChannel(utm, fromHost, selfHost);

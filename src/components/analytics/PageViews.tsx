@@ -13,6 +13,7 @@
  */
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef } from 'react';
+import { isExcludedPath } from '@/lib/analytics/excluded';
 
 export function PageViews() {
   const pathname = usePathname();
@@ -21,6 +22,10 @@ export function PageViews() {
   const firstView = useRef(true);
 
   useEffect(() => {
+    // 관리자 화면은 보내지 않는다. 서버도 같은 판단을 다시 하지만, 여기서
+    // 먼저 걸러 두면 셀 생각이 없는 요청이 애초에 나가지 않는다.
+    if (isExcludedPath(pathname)) return;
+
     const url = pathname + window.location.search;
     const referrer = firstView.current ? document.referrer || null : null;
     firstView.current = false;

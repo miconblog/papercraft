@@ -25,7 +25,7 @@ import { formatPlayers, SUPPORTED_PAPER_SIZE } from '@/lib/games/format';
 const VALUES = [
   {
     icon: HeartIcon,
-    title: '추억을 나눠요',
+    title: '추억을 쌓아요',
     body: '아빠가 공책 뒤에 그려 놀던 그 게임 그대로다. 아이와 함께 놀면서 추억을 쌓을 수 있어요.',
   },
   {
@@ -35,7 +35,7 @@ const VALUES = [
   },
   {
     icon: HandshakeIcon,
-    title: '규칙을 받아들이는 힘',
+    title: '규칙을 배울 수 있어요',
     body: '놀면서 게임 규칙을 익히고 받아들이는 능력을 키울 수 있어요.',
   },
 ] as const;
@@ -73,7 +73,7 @@ export default function Home() {
               만드는 종이 보드게임
             </p>
             <h1 className="mt-4 text-3xl leading-tight font-bold tracking-tight text-balance sm:text-4xl">
-              아이와 추억을 함께 나눠요.
+              아들! 축구 한판 할까?
             </h1>
             <p className="mt-4 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
               어릴쩍 연필로 공을 튕겨 골을 넣던 바로 그 놀이. 팀 색과 선수
@@ -139,7 +139,7 @@ export default function Home() {
       <section className="border-b border-border bg-secondary/50">
         <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 sm:py-14">
           <h2 className="text-xl font-bold tracking-tight sm:text-2xl">
-            아이와 함께 만들면 좋은 이유
+            아이와 함께
           </h2>
           <ul className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-3">
             {VALUES.map(({ icon: Icon, title, body }) => (
