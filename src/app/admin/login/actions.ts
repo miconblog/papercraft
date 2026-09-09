@@ -9,10 +9,11 @@ import { notFound } from 'next/navigation';
 import { adminPassword } from '@/lib/analytics/config';
 import {
   ADMIN_COOKIE,
-  NOCOUNT_COOKIE,
+  LEGACY_NOCOUNT_COOKIE,
+  OWNER_COOKIE,
   expiredCookie,
   issueSession,
-  noCountCookie,
+  ownerCookie,
   safeEqual,
   sessionCookie,
 } from '@/lib/analytics/session';
@@ -46,8 +47,9 @@ export async function login(
 
   const jar = await cookies();
   jar.set(sessionCookie(issueSession(password)));
-  // 로그인한 브라우저는 사이트 어디를 열어도 세지 않는다 (IDE-026).
-  jar.set(noCountCookie());
+  // 로그인한 브라우저는 사이트 어디를 열어도 세지 않고, 헤더에 관리자 메뉴가
+  // 보인다 (IDE-026 · IDE-027).
+  jar.set(ownerCookie());
   redirect(safeNext(form.get('next')));
 }
 
@@ -64,6 +66,8 @@ export async function login(
 export async function logout(): Promise<void> {
   const jar = await cookies();
   jar.set(expiredCookie(ADMIN_COOKIE, '/admin'));
-  jar.set(expiredCookie(NOCOUNT_COOKIE, '/'));
+  jar.set(expiredCookie(OWNER_COOKIE, '/'));
+  // 옛 이름도 함께 지운다 — 안 지우면 그때 심긴 브라우저가 영영 빠진 채 남는다.
+  jar.set(expiredCookie(LEGACY_NOCOUNT_COOKIE, '/'));
   redirect('/');
 }

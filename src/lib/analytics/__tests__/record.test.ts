@@ -72,12 +72,12 @@ describe('recordEvent', () => {
     expect(lastArgs().p_bot_reason).toContain('no-accept-language');
   });
 
-  it('제외 쿠키가 있으면 사이트 어디를 열어도 세지 않는다 (IDE-026)', async () => {
+  it('주인 쿠키가 있으면 사이트 어디를 열어도 세지 않는다 (IDE-026)', async () => {
     for (const url of ['/', '/games/soccer']) {
       const result = await recordEvent({
         type: 'pageview',
         url,
-        headers: headers({ cookie: 'theme=dark; dc_nocount=1' }),
+        headers: headers({ cookie: 'theme=dark; dc_owner=1' }),
       });
 
       expect(result).toEqual({ recorded: false, reason: 'opted-out' });
@@ -87,7 +87,7 @@ describe('recordEvent', () => {
     await recordEvent({
       type: 'download',
       url: '/games/soccer/print',
-      headers: headers({ cookie: 'dc_nocount=1' }),
+      headers: headers({ cookie: 'dc_owner=1' }),
       gameId: 'soccer',
     });
 
