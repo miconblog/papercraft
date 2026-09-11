@@ -1,5 +1,5 @@
 /**
- * 부속 파트 — 말 여섯 (IDE-015)
+ * 말 여섯 (IDE-015) — 말과 주사위 시트(`./pieces.ts`)의 오른쪽
  *
  * 옛 인쇄본의 〈말패〉는 얼굴 그림 여섯을 오려 쓰는 것이었다. 여기서는
  * **지름 13mm 원판**이다. 두꺼운 종이에 뽑아 오리면 손가락으로 집히고, 칸
@@ -13,23 +13,18 @@
  */
 import {
   TOKEN,
-  TOKEN_SHEET,
   TOKEN_STYLES,
   tokenCenter,
   tokenLayerId,
   type TokenShape,
 } from '../dimensions.ts';
 import {
-  ART_LAYER_ID,
   INK_COLOR,
-  RULE_COLOR,
   circle,
   group,
-  markLayer,
   num,
   path,
   rect,
-  svgDocument,
   text,
 } from '../../../shared/svg.ts';
 
@@ -90,7 +85,8 @@ const shapePath = (
   }
 };
 
-export const renderTokens = (): string => {
+/** 원판 조각 — 오림 원과 몸. 시트가 표시 레이어와 그림 레이어에 나눠 담는다. */
+export const renderTokenDiscs = (): { cuts: string[]; bodies: string[] } => {
   const cuts: string[] = [];
   const bodies: string[] = [];
 
@@ -122,28 +118,5 @@ export const renderTokens = (): string => {
     );
   }
 
-  return svgDocument({
-    widthMm: TOKEN_SHEET.widthMm,
-    heightMm: TOKEN_SHEET.heightMm,
-    title: '세계일주 주사위놀이 · 말',
-    children: [
-      markLayer('cut', cuts),
-      group({ id: ART_LAYER_ID, fill: 'none', stroke: 'none' }, [
-        text('말', TOKEN_SHEET.widthMm / 2, 9, 5, {
-          'text-anchor': 'middle',
-          'font-weight': 'bold',
-          fill: INK_COLOR,
-          stroke: 'none',
-        }),
-        text(
-          '두꺼운 종이에 뽑아 원을 따라 오린다. 한 사람이 하나씩, 2–6명. 색과 모양이 내 말이다.',
-          TOKEN_SHEET.widthMm / 2,
-          15,
-          2.6,
-          { 'text-anchor': 'middle', fill: RULE_COLOR, stroke: 'none' },
-        ),
-        ...bodies,
-      ]),
-    ],
-  });
+  return { cuts, bodies };
 };

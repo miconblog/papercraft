@@ -35,15 +35,21 @@ import {
 import {
   BOARD,
   CITY_MARKER,
+  DICE,
   DYNAMIC_SIZE_STEPS,
   MAP,
   NOTE_BAND,
   PAPER_STEPS,
+  PIECES_SHEET,
   TITLE_BAND,
+  TOKEN,
   TOKEN_STYLES,
   frameFor,
   paperFor,
+  tokenCenter,
 } from '../dimensions';
+import { estimateTextWidthMm } from '../../../shared/svg';
+import { PIECES_NOTES, PIECES_NOTE_FONT_MM } from '../artwork/pieces';
 import {
   ROBINSON_ASPECT,
   projectToMap,
@@ -88,18 +94,20 @@ const withCities = (ids: readonly string[], frame: 'full' | 'map' = 'full') => {
 };
 
 describe('도안 구조', () => {
-  it('스키마 검증을 통과하고 보드·부속·조립물로 나뉜다', () => {
-    expect(game.parts.filter((p) => p.kind === 'board')).toHaveLength(1);
-    expect(game.parts.filter((p) => p.kind === 'cutout')).toHaveLength(1);
-    expect(game.parts.filter((p) => p.kind === 'buildable')).toHaveLength(1);
+  it('스키마 검증을 통과하고 게임판 · 말과 주사위 한 장으로 나뉜다', () => {
+    // 말과 주사위는 한 장이다(2026-09-11 사용자 요청) — 따로면 종이가 두 장 나왔다.
+    expect(game.parts.map((p) => [p.id, p.kind])).toEqual([
+      ['board', 'board'],
+      ['pieces', 'buildable'],
+    ]);
     // 마커 슬롯이 없는 첫 게임이다 — 말은 놀이 중에 움직인다.
     expect(game.styleSets).toHaveLength(0);
     expect(game.presets).toHaveLength(0);
     expect(game.players).toEqual({ min: 2, max: 6 });
   });
 
-  it('커밋된 SVG가 생성기와 같다 — 기본 판·말·주사위', () => {
-    expect(Object.keys(ARTWORK).sort()).toEqual(['board', 'dice', 'tokens']);
+  it('커밋된 SVG가 생성기와 같다 — 기본 판 · 말과 주사위', () => {
+    expect(Object.keys(ARTWORK).sort()).toEqual(['board', 'pieces']);
     for (const id of Object.keys(ARTWORK)) {
       const committed = readFileSync(
         join(process.cwd(), 'public', 'games', 'world-tour', `${id}.svg`),
@@ -667,7 +675,7 @@ describe('값에서 그때 그리기 — 목록 슬롯과 동적 파트 (IDE-016
 
 describe('말과 주사위', () => {
   it('말 여섯 — 오림 원 여섯, 색 레이어 여섯', () => {
-    const doc = svgOf('tokens');
+    const doc = svgOf('pieces');
     expect(
       doc.getElementById('pc-cut')!.querySelectorAll('circle'),
     ).toHaveLength(6);
@@ -679,7 +687,7 @@ describe('말과 주사위', () => {
   });
 
   it('주사위 — 오림선 하나, 접는선 열둘, 풀칠면 일곱, 마주 보는 면의 합이 7', () => {
-    const doc = svgOf('dice');
+    const doc = svgOf('pieces');
     expect(doc.getElementById('pc-cut')!.querySelectorAll('path')).toHaveLength(
       1,
     );
@@ -691,7 +699,43 @@ describe('말과 주사위', () => {
       doc.getElementById('pc-glue')!.querySelectorAll('line').length,
     ).toBeGreaterThan(GLUE_TAB_COUNT);
     expect(OPPOSITE_FACE_SUMS).toEqual([7, 7, 7]);
-    expect(doc.querySelectorAll('#pc-art circle')).toHaveLength(21);
+    expect(
+      doc.querySelectorAll(`#pc-art circle[r="${DICE.pipRadiusMm}"]`),
+    ).toHaveLength(21);
+  });
+
+  it('한 장 안에서 전개도와 말 여섯이 제목 띠 아래에 겹치지 않고 들어간다', () => {
+    const margin = 3;
+    const within = (box: { l: number; t: number; r: number; b: number }) =>
+      box.l >= margin &&
+      box.r <= PIECES_SHEET.widthMm - margin &&
+      box.t >= PIECES_SHEET.headerHeightMm &&
+      box.b <= PIECES_SHEET.heightMm - margin;
+    const net = {
+      l: DICE.originXMm,
+      t: DICE.originYMm,
+      r: DICE.originXMm + DICE.netWidthMm,
+      b: DICE.originYMm + DICE.netHeightMm,
+    };
+    expect(within(net), '전개도').toBe(true);
+    for (const style of TOKEN_STYLES) {
+      const { xMm, yMm } = tokenCenter(style.id);
+      const disc = {
+        l: xMm - TOKEN.radiusMm,
+        t: yMm - TOKEN.radiusMm,
+        r: xMm + TOKEN.radiusMm,
+        b: yMm + TOKEN.radiusMm,
+      };
+      expect(within(disc), `말 ${style.id}`).toBe(true);
+      // 가위가 지나갈 틈 — 전개도 상자와 원판 사이.
+      expect(disc.l - net.r, `말 ${style.id}`).toBeGreaterThanOrEqual(margin);
+    }
+    for (const note of PIECES_NOTES) {
+      expect(
+        estimateTextWidthMm(note, PIECES_NOTE_FONT_MM),
+        note,
+      ).toBeLessThanOrEqual(PIECES_SHEET.widthMm - 2 * margin);
+    }
   });
 });
 

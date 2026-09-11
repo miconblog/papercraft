@@ -169,10 +169,10 @@ describe('세계일주 — 도시 목록', () => {
     });
   });
 
-  it('말 시트로 옮기면 도시 목록 패널은 사라진다 — 게임판에만 걸린 값이다', async () => {
+  it('말과 주사위 시트로 옮기면 도시 목록 패널은 사라진다 — 게임판에만 걸린 값이다', async () => {
     const user = userEvent.setup();
     render(<EditorClient game={game} />);
-    await user.click(screen.getByRole('button', { name: '말 여섯' }));
+    await user.click(screen.getByRole('button', { name: '말과 주사위' }));
     expect(screen.queryByRole('group', { name: '도시 묶음' })).toBeNull();
     expect(screen.getByLabelText('말 1 이름')).toBeInTheDocument();
   });

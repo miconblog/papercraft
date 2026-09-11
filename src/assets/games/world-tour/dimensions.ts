@@ -202,22 +202,34 @@ export const LAYOUT = {
 } as const;
 
 /**
- * 말 시트 — A7 가로. 여섯 개가 3×2로 앉는다.
+ * 말과 주사위 시트 — A6 가로. 위에 제목 띠, 왼쪽에 주사위 전개도, 오른쪽에 말
+ * 여섯이 2×3으로 앉는다.
  *
+ * 처음엔 말(A7)과 주사위(120×100)가 따로 뽑혀 종이가 두 장 나왔다. 둘 다
+ * 두꺼운 종이에 뽑는 작은 부속이라 한 장에 합쳤다(2026-09-11 사용자 요청).
+ */
+export const PIECES_SHEET = {
+  widthMm: 148,
+  heightMm: 105,
+  headerHeightMm: 18,
+} as const;
+
+/**
  * 말은 **평평한 원판**이다. 지름 13mm면 칸(6.6mm)을 덮고도 이름 글자가 밑으로
  * 보이고, 두꺼운 종이에 뽑아 오리면 손가락으로 집힌다. 세우는 말(텐트형)은
  * 칸 간격 8mm 안에서 이웃 칸을 가리므로 쓰지 않는다.
  */
-export const TOKEN_SHEET = { widthMm: 105, heightMm: 74 } as const;
-
 export const TOKEN = {
   radiusMm: 6.5,
   count: 6,
-  columns: 3,
+  columns: 2,
   /** 원판 중심 사이 간격. */
   pitchMm: 24,
-  /** 첫 원판 중심. 아래 다섯은 `pitchMm`로 늘어선다. */
-  firstCenter: { xMm: 28.5, yMm: 34 },
+  /**
+   * 첫 원판 중심. 아래 다섯은 `pitchMm`로 늘어선다. 2×3 묶음(37 × 61mm)을
+   * 전개도 오른쪽 남은 폭(100–148)과 제목 띠 아래 높이의 가운데에 둔다.
+   */
+  firstCenter: { xMm: 112, yMm: 37.5 },
   /** 색 테. 원판 가장자리 안쪽에 두르고, 사용자가 색을 고른다. */
   ringWidthMm: 1.6,
   /** 그림(모양)이 앉는 위쪽 상자의 중심 — 원판 중심에서 위로. */
@@ -258,21 +270,25 @@ export const tokenCenter = (n: number): { xMm: number; yMm: number } => {
 export const tokenLayerId = (n: number): string => `pc-token-${n}`;
 
 /**
- * 종이 주사위 전개도 시트.
+ * 종이 주사위 전개도.
  *
  * 한 변 22mm. 옛 인쇄본의 주사위가 이만했고, 이보다 작으면 여섯 살 손으로
- * 접기 어렵다. 십자 전개도에 풀칠면 일곱이다.
+ * 접기 어렵다. 십자 전개도에 풀칠면 일곱이다. 전개도의 바깥 상자는
+ * 폭 4면 + 오른쪽 풀칠면(94mm), 높이 3면(66mm)이다 — A의 위아래 풀칠면은
+ * T·U 줄 안에 든다.
  */
-export const DICE_SHEET = { widthMm: 120, heightMm: 100 } as const;
-
 export const DICE = {
   faceMm: 22,
   /** 풀칠면 깊이와 사다리꼴 빗변의 들여쓰기. */
   tabDepthMm: 6,
   tabInsetMm: 2,
-  /** 전개도 왼쪽 위(첫 면 A의 좌상단) — 시트 안에서 가운데다. */
-  originXMm: (120 - (4 * 22 + 6)) / 2, // 13
-  originYMm: 14 + (100 - 14 - (3 * 22 + 2 * 6)) / 2, // 18
+  netWidthMm: 4 * 22 + 6,
+  netHeightMm: 3 * 22,
+  /**
+   * 전개도 상자의 좌상단(= 면 A 왼쪽 변의 x, 면 T 윗변의 y). 시트 왼쪽에 붙이고
+   * 제목 띠 아래 높이의 가운데에 둔다.
+   */
+  originXMm: 6,
+  originYMm: 18 + (105 - 18 - 3 * 22) / 2, // 28.5
   pipRadiusMm: 2,
-  headerHeightMm: 14,
 } as const;

@@ -10,14 +10,12 @@
  */
 import { DEFAULT_COUNT } from '../cities.ts';
 import { renderBoard } from './board.ts';
-import { renderDice } from './dice.ts';
-import { renderTokens } from './tokens.ts';
+import { renderPieces } from './pieces.ts';
 
-export { renderBoard, renderDice, renderTokens };
+export { renderBoard, renderPieces };
 export { renderWorldTourArtwork } from './dynamic.ts';
 
 export const ARTWORK: Readonly<Record<string, () => string>> = {
   board: () => renderBoard(DEFAULT_COUNT),
-  tokens: renderTokens,
-  dice: renderDice,
+  pieces: renderPieces,
 };

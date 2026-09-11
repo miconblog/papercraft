@@ -18,8 +18,7 @@ npm run artwork              # 모든 게임
 | `board-80.svg`  | 게임판 · 도시 80개 (594×420mm · A2 = A4 네 장)    |
 | `board-90.svg`  | 게임판 · 도시 90개 (A2)                           |
 | `board-100.svg` | 게임판 · 도시 100개 (A2)                          |
-| `tokens.svg`    | 말 여섯 (오림 부속, 105×74mm)                     |
-| `dice.svg`      | 종이 주사위 전개도 (조립물, 120×100mm)            |
+| `pieces.svg`    | 말 여섯 + 종이 주사위 전개도 (조립물, 148×105mm)  |
 
 판 크기는 도시 수를 따른다(`dimensions.ts`의 `PAPER_STEPS`). 칸·말·글자는 실물
 치수 그대로이고 지도만 커진다. 도안 정의(`parts`)가 가리키는 판은 `board.svg`

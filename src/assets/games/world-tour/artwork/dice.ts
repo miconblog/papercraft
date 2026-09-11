@@ -1,5 +1,5 @@
 /**
- * 조립물 파트 — 종이 주사위 (IDE-015)
+ * 종이 주사위 전개도 (IDE-015) — 말과 주사위 시트(`./pieces.ts`)의 왼쪽
  *
  * 옛 인쇄본의 위 띠에 있던 〈종이주사위 만들기〉다. "잘라서 오리고 풀칠을 하고
  * 접어서 만듭니다." — 십자 전개도에 풀칠면 일곱이고, 마주 보는 면의 눈을
@@ -11,21 +11,8 @@
  * 면의 차례(왼쪽부터) A·B·C·D, B 위가 T, B 아래가 U. 눈은 B=1 D=6, A=2 C=5,
  * T=3 U=4.
  */
-import { DICE, DICE_SHEET } from '../dimensions.ts';
-import {
-  ART_LAYER_ID,
-  INK_COLOR,
-  RULE_COLOR,
-  circle,
-  glueHatch,
-  group,
-  line,
-  markLayer,
-  num,
-  path,
-  svgDocument,
-  text,
-} from '../../../shared/svg.ts';
+import { DICE } from '../dimensions.ts';
+import { circle, glueHatch, line, num, path } from '../../../shared/svg.ts';
 
 const s = DICE.faceMm;
 const d = DICE.tabDepthMm;
@@ -186,45 +173,26 @@ const PIP_LAYOUT: Readonly<Record<number, ReadonlyArray<Pt>>> = {
   ],
 };
 
-export const renderDice = (): string => {
-  const outline = path(
+/** 전개도 조각 — 시트가 표시 레이어별로 모아 담는다. 눈은 잉크 색을 물려받는다. */
+export const renderDiceNet = (): {
+  cut: string;
+  folds: string[];
+  glue: string[];
+  pips: string[];
+} => ({
+  cut: path(
     OUTLINE.map(
       ([x, y], k) => `${k === 0 ? 'M' : 'L'}${num(x)} ${num(y)}`,
     ).join('') + 'Z',
-  );
-  const folds = FOLDS.map(([[x1, y1], [x2, y2]]) => line(x1, y1, x2, y2));
-  const glue = GLUE_BOXES.flatMap(([x, y, w, h]) => glueHatch(x, y, w, h));
-  const pips = FACES.flatMap((face) =>
+  ),
+  folds: FOLDS.map(([[x1, y1], [x2, y2]]) => line(x1, y1, x2, y2)),
+  glue: GLUE_BOXES.flatMap(([x, y, w, h]) => glueHatch(x, y, w, h)),
+  pips: FACES.flatMap((face) =>
     PIP_LAYOUT[face.pips].map(([fx, fy]) =>
       circle(face.x + fx * s, face.y + fy * s, DICE.pipRadiusMm),
     ),
-  );
-
-  return svgDocument({
-    widthMm: DICE_SHEET.widthMm,
-    heightMm: DICE_SHEET.heightMm,
-    title: '세계일주 주사위놀이 · 종이 주사위',
-    children: [
-      markLayer('cut', [outline]),
-      markLayer('fold-valley', folds),
-      markLayer('glue', glue),
-      group({ id: ART_LAYER_ID, fill: INK_COLOR, stroke: 'none' }, [
-        text('종이 주사위', DICE_SHEET.widthMm / 2, 6, 5, {
-          'text-anchor': 'middle',
-          'font-weight': 'bold',
-        }),
-        text(
-          '바깥 실선을 오리고 파선을 안으로 접는다. 빗금 면에 풀을 발라 정육면체로 붙인다.',
-          DICE_SHEET.widthMm / 2,
-          11.5,
-          2.6,
-          { 'text-anchor': 'middle', fill: RULE_COLOR },
-        ),
-        ...pips,
-      ]),
-    ],
-  });
-};
+  ),
+});
 
 /** 테스트가 쓴다 — 마주 보는 면의 눈 합. */
 export const OPPOSITE_FACE_SUMS = [
