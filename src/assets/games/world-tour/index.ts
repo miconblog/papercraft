@@ -29,10 +29,9 @@ import {
 } from './cities';
 import {
   BOARD,
-  DICE_SHEET,
   DYNAMIC_SIZE_STEPS,
+  PIECES_SHEET,
   TOKEN,
-  TOKEN_SHEET,
   TOKEN_STYLES,
   paperFor,
   tokenCenter,
@@ -43,8 +42,7 @@ export const artworkPath = (partId: string): string =>
   `/games/world-tour/${partId}.svg`;
 
 const BOARD_PART_ID = 'board';
-const TOKENS_PART_ID = 'tokens';
-const DICE_PART_ID = 'dice';
+const PIECES_PART_ID = 'pieces';
 
 const CITIES_SLOT_ID = 'cities';
 const FRAME_SLOT_ID = 'board-frame';
@@ -97,7 +95,7 @@ const tokenSlots = TOKEN_STYLES.flatMap((style) => {
       placeholder: '이름',
       placements: [
         {
-          partId: TOKENS_PART_ID,
+          partId: PIECES_PART_ID,
           mode: 'text' as const,
           xMm,
           yMm: yMm + TOKEN.nameOffsetMm,
@@ -115,7 +113,7 @@ const tokenSlots = TOKEN_STYLES.flatMap((style) => {
       default: style.color,
       placements: [
         {
-          partId: TOKENS_PART_ID,
+          partId: PIECES_PART_ID,
           mode: 'paint' as const,
           layerId: tokenLayerId(style.id),
           property: 'fill' as const,
@@ -169,35 +167,25 @@ export default defineGame({
       },
     },
     {
-      id: TOKENS_PART_ID,
-      kind: 'cutout',
-      title: '말 여섯',
+      // 말과 주사위는 한 장이다(2026-09-11 사용자 요청) — 둘 다 두꺼운 종이에
+      // 뽑는 작은 부속인데 따로 뽑으면 종이가 두 장 나왔다.
+      id: PIECES_PART_ID,
+      kind: 'buildable',
+      title: '말과 주사위',
       description:
-        '지름 13mm 원판 여섯. 색과 모양이 다르고, 만들기 화면에서 넣은 이름이 ' +
-        '찍힌다. 두꺼운 종이에 뽑아 원을 따라 오린다. 사람 수만큼 골라 쓴다.',
-      widthMm: TOKEN_SHEET.widthMm,
-      heightMm: TOKEN_SHEET.heightMm,
+        '말 여섯과 종이 주사위 전개도가 A6 한 장에 있다. 두꺼운 종이에 뽑는다. ' +
+        '말은 지름 13mm 원판으로 색과 모양이 다르고, 만들기 화면에서 넣은 이름이 ' +
+        '찍힌다 — 원을 따라 오려 사람 수만큼 골라 쓴다. 주사위는 한 변 22mm ' +
+        '정육면체로, 바깥 실선을 오리고 파선을 안으로 접어 빗금 면에 풀을 발라 ' +
+        '붙인다. 마주 보는 면의 눈을 더하면 7이다.',
+      widthMm: PIECES_SHEET.widthMm,
+      heightMm: PIECES_SHEET.heightMm,
       orientation: 'landscape',
-      // 이름 글자(2mm)가 하한을 정한다.
+      // 말 이름 글자(2mm)가 하한을 정한다.
       minScale: 1,
       maxScale: 2,
-      marks: ['cut'],
-      artwork: artworkPath(TOKENS_PART_ID),
-    },
-    {
-      id: DICE_PART_ID,
-      kind: 'buildable',
-      title: '종이 주사위',
-      description:
-        '한 변 22mm 정육면체 전개도. 바깥 실선을 오리고 파선을 안으로 접어 빗금 ' +
-        '면에 풀을 발라 붙인다. 마주 보는 면의 눈을 더하면 7이다.',
-      widthMm: DICE_SHEET.widthMm,
-      heightMm: DICE_SHEET.heightMm,
-      orientation: 'landscape',
-      minScale: 0.8,
-      maxScale: 2,
       marks: ['cut', 'fold-valley', 'glue'],
-      artwork: artworkPath(DICE_PART_ID),
+      artwork: artworkPath(PIECES_PART_ID),
     },
   ],
 
