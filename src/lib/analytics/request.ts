@@ -64,7 +64,7 @@ export function summarizeUa(userAgent: string | null | undefined): UaSummary {
 }
 
 /**
- * 경로에서 게임 id 를 꺼낸다 — `/games/<id>` · `/games/<id>/edit` · `/games/<id>/print`.
+ * 경로에서 게임 id 를 꺼낸다 — `/games/<id>` · `/games/<id>/rules` · `/games/<id>/print`.
  *
  * **등록소에 있는 id 만 인정한다.** 경로는 누구나 만들어 부를 수 있어서,
  * 그대로 받으면 `game_id` 칸이 남이 지어낸 문자열로 채워진다.

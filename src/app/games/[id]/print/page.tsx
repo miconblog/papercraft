@@ -34,7 +34,7 @@ export default async function PrintGamePage({ params }: Props) {
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
       <Link
-        href={`/games/${game.id}/edit`}
+        href={`/games/${game.id}`}
         className="text-sm text-muted-foreground hover:underline"
       >
         ← 만들기로 돌아가기

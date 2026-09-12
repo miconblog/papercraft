@@ -252,7 +252,7 @@ export default defineGame({
     '홈런선 밖으로 나가면 홈런이고, 오려 세운 수비 선수에 맞으면 아웃이다. ' +
     '수비 시프트와 등번호, 팀 색을 원하는 대로 바꿔 인쇄할 수 있다.',
   players: { min: 2, max: 2 },
-  supplies: ['연필', '가위', '공(지름 10mm쯤)', '동전 몇 개'],
+  supplies: ['연필', '가위', '풀(보관함용)', '공(지름 10mm쯤)', '동전 몇 개'],
   // 카탈로그(IDE-005) 썸네일 — 별도로 그리지 않고 야구장 아트워크를 그대로 쓴다.
   // 실제 인쇄될 도안을 보여주는 게 만든 아이콘보다 정직한 미리보기다.
   thumbnail: artworkPath(FIELD_PART_ID),
@@ -305,23 +305,47 @@ export default defineGame({
       artwork: artworkPath('score-sheet'),
     },
     {
+      // 2026-09-12 사용자 요청 — "1번부터 9번까지 선수 기록을 적을 수 있는 기록용
+      // 용지". 스코어보드가 이닝별 점수라면 이쪽은 선수별 타격이다.
+      id: 'roster',
+      kind: 'cutout',
+      title: '선수 로스터',
+      description:
+        '타순 1번부터 9번까지 선수 이름을 적고 타석마다 결과를 기호로 남기는 ' +
+        '기록 용지. 한 사람에 타석 다섯 칸이 있고, 오른쪽 끝에서 타수·안타·타율을 ' +
+        '적는다. 한 장에 표가 두 벌이라 한 경기에 양 팀을 다 적는다. 아래 타율 ' +
+        '조견표에서 타수와 안타가 만나는 칸을 찾으면 나눗셈을 못 해도 타율이 나온다.',
+      widthMm: SHEETS.roster.widthMm,
+      heightMm: SHEETS.roster.heightMm,
+      orientation: 'portrait',
+      // 머리글 글자(3.2mm)가 하한을 정한다.
+      minScale: 0.7,
+      maxScale: 2,
+      marks: ['cut'],
+      artwork: artworkPath('roster'),
+    },
+    {
       id: 'stands',
       kind: 'buildable',
       title: '선수 스탠드',
       description:
-        '오려 접어 야구장에 세우는 선수 스무 명 — 한 줄이 한 팀 열(투수부터 야수 ' +
-        '여덟에 포수와 지명타자)이라 한 장에 양 팀이 다 있다. 카드 가운데를 산 ' +
-        '모양으로 한 번 접으면 혼자 선다 — 풀도 칼도 탭도 쓰지 않는다. 한 면은 그 ' +
-        '자리의 수비 자세, 반대 면은 방망이를 든 타자이고 타격 자세가 열 다 다르다 — ' +
-        '돌려 세우면 그대로 타순이 된다. 세워야 타구가 부딪혀 아웃이 된다. ' +
-        '줄마다 다른 색으로 칠해 두면 공수를 바꿀 때 헷갈리지 않는다.',
+        '오려 접어 야구장에 세우는 선수 스무 명(한 팀 열 명 — 투수부터 야수 ' +
+        '여덟에 포수와 지명타자)과 선수 보관함 한 벌이 A4 가로 한 장에 있다. ' +
+        '카드 가운데를 산 모양으로 한 번 접으면 혼자 선다 — 카드에는 풀도 칼도 ' +
+        '탭도 쓰지 않는다. 한 면은 그 자리의 수비 자세, 반대 면은 방망이를 든 ' +
+        '타자이고 타격 자세가 열 다 다르다 — 돌려 세우면 그대로 타순이 된다. ' +
+        '세워야 타구가 부딪혀 아웃이 된다. 오른쪽의 큰 전개도가 보관함이다 — ' +
+        '오려 접어 네 귀를 풀로 붙이면, 다 놀고 난 선수를 접은 채로 세워 일렬로 ' +
+        '담아 둘 수 있다(뚜껑은 없다). 팀마다 다른 색으로 칠해 두면 공수를 바꿀 때 ' +
+        '헷갈리지 않는다.',
       widthMm: SHEETS.stands.widthMm,
       heightMm: SHEETS.stands.heightMm,
       orientation: 'landscape',
       // 포지션 이름표(3mm)가 하한을 정한다.
       minScale: 0.8,
       maxScale: 2,
-      marks: ['cut', 'fold-mountain'],
+      // 카드는 산접기(그림이 바깥), 보관함은 골접기와 풀칠면이다.
+      marks: ['cut', 'fold-mountain', 'fold-valley', 'glue'],
       // 한 장에 두 팀이 다 들어간다 — 두 벌 뽑을 이유가 없어졌다.
       defaultCopies: 1,
       artwork: artworkPath('stands'),

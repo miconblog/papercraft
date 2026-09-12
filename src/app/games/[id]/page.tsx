@@ -1,41 +1,13 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { gameIds, getGame } from '@/lib/games';
-import { groupRuleSections, type RuleBody } from '@/lib/schema';
-import {
-  ORIENTATION_LABEL,
-  PART_KIND_LABEL,
-  SUPPORTED_PAPER_SIZE,
-  boardOf,
-  formatPlayers,
-} from '@/lib/games/format';
+import { movableSlots } from '@/lib/schema';
+import { EditorClient } from '@/components/editor/EditorClient';
 
 type Params = { id: string };
 type Props = { params: Promise<Params> };
 
-/**
- * 같은 종류가 잇달아 오는 만큼씩 끊는다.
- *
- * 한 절에 번호 있는 항목(`step`)과 없는 항목(`bullet`)이 섞이는데 — 축구
- * 게임판의 "차리기"가 그렇다 — 하나의 `ol`에 몰아넣으면 점 항목까지 번호를
- * 먹거나 번호가 건너뛴다.
- */
-function groupRuns(
-  blocks: readonly RuleBody[],
-): { kind: RuleBody['kind']; texts: string[] }[] {
-  const runs: { kind: RuleBody['kind']; texts: string[] }[] = [];
-  for (const block of blocks) {
-    const last = runs.at(-1);
-    if (last?.kind === block.kind) last.texts.push(block.text);
-    else runs.push({ kind: block.kind, texts: [block.text] });
-  }
-  return runs;
-}
-
-/** 게임마다 하나씩 빌드 시점에 정적 생성한다 — 등록소에 게임을 더하면 이
- * 목록도 같이 늘어난다(IDE-005 수용 기준: 페이지가 자동으로 생긴다). */
 export function generateStaticParams(): Params[] {
   return gameIds().map((id) => ({ id }));
 }
@@ -46,29 +18,37 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!game) return {};
 
   return {
-    title: game.title,
+    title: `${game.title} 만들기`,
     description: game.tagline,
-    openGraph: {
-      title: game.title,
-      description: game.tagline,
-    },
+    // 밖에서 이 주소를 나눌 때 보이는 것은 "만들기 화면"이 아니라 게임이다 —
+    // 카탈로그·공유 링크(`/admin/share`)가 가리키는 주소가 여기다.
+    openGraph: { title: game.title, description: game.tagline },
   };
 }
 
-export default async function GamePage({ params }: Props) {
+/**
+ * 게임 화면 = 커스터마이즈 에디터 (IDE-006)
+ *
+ * 스키마(`GameDefinition`)를 클라이언트 컴포넌트에 그대로 넘긴다 — 폼도
+ * 미리보기도 이 안에서 게임을 몰라도 되게 스키마만 읽는다.
+ *
+ * **카탈로그에서 누르면 곧장 여기로 온다**(2026-09-12 사용자 요청). 전에는
+ * 소개 페이지를 거쳐 "만들기"를 한 번 더 눌러야 했는데, 고르고 나서 하고 싶은
+ * 일이 늘 만들기였다. 소개와 게임 방법은 `./rules`로 옮기고 여기서 링크한다.
+ *
+ * 폭을 넓게 잡고 위아래 여백은 좁힌다. 미리보기를 폭 전체로 놓는 배치라
+ * (`EditorClient`) 페이지가 좁으면 미리보기가 그만큼 작아지고, 세로 여백은
+ * 곧장 미리보기 높이에서 빠진다(2026-09-06 레이아웃 정리).
+ */
+export default async function EditGamePage({ params }: Props) {
   const { id } = await params;
   const game = getGame(id);
   if (!game) notFound();
 
-  const board = boardOf(game);
-  const accessories = game.parts.filter((p) => p.kind !== 'board');
-  const sections = groupRuleSections(game.rules);
-
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
-      {/* 만들기 버튼은 맨 위 오른쪽, 목록 링크와 같은 줄이다. 아래에 두면
-          규칙·구성을 지나 스크롤해야 닿았다(2026-09-06 사용자 요청). 인쇄는
-          여기 없다 — 만들기 페이지 안의 "출력하기"가 모달로 연다. */}
+    <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6">
+      {/* 왼쪽은 목록으로, 오른쪽은 게임 방법이다. 규칙은 이제 이 화면에 없고
+          (`./rules`), 놀다가 되짚을 것이라 늘 한 번에 닿아야 한다. */}
       <div className="flex items-center justify-between gap-4">
         <Link
           href="/"
@@ -77,129 +57,29 @@ export default async function GamePage({ params }: Props) {
           ← 목록으로
         </Link>
         <Link
-          href={`/games/${game.id}/edit`}
-          className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/85"
+          href={`/games/${game.id}/rules`}
+          className="text-sm text-muted-foreground hover:underline"
         >
-          만들기
+          {game.title} 게임 방법
         </Link>
       </div>
+      {/* 설명 문단은 여전히 두지 않는다(2026-09-06 사용자 요청 — "최대한
+          간결하고 직관적으로"). 다만 끌어서 옮길 수 있다는 것만은 보지 않으면
+          모르므로, 제목 옆에 한 줄로 붙인다(2026-09-08 사용자 요청).
 
-      {/* 도안 그림도 만들기로 가는 문이다 — 보고 나서 바로 만지고 싶은 것이 첫
-          충동이다. */}
-      <Link
-        href={`/games/${game.id}/edit`}
-        aria-label={`${game.title} 만들기`}
-        className="mt-4 block overflow-hidden rounded-lg border border-border bg-paper outline-none transition-shadow hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
-      >
-        <Image
-          src={game.thumbnail}
-          alt={`${game.title} 도안 미리보기`}
-          width={board.widthMm}
-          height={board.heightMm}
-          className="h-auto w-full"
-        />
-      </Link>
-
-      <h1 className="mt-6 text-3xl font-bold tracking-tight">{game.title}</h1>
-      <p className="mt-2 text-lg text-muted-foreground">{game.tagline}</p>
-
-      <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm">
-        <div className="flex gap-1">
-          <dt className="font-medium">인원</dt>
-          <dd className="text-muted-foreground">
-            {formatPlayers(game.players)}
-          </dd>
-        </div>
-        <div className="flex gap-1">
-          <dt className="font-medium">지원 용지</dt>
-          <dd className="text-muted-foreground">{SUPPORTED_PAPER_SIZE}</dd>
-        </div>
-        <div className="flex gap-1">
-          <dt className="font-medium">준비물</dt>
-          <dd className="text-muted-foreground">{game.supplies.join(' · ')}</dd>
-        </div>
-      </dl>
-
-      <p className="mt-6 leading-7 text-foreground/85">{game.description}</p>
-
-      {/* 규칙은 인쇄물이 아니라 여기서 읽는다 — 게임 방법 카드를 출력물에서
-          뺐다(2026-09-05). 무엇을 뽑을지(구성)보다 어떻게 노는지가 먼저 궁금한
-          정보라 위에 둔다. */}
-      {sections.length > 0 && (
-        <section className="mt-8">
-          <h2 className="text-lg font-semibold">게임 방법</h2>
-          <div className="mt-3 space-y-5 rounded-lg border border-border p-4">
-            {sections.map((section, i) => (
-              <div key={section.heading ?? `intro-${i}`}>
-                {section.heading && (
-                  <h3 className="text-sm font-semibold">{section.heading}</h3>
-                )}
-                {/* 번호 있는 항목과 없는 항목이 한 절에 섞일 수 있어 목록을
-                    나눠 그린다 — `ol`에 점 항목을 넣으면 번호가 건너뛴다. */}
-                {groupRuns(section.blocks).map((run, j) =>
-                  run.kind === 'step' ? (
-                    <ol
-                      key={j}
-                      className="mt-2 list-decimal space-y-1 pl-5 text-sm leading-6 text-foreground/85"
-                    >
-                      {run.texts.map((text) => (
-                        <li key={text}>{text}</li>
-                      ))}
-                    </ol>
-                  ) : (
-                    <ul
-                      key={j}
-                      className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-foreground/85"
-                    >
-                      {run.texts.map((text) => (
-                        <li key={text}>{text}</li>
-                      ))}
-                    </ul>
-                  ),
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      <section className="mt-8">
-        <h2 className="text-lg font-semibold">구성</h2>
-        <ul className="mt-3 divide-y divide-border rounded-lg border border-border">
-          {[board, ...accessories].map((part) => (
-            <li key={part.id} className="p-3 text-sm">
-              <div className="flex items-baseline justify-between gap-2">
-                <span className="font-medium">{part.title}</span>
-                <span className="text-muted-foreground">
-                  {PART_KIND_LABEL[part.kind]}
-                </span>
-              </div>
-              <div className="mt-1 text-muted-foreground">
-                배율 100%에서 {part.widthMm}×{part.heightMm}mm ·{' '}
-                {ORIENTATION_LABEL[part.orientation]}
-                {/* 변형이 있는 파트(세계일주 게임판의 도시 수)는 고르는 값에
-                    따라 크기가 달라진다 — 기본값만 적으면 거짓말이 된다. */}
-                {part.variants && (
-                  <>
-                    {' '}
-                    · 만들기에서 고르는 값에 따라{' '}
-                    {[
-                      ...new Set(
-                        part.variants.options.map(
-                          (o) => `${o.widthMm}×${o.heightMm}mm`,
-                        ),
-                      ),
-                    ].join(' / ')}
-                  </>
-                )}
-              </div>
-              {part.description && (
-                <p className="mt-1 text-muted-foreground">{part.description}</p>
-              )}
-            </li>
-          ))}
-        </ul>
-      </section>
+          끌 수 있는 슬롯이 없는 게임에서는 거짓말이 되므로 그때는 감춘다 —
+          이 페이지는 게임을 모르는 채로 서야 한다. */}
+      <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <h1 className="text-2xl font-bold tracking-tight">
+          {game.title} 만들기
+        </h1>
+        {movableSlots(game).length > 0 && (
+          <p className="text-sm text-muted-foreground">
+            선수를 드래그해서 위치를 직접 바꿔보세요.
+          </p>
+        )}
+      </div>
+      <EditorClient game={game} />
     </div>
   );
 }

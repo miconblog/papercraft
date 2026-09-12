@@ -28,13 +28,13 @@
  * 지명타자 카드만 아래 면도 타자다(`DH_CARD`) — 수비를 나가지 않는 자리라
  * 수비 자세랄 것이 없다.
  *
- * ## 한 장에 두 팀
+ * ## 한 장에 두 팀과 보관함
  *
- * 격자는 **10열 × 2행**이고 한 줄이 한 팀이다(2026-09-08 사용자 요청). 앞서는
- * 열 장짜리 시트를 두 벌 뽑게 했는데 A4에 얹으면 종이가 절반 넘게 남았다 —
- * 카드는 마커 자리에 서야 해서 키울 수 없으니(`../dimensions.ts`의 `SHEETS`)
- * 남는 자리를 두 번째 팀으로 채웠다. 한 줄 열은 판에 서는 수비 여덟에 포수와
- * 지명타자를 더한 한 팀 전부다.
+ * 격자는 **7열 × 3행**이고 스무 장이 7·7·6으로 흐른다(2026-09-12). 오른쪽 세로
+ * 칸을 **선수 보관함 전개도**(`./stand-box.ts`)에 내주면서 열이 줄었다 — 놀고 난
+ * 선수가 온 집에 흩어진다는 사용자 신고에서 나온 부속이다. 팀은 이어 붙는다:
+ * 첫 팀 열 장이 먼저, 두 번째 팀이 그 뒤이고, 팀이 바뀌는 자리마다 이름 띠가
+ * 붙는다. 한 팀 열 장은 판에 서는 수비 여덟에 포수와 지명타자를 더한 전부다.
  *
  * 그림은 **윤곽선**으로만 낸다. 판 위 마커처럼 팀 색을 받지 않는다 — 두 팀이
  * 한 줄씩 나눠 갖고 각자 칠하는 것을 전제로 한 부속이라 색을 미리 넣으면 그
@@ -44,6 +44,8 @@
 import {
   SHEETS,
   STAND,
+  STAND_BOX,
+  STAND_BOX_NET_MM,
   STAND_GRID,
   STAND_CARDS,
   STAND_ROW_HEIGHT_MM,
@@ -62,25 +64,36 @@ import {
 } from '../../../shared/svg.ts';
 import { drawShape, figureModeAttrs, type Pt } from '../../../shared/figure.ts';
 import { FIGURE_OUTLINE_MM, fittedShapes } from './player-markers.ts';
+import { renderTrayNet } from './stand-box.ts';
 
 const SHEET = SHEETS.stands;
-
-/** 한 줄 — 한 팀 아홉 장(`../dimensions.ts`의 `STAND_CARDS`). */
-const TEAM_CARDS = STAND_CARDS;
 
 const FIGURE_BOX = {
   widthMm: STAND.figureWidthMm,
   heightMm: STAND.figureHeightMm,
 };
 
-const gridLeftMm = (SHEET.widthMm - STAND_GRID.widthMm) / 2;
-const gridTopMm =
-  STAND.headerHeightMm +
-  (SHEET.heightMm - STAND.headerHeightMm - STAND_GRID.heightMm) / 2;
+const gridLeftMm = STAND.sheetMarginMm;
+const gridTopMm = STAND.headerHeightMm;
+
+/** 보관함은 격자 오른쪽 세로 칸에 선다. */
+const boxLeftMm = gridLeftMm + STAND_GRID.widthMm + STAND_BOX.gapMm;
+const boxNotesTopMm = gridTopMm + STAND_BOX_NET_MM.heightMm + 8;
+
+/**
+ * 보관함 만드는 법. 전개도 아래 남는 자리에 그대로 적는다 — 상자를 만드는 자리가
+ * 곧 설명을 읽는 자리다.
+ */
+export const BOX_SHEET_NOTES: readonly string[] = [
+  '① 바깥 실선대로 오린다.',
+  '② 파선을 인쇄면이 안으로 오게(골 모양) 접는다.',
+  '③ 네 귀에 풀을 발라 옆벽 안쪽에 붙인다.',
+  '④ 접은 선수를 세워 일렬로 담는다.',
+];
 
 const cardHeightMm = STAND.faceHeightMm * 2;
 
-/** 줄(=팀) 한 칸의 위쪽 끝. 이름 띠가 여기서 시작하고 카드는 그 아래다. */
+/** 줄 한 칸의 위쪽 끝. 이름 띠가 여기서 시작하고 카드는 그 아래다. */
 const rowTopMm = (row: number): number =>
   gridTopMm + row * (STAND_ROW_HEIGHT_MM + STAND.gapMm);
 
@@ -92,6 +105,35 @@ const cardOriginMm = (
   xMm: gridLeftMm + column * (STAND.cardWidthMm + STAND.gapMm),
   yMm: rowTopMm(row) + STAND.teamBandHeightMm,
 });
+
+/**
+ * 카드 스무 장이 앉을 자리 — 첫 팀 열 장이 먼저, 두 번째 팀이 그 뒤다.
+ *
+ * 줄이 곧 팀이던 시절에는 이 계산이 필요 없었지만(한 줄 = 한 팀), 열이 일곱으로
+ * 줄면서 팀이 줄을 걸쳐 흐른다. 차례만 지키면 팀은 여전히 이어 붙는다.
+ */
+export const STAND_CELLS = STAND_TEAMS.flatMap((_, team) =>
+  STAND_CARDS.map((card) => ({ team, card })),
+).map((cell, index) => ({
+  ...cell,
+  row: Math.floor(index / STAND.columns),
+  column: index % STAND.columns,
+}));
+
+/** 팀 이름 띠가 붙는 자리 — 줄마다, 팀이 바뀔 때마다 하나씩이다. */
+export const teamBands = (): {
+  team: number;
+  row: number;
+  column: number;
+}[] => {
+  const bands: { team: number; row: number; column: number }[] = [];
+  for (const cell of STAND_CELLS) {
+    const previous = bands.at(-1);
+    if (previous?.row === cell.row && previous.team === cell.team) continue;
+    bands.push({ team: cell.team, row: cell.row, column: cell.column });
+  }
+  return bands;
+};
 
 /**
  * 그림 한 면. `flip`이면 면 중심을 축으로 180° 돌려 그린다 — 접었을 때 뒤로
@@ -123,52 +165,58 @@ const face = (
 };
 
 export const renderStands = (): string => {
+  const box = renderTrayNet(STAND_BOX.tray, boxLeftMm, gridTopMm);
+
   const cutRects: string[] = [];
   const foldLines: string[] = [];
   const figures: string[] = [];
   const labels: string[] = [];
-  const teamLabels: string[] = [];
 
-  for (const [row, teamLabel] of STAND_TEAMS.entries()) {
-    teamLabels.push(
-      text(
-        `${teamLabel} — 이 줄을 한 가지 색으로 칠한다`,
-        gridLeftMm,
-        rowTopMm(row) + STAND.teamBandHeightMm / 2,
-        STAND.teamFontMm,
-        { fill: RULE_COLOR, stroke: 'none' },
+  const teamLabels = teamBands().map((band) =>
+    text(
+      band.column === 0 && band.row === 0
+        ? `${STAND_TEAMS[band.team]} — 한 가지 색으로 칠한다`
+        : STAND_TEAMS[band.team],
+      cardOriginMm(band.row, band.column).xMm,
+      rowTopMm(band.row) + STAND.teamBandHeightMm / 2,
+      STAND.teamFontMm,
+      { fill: RULE_COLOR, stroke: 'none' },
+    ),
+  );
+
+  for (const cell of STAND_CELLS) {
+    const { xMm, yMm } = cardOriginMm(cell.row, cell.column);
+    const centerXMm = xMm + STAND.cardWidthMm / 2;
+    const foldYMm = yMm + STAND.faceHeightMm;
+
+    cutRects.push(rect(xMm, yMm, STAND.cardWidthMm, cardHeightMm));
+    foldLines.push(line(xMm, foldYMm, xMm + STAND.cardWidthMm, foldYMm));
+
+    // 접는선을 사이에 두고 같은 거리에 두 면을 놓는다 — 접으면 두 그림의
+    // 발끝이 같은 높이에서 만난다. 아래가 수비, 위가 타자다.
+    figures.push(
+      ...face(
+        cell.card.poseId,
+        centerXMm,
+        foldYMm + STAND.figureOffsetMm,
+        false,
+      ),
+      ...face(
+        cell.card.batterPoseId,
+        centerXMm,
+        foldYMm - STAND.figureOffsetMm,
+        true,
       ),
     );
-
-    for (const [column, card] of TEAM_CARDS.entries()) {
-      const { xMm, yMm } = cardOriginMm(row, column);
-      const centerXMm = xMm + STAND.cardWidthMm / 2;
-      const foldYMm = yMm + STAND.faceHeightMm;
-
-      cutRects.push(rect(xMm, yMm, STAND.cardWidthMm, cardHeightMm));
-      foldLines.push(line(xMm, foldYMm, xMm + STAND.cardWidthMm, foldYMm));
-
-      // 접는선을 사이에 두고 같은 거리에 두 면을 놓는다 — 접으면 두 그림의
-      // 발끝이 같은 높이에서 만난다. 아래가 수비, 위가 타자다.
-      figures.push(
-        ...face(card.poseId, centerXMm, foldYMm + STAND.figureOffsetMm, false),
-        ...face(
-          card.batterPoseId,
-          centerXMm,
-          foldYMm - STAND.figureOffsetMm,
-          true,
-        ),
-      );
-      labels.push(
-        text(
-          card.label,
-          centerXMm,
-          yMm + cardHeightMm - STAND.labelBaselineMm,
-          STAND.labelFontMm,
-          { 'text-anchor': 'middle', fill: INK_COLOR, stroke: 'none' },
-        ),
-      );
-    }
+    labels.push(
+      text(
+        cell.card.label,
+        centerXMm,
+        yMm + cardHeightMm - STAND.labelBaselineMm,
+        STAND.labelFontMm,
+        { 'text-anchor': 'middle', fill: INK_COLOR, stroke: 'none' },
+      ),
+    );
   }
 
   return svgDocument({
@@ -176,25 +224,38 @@ export const renderStands = (): string => {
     heightMm: SHEET.heightMm,
     title: '야구 게임판 · 선수 스탠드',
     children: [
-      markLayer('cut', cutRects),
+      markLayer('cut', [...cutRects, box.cut]),
       markLayer('fold-mountain', foldLines),
+      // 카드는 산접기(그림이 바깥), 보관함은 골접기(인쇄면이 안쪽)다.
+      markLayer('fold-valley', [...box.folds]),
+      markLayer('glue', [...box.glue]),
 
       group({ id: ART_LAYER_ID, fill: 'none', stroke: INK_COLOR }, [
-        text('선수 스탠드', SHEET.widthMm / 2, 9, 5, {
-          'text-anchor': 'middle',
+        text('선수 스탠드', gridLeftMm, 6, 4.6, {
+          'font-weight': 'bold',
           fill: INK_COLOR,
           stroke: 'none',
         }),
         text(
-          '오려서 가운데 일점쇄선을 산 모양으로 접으면 혼자 선다. 한 면은 수비, 반대 면은 타자다. 한 줄이 한 팀이라 이 한 장에 양 팀 스무 명이 다 있다.',
-          SHEET.widthMm / 2,
-          15,
+          '오려서 가운데 일점쇄선을 산 모양으로 접으면 혼자 선다. 한 면은 수비, 반대 면은 타자다. 다 놀고 나면 오른쪽 상자에 세워 담는다.',
+          gridLeftMm,
+          11,
           2.8,
-          { 'text-anchor': 'middle', fill: RULE_COLOR, stroke: 'none' },
+          { fill: RULE_COLOR, stroke: 'none' },
         ),
         ...teamLabels,
         ...figures,
         ...labels,
+        ...box.labels,
+        ...BOX_SHEET_NOTES.map((note, i) =>
+          text(
+            note,
+            boxLeftMm,
+            boxNotesTopMm + i * STAND_BOX.noteLeadingMm,
+            STAND_BOX.noteFontMm,
+            { fill: RULE_COLOR, stroke: 'none' },
+          ),
+        ),
       ]),
     ],
   });

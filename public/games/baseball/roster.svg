@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 자동 생성 파일. 고치려면 src/assets/games/soccer/artwork/ 를 고치고 `npm run artwork` 를 돌린다. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="297mm" viewBox="0 0 210 297" font-family="Noto Sans KR">
+<title>야구 게임판 · 선수 로스터</title>
+<g id="pc-cut" fill="none" stroke="#000000" stroke-width="0.25" stroke-linecap="butt">
+<rect x="5" y="5" width="200" height="287" />
+</g>
+<g id="pc-art" fill="#1a1a1a" stroke="none">
+<text x="105" y="16" font-size="5.5" dominant-baseline="central" text-anchor="middle">선수 로스터 · 타격 기록</text>
+<text x="105" y="21" font-size="2.8" dominant-baseline="central" text-anchor="middle" fill="#6b7280">한 표가 한 팀이다. 타순대로 이름을 적고 타석마다 결과를 남기면, 경기가 끝났을 때 타율이 나온다.</text>
+<text x="10" y="29" font-size="3.2" dominant-baseline="central" fill="#6b7280">팀 이름</text>
+<line x1="26" y1="30.2" x2="105" y2="30.2" stroke="#6b7280" stroke-width="0.3" />
+<text x="115" y="29" font-size="3.2" dominant-baseline="central" fill="#6b7280">날짜</text>
+<line x1="126" y1="30.2" x2="200" y2="30.2" stroke="#6b7280" stroke-width="0.3" />
+<g fill="none" stroke="#6b7280" stroke-width="0.3">
+<line x1="10" y1="31" x2="10" y2="130" />
+<line x1="20" y1="31" x2="20" y2="130" />
+<line x1="56" y1="31" x2="56" y2="130" />
+<line x1="74" y1="31" x2="74" y2="130" />
+<line x1="91" y1="31" x2="91" y2="130" />
+<line x1="108" y1="31" x2="108" y2="130" />
+<line x1="125" y1="31" x2="125" y2="130" />
+<line x1="142" y1="31" x2="142" y2="130" />
+<line x1="159" y1="31" x2="159" y2="130" />
+<line x1="171" y1="31" x2="171" y2="130" />
+<line x1="183" y1="31" x2="183" y2="130" />
+<line x1="200" y1="31" x2="200" y2="130" />
+<line x1="10" y1="31" x2="200" y2="31" />
+<line x1="10" y1="50" x2="200" y2="50" />
+<line x1="10" y1="60" x2="200" y2="60" />
+<line x1="10" y1="70" x2="200" y2="70" />
+<line x1="10" y1="80" x2="200" y2="80" />
+<line x1="10" y1="90" x2="200" y2="90" />
+<line x1="10" y1="100" x2="200" y2="100" />
+<line x1="10" y1="110" x2="200" y2="110" />
+<line x1="10" y1="120" x2="200" y2="120" />
+<line x1="10" y1="130" x2="200" y2="130" />
+<line x1="10" y1="40" x2="200" y2="40" stroke-width="0.5" stroke="#1a1a1a" />
+</g>
+<text x="15" y="36.6" font-size="3.2" dominant-baseline="central" text-anchor="middle">타순</text>
+<text x="38" y="36.6" font-size="3.2" dominant-baseline="central" text-anchor="middle">선수 이름</text>
+<text x="65" y="36.6" font-size="3.2" dominant-baseline="central" text-anchor="middle">자리</text>
+<text x="82.5" y="36.6" font-size="3.2" dominant-baseline="central" text-anchor="middle">1타석</text>
+<text x="99.5" y="36.6" font-size="3.2" dominant-baseline="central" text-anchor="middle">2타석</text>
+<text x="116.5" y="36.6" font-size="3.2" dominant-baseline="central" text-anchor="middle">3타석</text>
+<text x="133.5" y="36.6" font-size="3.2" dominant-baseline="central" text-anchor="middle">4타석</text>
+<text x="150.5" y="36.6" font-size="3.2" dominant-baseline="central" text-anchor="middle">5타석</text>
+<text x="165" y="36.6" font-size="3.2" dominant-baseline="central" text-anchor="middle">타수</text>
+<text x="177" y="36.6" font-size="3.2" dominant-baseline="central" text-anchor="middle">안타</text>
+<text x="191.5" y="36.6" font-size="3.2" dominant-baseline="central" text-anchor="middle">타율</text>
+<text x="15" y="46.3" font-size="3.6" dominant-baseline="central" text-anchor="middle">1</text>
+<text x="15" y="56.3" font-size="3.6" dominant-baseline="central" text-anchor="middle">2</text>
+<text x="15" y="66.3" font-size="3.6" dominant-baseline="central" text-anchor="middle">3</text>
+<text x="15" y="76.3" font-size="3.6" dominant-baseline="central" text-anchor="middle">4</text>
+<text x="15" y="86.3" font-size="3.6" dominant-baseline="central" text-anchor="middle">5</text>
+<text x="15" y="96.3" font-size="3.6" dominant-baseline="central" text-anchor="middle">6</text>
+<text x="15" y="106.3" font-size="3.6" dominant-baseline="central" text-anchor="middle">7</text>
+<text x="15" y="116.3" font-size="3.6" dominant-baseline="central" text-anchor="middle">8</text>
+<text x="15" y="126.3" font-size="3.6" dominant-baseline="central" text-anchor="middle">9</text>
+<text x="10" y="143" font-size="3.2" dominant-baseline="central" fill="#6b7280">팀 이름</text>
+<line x1="26" y1="144.2" x2="105" y2="144.2" stroke="#6b7280" stroke-width="0.3" />
+<text x="115" y="143" font-size="3.2" dominant-baseline="central" fill="#6b7280">날짜</text>
+<line x1="126" y1="144.2" x2="200" y2="144.2" stroke="#6b7280" stroke-width="0.3" />
+<g fill="none" stroke="#6b7280" stroke-width="0.3">
+<line x1="10" y1="145" x2="10" y2="244" />
+<line x1="20" y1="145" x2="20" y2="244" />
+<line x1="56" y1="145" x2="56" y2="244" />
+<line x1="74" y1="145" x2="74" y2="244" />
+<line x1="91" y1="145" x2="91" y2="244" />
+<line x1="108" y1="145" x2="108" y2="244" />
+<line x1="125" y1="145" x2="125" y2="244" />
+<line x1="142" y1="145" x2="142" y2="244" />
+<line x1="159" y1="145" x2="159" y2="244" />
+<line x1="171" y1="145" x2="171" y2="244" />
+<line x1="183" y1="145" x2="183" y2="244" />
+<line x1="200" y1="145" x2="200" y2="244" />
+<line x1="10" y1="145" x2="200" y2="145" />
+<line x1="10" y1="164" x2="200" y2="164" />
+<line x1="10" y1="174" x2="200" y2="174" />
+<line x1="10" y1="184" x2="200" y2="184" />
+<line x1="10" y1="194" x2="200" y2="194" />
+<line x1="10" y1="204" x2="200" y2="204" />
+<line x1="10" y1="214" x2="200" y2="214" />
+<line x1="10" y1="224" x2="200" y2="224" />
+<line x1="10" y1="234" x2="200" y2="234" />
+<line x1="10" y1="244" x2="200" y2="244" />
+<line x1="10" y1="154" x2="200" y2="154" stroke-width="0.5" stroke="#1a1a1a" />
+</g>
+<text x="15" y="150.6" font-size="3.2" dominant-baseline="central" text-anchor="middle">타순</text>
+<text x="38" y="150.6" font-size="3.2" dominant-baseline="central" text-anchor="middle">선수 이름</text>
+<text x="65" y="150.6" font-size="3.2" dominant-baseline="central" text-anchor="middle">자리</text>
+<text x="82.5" y="150.6" font-size="3.2" dominant-baseline="central" text-anchor="middle">1타석</text>
+<text x="99.5" y="150.6" font-size="3.2" dominant-baseline="central" text-anchor="middle">2타석</text>
+<text x="116.5" y="150.6" font-size="3.2" dominant-baseline="central" text-anchor="middle">3타석</text>
+<text x="133.5" y="150.6" font-size="3.2" dominant-baseline="central" text-anchor="middle">4타석</text>
+<text x="150.5" y="150.6" font-size="3.2" dominant-baseline="central" text-anchor="middle">5타석</text>
+<text x="165" y="150.6" font-size="3.2" dominant-baseline="central" text-anchor="middle">타수</text>
+<text x="177" y="150.6" font-size="3.2" dominant-baseline="central" text-anchor="middle">안타</text>
+<text x="191.5" y="150.6" font-size="3.2" dominant-baseline="central" text-anchor="middle">타율</text>
+<text x="15" y="160.3" font-size="3.6" dominant-baseline="central" text-anchor="middle">1</text>
+<text x="15" y="170.3" font-size="3.6" dominant-baseline="central" text-anchor="middle">2</text>
+<text x="15" y="180.3" font-size="3.6" dominant-baseline="central" text-anchor="middle">3</text>
+<text x="15" y="190.3" font-size="3.6" dominant-baseline="central" text-anchor="middle">4</text>
+<text x="15" y="200.3" font-size="3.6" dominant-baseline="central" text-anchor="middle">5</text>
+<text x="15" y="210.3" font-size="3.6" dominant-baseline="central" text-anchor="middle">6</text>
+<text x="15" y="220.3" font-size="3.6" dominant-baseline="central" text-anchor="middle">7</text>
+<text x="15" y="230.3" font-size="3.6" dominant-baseline="central" text-anchor="middle">8</text>
+<text x="15" y="240.3" font-size="3.6" dominant-baseline="central" text-anchor="middle">9</text>
+<text x="10" y="249.5" font-size="3.2" dominant-baseline="central" fill="#6b7280">타율 조견표</text>
+<g fill="none" stroke="#6b7280" stroke-width="0.3">
+<line x1="10" y1="252" x2="10" y2="291" />
+<line x1="26" y1="252" x2="26" y2="291" />
+<line x1="40" y1="252" x2="40" y2="291" />
+<line x1="54" y1="252" x2="54" y2="291" />
+<line x1="68" y1="252" x2="68" y2="291" />
+<line x1="82" y1="252" x2="82" y2="291" />
+<line x1="96" y1="252" x2="96" y2="291" />
+<line x1="110" y1="252" x2="110" y2="291" />
+<line x1="10" y1="252" x2="110" y2="252" />
+<line x1="10" y1="258.5" x2="110" y2="258.5" />
+<line x1="10" y1="265" x2="110" y2="265" />
+<line x1="10" y1="271.5" x2="110" y2="271.5" />
+<line x1="10" y1="278" x2="110" y2="278" />
+<line x1="10" y1="284.5" x2="110" y2="284.5" />
+<line x1="10" y1="291" x2="110" y2="291" />
+</g>
+<text x="18" y="256.15" font-size="2.6" dominant-baseline="central" text-anchor="middle" fill="#6b7280">타수＼안타</text>
+<text x="33" y="256.15" font-size="2.6" dominant-baseline="central" text-anchor="middle">0</text>
+<text x="47" y="256.15" font-size="2.6" dominant-baseline="central" text-anchor="middle">1</text>
+<text x="61" y="256.15" font-size="2.6" dominant-baseline="central" text-anchor="middle">2</text>
+<text x="75" y="256.15" font-size="2.6" dominant-baseline="central" text-anchor="middle">3</text>
+<text x="89" y="256.15" font-size="2.6" dominant-baseline="central" text-anchor="middle">4</text>
+<text x="103" y="256.15" font-size="2.6" dominant-baseline="central" text-anchor="middle">5</text>
+<text x="18" y="262.65" font-size="2.6" dominant-baseline="central" text-anchor="middle">1</text>
+<text x="33" y="262.65" font-size="2.6" dominant-baseline="central" text-anchor="middle">.000</text>
+<text x="47" y="262.65" font-size="2.6" dominant-baseline="central" text-anchor="middle">1.000</text>
+<text x="18" y="269.15" font-size="2.6" dominant-baseline="central" text-anchor="middle">2</text>
+<text x="33" y="269.15" font-size="2.6" dominant-baseline="central" text-anchor="middle">.000</text>
+<text x="47" y="269.15" font-size="2.6" dominant-baseline="central" text-anchor="middle">.500</text>
+<text x="61" y="269.15" font-size="2.6" dominant-baseline="central" text-anchor="middle">1.000</text>
+<text x="18" y="275.65" font-size="2.6" dominant-baseline="central" text-anchor="middle">3</text>
+<text x="33" y="275.65" font-size="2.6" dominant-baseline="central" text-anchor="middle">.000</text>
+<text x="47" y="275.65" font-size="2.6" dominant-baseline="central" text-anchor="middle">.333</text>
+<text x="61" y="275.65" font-size="2.6" dominant-baseline="central" text-anchor="middle">.667</text>
+<text x="75" y="275.65" font-size="2.6" dominant-baseline="central" text-anchor="middle">1.000</text>
+<text x="18" y="282.15" font-size="2.6" dominant-baseline="central" text-anchor="middle">4</text>
+<text x="33" y="282.15" font-size="2.6" dominant-baseline="central" text-anchor="middle">.000</text>
+<text x="47" y="282.15" font-size="2.6" dominant-baseline="central" text-anchor="middle">.250</text>
+<text x="61" y="282.15" font-size="2.6" dominant-baseline="central" text-anchor="middle">.500</text>
+<text x="75" y="282.15" font-size="2.6" dominant-baseline="central" text-anchor="middle">.750</text>
+<text x="89" y="282.15" font-size="2.6" dominant-baseline="central" text-anchor="middle">1.000</text>
+<text x="18" y="288.65" font-size="2.6" dominant-baseline="central" text-anchor="middle">5</text>
+<text x="33" y="288.65" font-size="2.6" dominant-baseline="central" text-anchor="middle">.000</text>
+<text x="47" y="288.65" font-size="2.6" dominant-baseline="central" text-anchor="middle">.200</text>
+<text x="61" y="288.65" font-size="2.6" dominant-baseline="central" text-anchor="middle">.400</text>
+<text x="75" y="288.65" font-size="2.6" dominant-baseline="central" text-anchor="middle">.600</text>
+<text x="89" y="288.65" font-size="2.6" dominant-baseline="central" text-anchor="middle">.800</text>
+<text x="103" y="288.65" font-size="2.6" dominant-baseline="central" text-anchor="middle">1.000</text>
+<text x="118" y="256" font-size="2.8" dominant-baseline="central" fill="#6b7280">타석이 끝날 때마다 기호를 적는다</text>
+<text x="118" y="261.4" font-size="2.8" dominant-baseline="central" fill="#6b7280">안타 ○ · 2루타 ◎ · 홈런 ☆ · 아웃 ×</text>
+<text x="118" y="266.8" font-size="2.8" dominant-baseline="central" fill="#6b7280">파울은 적지 않는다 — 타석이 끝난 게 아니다</text>
+<text x="118" y="272.2" font-size="2.8" dominant-baseline="central" fill="#6b7280">타수 = 적은 기호의 수 · 안타 = ○ ◎ ☆의 수</text>
+<text x="118" y="277.6" font-size="2.8" dominant-baseline="central" fill="#6b7280">타율 = 안타 ÷ 타수 (왼쪽 표에서 찾아 적어도 된다)</text>
+</g>
+<g id="pc-slot" />
+</svg>
