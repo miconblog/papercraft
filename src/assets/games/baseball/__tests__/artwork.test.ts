@@ -27,18 +27,35 @@ import {
   DH_CARD,
   SCORE_TABLE,
   SCORE_TABLE_WIDTH_MM,
+  ROSTER,
+  ROSTER_BLOCK_HEIGHT_MM,
+  ROSTER_GUIDE,
+  ROSTER_TABLE_WIDTH_MM,
   SHEETS,
   STAND,
+  STAND_BOX,
+  STAND_BOX_NET_MM,
   STAND_CARDS,
+  STAND_GRID,
   STAND_TEAMS,
+  battingAverage,
   edgeCrossingYMm,
 } from '../dimensions';
+import { GOAL_NET_SIZE } from '@/assets/games/soccer/dimensions';
 import {
   DIRT_COLOR,
   DOUBLE_LINE_COLOR,
   OUT_LINE_COLOR,
 } from '../artwork/field';
-import { RULES, STAND_ASSEMBLY_STEPS } from '../rules';
+import {
+  BOX_ASSEMBLY_STEPS,
+  ROSTER_STEPS,
+  RULES,
+  STAND_ASSEMBLY_STEPS,
+} from '../rules';
+import { BOX_SHEET_NOTES, STAND_CELLS, teamBands } from '../artwork/stands';
+import { COLUMN_LABELS, ROSTER_NOTES } from '../artwork/roster';
+import { estimateTextWidthMm } from '../../../shared/svg';
 
 const game = getGame('baseball')!;
 
@@ -59,10 +76,14 @@ const distanceFromHome = (xMm: number, yMm: number): number =>
   Math.hypot(xMm - HOME.xMm, yMm - HOME.yMm);
 
 describe('도안 구조', () => {
-  it('스키마 검증을 통과하고 보드·부속·조립물로 나뉜다', () => {
-    expect(game.parts.filter((p) => p.kind === 'board')).toHaveLength(1);
-    expect(game.parts.filter((p) => p.kind === 'cutout')).toHaveLength(1);
-    expect(game.parts.filter((p) => p.kind === 'buildable')).toHaveLength(1);
+  it('스키마 검증을 통과하고 보드·부속 둘·조립물로 나뉜다', () => {
+    expect(game.parts.map((p) => [p.id, p.kind])).toEqual([
+      ['field', 'board'],
+      ['score-sheet', 'cutout'],
+      // 2026-09-12 사용자 요청 — 선수별 타격을 적는 기록 용지.
+      ['roster', 'cutout'],
+      ['stands', 'buildable'],
+    ]);
   });
 
   it('모든 파트가 아트워크를 갖고, 커밋된 SVG가 생성기와 같다', () => {
@@ -389,6 +410,103 @@ describe('스코어보드', () => {
   });
 });
 
+/**
+ * 선수 로스터 기록 용지 (2026-09-12 사용자 요청 — "1번부터 9번까지 선수 기록을
+ * 적을수있는 기록용 용지 … 선수이름과 각 타석수만큼 기록칸 … 최종적으로 타율도").
+ */
+describe('선수 로스터', () => {
+  const doc = svgOf('roster');
+  const textContent = doc.documentElement.textContent ?? '';
+
+  it('표가 두 벌 — 한 벌이 한 팀이고 한 장에 한 경기가 들어간다', () => {
+    expect(ROSTER.blockTopYMm).toHaveLength(2);
+    // 팀 이름과 날짜 자리가 표마다 하나씩이다.
+    const labels = [...doc.querySelectorAll('text')].map(
+      (node) => node.textContent ?? '',
+    );
+    expect(labels.filter((label) => label === '팀 이름')).toHaveLength(2);
+    expect(labels.filter((label) => label === '날짜')).toHaveLength(2);
+  });
+
+  it('타순 아홉 줄과 타석 다섯 칸, 그리고 타수·안타·타율 열이 있다', () => {
+    expect(ROSTER.rows).toBe(9);
+    expect(ROSTER.atBats).toBe(5);
+    expect(COLUMN_LABELS).toEqual([
+      '타순',
+      '선수 이름',
+      '자리',
+      '1타석',
+      '2타석',
+      '3타석',
+      '4타석',
+      '5타석',
+      '타수',
+      '안타',
+      '타율',
+    ]);
+    const labels = [...doc.querySelectorAll('text')].map(
+      (node) => node.textContent ?? '',
+    );
+    // 타순 번호는 미리 찍힌다 — 표 두 벌이니 1~9가 두 벌이다.
+    for (let order = 1; order <= ROSTER.rows; order += 1) {
+      expect(
+        labels.filter((label) => label === String(order)).length,
+        `${order}번`,
+      ).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('표가 스코어보드와 같은 폭이고 시트 안에 들어간다', () => {
+    expect(ROSTER_TABLE_WIDTH_MM).toBe(SCORE_TABLE_WIDTH_MM);
+    expect(ROSTER.xMm + ROSTER_TABLE_WIDTH_MM).toBeLessThanOrEqual(
+      SHEETS.roster.widthMm - ROSTER.cutInsetMm,
+    );
+    const lastBlockBottom =
+      ROSTER.blockTopYMm[ROSTER.blockTopYMm.length - 1] +
+      ROSTER_BLOCK_HEIGHT_MM;
+    expect(lastBlockBottom).toBeLessThan(ROSTER_GUIDE.topYMm);
+    const guideBottom =
+      ROSTER_GUIDE.topYMm +
+      ROSTER_GUIDE.cellHeightMm * (ROSTER_GUIDE.maxAtBats + 1);
+    expect(guideBottom).toBeLessThanOrEqual(
+      SHEETS.roster.heightMm - ROSTER.cutInsetMm,
+    );
+  });
+
+  it('타율을 야구 관례대로 적는다 — 앞의 0을 떼고 소수 셋째 자리까지', () => {
+    expect(battingAverage(1, 3)).toBe('.333');
+    expect(battingAverage(1, 4)).toBe('.250');
+    expect(battingAverage(2, 5)).toBe('.400');
+    expect(battingAverage(0, 4)).toBe('.000');
+    expect(battingAverage(3, 3)).toBe('1.000');
+    // 타석에 서지 않았거나 말이 안 되는 값은 계산하지 않는다.
+    expect(battingAverage(0, 0)).toBe('—');
+    expect(battingAverage(3, 2)).toBe('—');
+  });
+
+  it('조견표가 타수 다섯까지의 모든 조합을 적어 둔다 — 나눗셈을 종이가 대신한다', () => {
+    for (let atBats = 1; atBats <= ROSTER_GUIDE.maxAtBats; atBats += 1) {
+      for (let hits = 0; hits <= atBats; hits += 1) {
+        expect(textContent, `${hits}/${atBats}`).toContain(
+          battingAverage(hits, atBats),
+        );
+      }
+    }
+    expect(textContent).toContain('타율 조견표');
+  });
+
+  it('기호 범례가 용지와 게임 방법에서 같다', () => {
+    for (const note of ROSTER_NOTES) expect(textContent).toContain(note);
+    const steps = ROSTER_STEPS.join('\n');
+    for (const mark of ['안타 ○', '2루타 ◎', '홈런 ☆', '아웃 ×']) {
+      expect(steps, mark).toContain(mark);
+    }
+    expect(ruleText).toContain('타격 기록 적는 법');
+    // 표 안은 비워 둔다 — 이름도 기호도 아이가 쓰는 자리다.
+    expect(doc.getElementById('pc-slot')).not.toBeNull();
+  });
+});
+
 describe('선수 스탠드', () => {
   const doc = svgOf('stands');
   const layer = (id: string) => doc.getElementById(id)!;
@@ -407,14 +525,131 @@ describe('선수 스탠드', () => {
       '포수',
       '지명타자',
     ]);
-    expect(STAND.columns).toBe(STAND_CARDS.length);
-    expect(STAND.rows).toBe(STAND_TEAMS.length);
-    const cards = STAND.columns * STAND.rows;
+    // 2026-09-12: 오른쪽 세로 칸을 보관함에 내주면서 7열 3행이 됐다. 줄이 곧
+    // 팀이던 규칙은 끝났지만 팀은 여전히 이어 붙는다.
+    const cards = STAND_CARDS.length * STAND_TEAMS.length;
     expect(cards).toBe(20);
+    expect(STAND_CELLS).toHaveLength(cards);
+    expect(STAND.columns * STAND.rows).toBeGreaterThanOrEqual(cards);
+    for (const [i, cell] of STAND_CELLS.entries()) {
+      expect(cell.team, `${i}`).toBe(Math.floor(i / STAND_CARDS.length));
+      expect(cell.row).toBe(Math.floor(i / STAND.columns));
+      expect(cell.column).toBe(i % STAND.columns);
+    }
+    // 팀은 끊기지 않고 이어진다 — 이름 띠는 줄이 바뀌거나 팀이 바뀔 때만 붙는다.
+    expect(teamBands().length).toBeLessThanOrEqual(
+      STAND.rows + STAND_TEAMS.length,
+    );
     expect(layer('pc-cut').querySelectorAll('rect')).toHaveLength(cards);
     expect(layer('pc-fold-mountain').querySelectorAll('line')).toHaveLength(
       cards,
     );
+  });
+
+  /**
+   * 선수 보관함 (2026-09-12 사용자 요청 — "선수들을 오려놓고 이곳저곳으로
+   * 흩어져서 게임을 안할때 정리해둘 상자가 필요해", 같은 날 "뚜껑 필요없고
+   * 축구 골대 전개도만큼 크게 … 선수들을 세워서 일렬로 차곡차곡").
+   */
+  describe('선수 보관함', () => {
+    /** `M`·`L` 좌표만으로 전개도의 외곽 상자를 잰다. */
+    const bounds = (d: string) => {
+      const points = [...d.matchAll(/[ML](-?[\d.]+) (-?[\d.]+)/g)].map((m) => [
+        Number(m[1]),
+        Number(m[2]),
+      ]);
+      const xs = points.map(([x]) => x);
+      const ys = points.map(([, y]) => y);
+      return {
+        left: Math.min(...xs),
+        right: Math.max(...xs),
+        top: Math.min(...ys),
+        bottom: Math.max(...ys),
+      };
+    };
+    const nets = [...layer('pc-cut').querySelectorAll('path')].map((node) =>
+      bounds(node.getAttribute('d') ?? ''),
+    );
+
+    it('전개도가 하나다 — 뚜껑은 없다', () => {
+      expect(nets).toHaveLength(1);
+      expect(doc.documentElement.textContent ?? '').toContain(
+        STAND_BOX.tray.label,
+      );
+      // 골접기 넷 + 풀칠 귀 넷.
+      expect(layer('pc-fold-valley').querySelectorAll('line')).toHaveLength(4);
+      expect(
+        layer('pc-glue').querySelectorAll('line').length,
+      ).toBeGreaterThanOrEqual(4);
+    });
+
+    it('접은 선수가 세워서 다 들어간다 — 벽이 선수 키보다 높다', () => {
+      const tray = STAND_BOX.tray;
+      // 접어 세운 카드는 카드 폭 × 한 면 높이다.
+      expect(tray.depthMm).toBeGreaterThanOrEqual(STAND.faceHeightMm);
+      expect(tray.innerWidthMm).toBeGreaterThan(STAND.cardWidthMm);
+      // 접은 카드 스무 장이 일렬로 서면 30mm쯤이다 — 공과 동전까지 들어간다.
+      expect(tray.innerLengthMm).toBeGreaterThan(
+        STAND_CARDS.length * STAND_TEAMS.length * 1.5,
+      );
+      // 눕혀 담아도 된다 — 편 카드가 바닥에 든다.
+      expect(tray.innerLengthMm).toBeGreaterThan(STAND.faceHeightMm * 2);
+    });
+
+    it('축구 골대 전개도만큼 크다', () => {
+      const area = STAND_BOX_NET_MM.widthMm * STAND_BOX_NET_MM.heightMm;
+      const goalArea = GOAL_NET_SIZE.widthMm * GOAL_NET_SIZE.heightMm;
+      expect(area).toBeGreaterThan(goalArea * 0.7);
+    });
+
+    it('전개도가 카드 격자 오른쪽 칸에 서고 시트를 넘지 않는다', () => {
+      const [net] = nets;
+      const gridRightMm = STAND.sheetMarginMm + STAND_GRID.widthMm;
+      expect(net.left).toBeGreaterThanOrEqual(gridRightMm + STAND_BOX.gapMm);
+      expect(net.right).toBeLessThanOrEqual(SHEETS.stands.widthMm);
+      expect(net.top).toBeGreaterThanOrEqual(0);
+      expect(net.bottom).toBeLessThanOrEqual(SHEETS.stands.heightMm);
+      expect(net.right - net.left).toBeCloseTo(STAND_BOX_NET_MM.widthMm, 6);
+      expect(net.bottom - net.top).toBeCloseTo(STAND_BOX_NET_MM.heightMm, 6);
+    });
+
+    it('종이가 남지 않는다 — 격자와 보관함이 시트를 거의 채운다', () => {
+      const sheetArea = SHEETS.stands.widthMm * SHEETS.stands.heightMm;
+      const gridArea = STAND_GRID.widthMm * STAND_GRID.heightMm;
+      const netArea = STAND_BOX_NET_MM.widthMm * STAND_BOX_NET_MM.heightMm;
+      expect((gridArea + netArea) / sheetArea).toBeGreaterThan(0.75);
+      // 격자와 보관함이 시트 높이·폭 안에서 서로 밀어내지 않는다.
+      expect(
+        STAND.sheetMarginMm +
+          STAND_GRID.widthMm +
+          STAND_BOX.gapMm +
+          STAND_BOX_NET_MM.widthMm,
+      ).toBeLessThanOrEqual(SHEETS.stands.widthMm);
+      expect(STAND.headerHeightMm + STAND_GRID.heightMm).toBeLessThanOrEqual(
+        SHEETS.stands.heightMm,
+      );
+    });
+
+    it('만드는 법이 보관함 칸 폭 안에 들어간다', () => {
+      for (const note of BOX_SHEET_NOTES) {
+        expect(
+          estimateTextWidthMm(note, STAND_BOX.noteFontMm),
+          note,
+        ).toBeLessThanOrEqual(STAND_BOX_NET_MM.widthMm + STAND_BOX.gapMm);
+      }
+      const text = doc.documentElement.textContent ?? '';
+      for (const note of BOX_SHEET_NOTES) expect(text).toContain(note);
+    });
+
+    it('게임 방법에도 만드는 법이 있고 풀을 준비물로 부른다', () => {
+      expect(BOX_ASSEMBLY_STEPS.join('\n')).toContain('풀');
+      const ruleText = RULES.map((block) => block.text).join('\n');
+      expect(ruleText).toContain('선수 보관함 만드는 법');
+      expect(game.supplies.join(' ')).toContain('풀');
+      const part = game.parts.find((p) => p.id === 'stands')!;
+      expect(part.marks).toContain('glue');
+      expect(part.marks).toContain('fold-valley');
+    });
   });
 
   it('한 장으로 끝나므로 기본 인쇄 부수가 한 장이다', () => {

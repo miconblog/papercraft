@@ -23,7 +23,7 @@ describe('인쇄 화면 진입 경로 (IDE-007)', () => {
     );
     expect(screen.getByRole('link', { name: /돌아가기/ })).toHaveAttribute(
       'href',
-      '/games/soccer/edit',
+      '/games/soccer',
     );
   });
 

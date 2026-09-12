@@ -402,10 +402,21 @@ export const SHEETS = {
    * 한 줄은 **열 명**이다(`STAND_CARDS`) — 판에 서는 수비 여덟에 포수와
    * 지명타자를 더한 한 팀 전부이고, 뒷면이 모두 타자다.
    *
-   * 287×165는 A4 가로(297×210)에 5mm를 남기고 앉는 크기다 — 인쇄 여백을
-   * 5mm까지 올려도 타일이 갈라지지 않는다.
+   * 287×200은 A4 가로(297×210)에 5mm를 남기고 앉는 크기다 — 인쇄 여백을
+   * 5mm까지 올려도 타일이 갈라지지 않는다. 카드 격자는 155mm까지만 쓰고,
+   * **남는 아래 띠에 보관함 전개도**가 앉는다(`STAND_BOX`, 2026-09-12 사용자
+   * 요청 — 오려 놓은 선수가 온 집에 흩어진다). 전에는 165였고 그 아래 45mm가
+   * 빈 종이로 나왔다.
    */
-  stands: { widthMm: 287, heightMm: 165 },
+  stands: { widthMm: 287, heightMm: 200 },
+  /**
+   * 선수 로스터 기록 용지 — **A4 세로. 한 장에 두 팀**이다(2026-09-12 사용자 요청).
+   *
+   * 스코어보드가 "이닝마다 몇 점"이라면 이쪽은 "누가 몇 번 쳐서 몇 번 살았나"다.
+   * 표 한 벌이 한 팀의 타순 아홉이고, 한 경기에 두 팀이 필요하므로 한 장에 두
+   * 벌을 얹는다.
+   */
+  roster: { widthMm: 210, heightMm: 297 },
 } as const;
 
 /** 스코어보드 표 한 벌. */
@@ -434,6 +445,88 @@ export const SCORE_TABLE_WIDTH_MM =
   SCORE_TABLE.totalColumnMm * 2; // 190
 
 /**
+ * 선수 로스터 기록 용지 (2026-09-12 사용자 요청)
+ *
+ * "1번부터 9번까지 선수 기록을 적을 수 있는 기록용 용지가 있으면 좋겠어.
+ * 선수이름과 각 타석수만큼 기록칸이 있으면 좋겠고, 최종적으로 타율도 계산해서
+ * 넣어보면 좋겠어."
+ *
+ * 표 한 벌 = 한 팀이다. 줄은 타순 아홉, 열은 **타순 · 이름 · 자리 · 타석 다섯 ·
+ * 타수 · 안타 · 타율**이다. 폭 190mm는 스코어보드 표와 같다 — 두 용지를 나란히
+ * 놓았을 때 같은 물건으로 보이라고 맞췄다.
+ *
+ * **타석 칸이 다섯**인 것은 9이닝에 타순 아홉이면 한 사람이 네 번에서 다섯 번
+ * 서기 때문이다. 여섯 칸을 두면 열이 좁아져 여섯 살 글씨가 들어가지 않는다.
+ *
+ * **타율은 나눗셈이다.** 아이가 못 하는 계산을 종이가 대신하도록 용지 아래에
+ * 조견표를 둔다(`ROSTER_GUIDE`) — 타수와 안타가 만나는 칸에 값이 적혀 있다.
+ */
+export const ROSTER = {
+  cutInsetMm: 5,
+  xMm: 10,
+  titleYMm: 16,
+  /** 표 두 벌의 위쪽 끝 — 한 벌이 한 팀이다. */
+  blockTopYMm: [24, 138] as readonly number[],
+  /** 표 위의 팀 이름 줄 높이. */
+  teamLineHeightMm: 7,
+  headerHeightMm: 9,
+  rowHeightMm: 10,
+  /** 타순 아홉. */
+  rows: 9,
+  orderColumnMm: 10,
+  nameColumnMm: 36,
+  positionColumnMm: 18,
+  /** 타석 칸 하나의 폭과 개수. */
+  atBatColumnMm: 17,
+  atBats: 5,
+  /** 타수·안타 열. */
+  countColumnMm: 12,
+  averageColumnMm: 17,
+  headerFontMm: 3.2,
+  orderFontMm: 3.6,
+  noteFontMm: 2.8,
+} as const;
+
+export const ROSTER_TABLE_WIDTH_MM =
+  ROSTER.orderColumnMm +
+  ROSTER.nameColumnMm +
+  ROSTER.positionColumnMm +
+  ROSTER.atBatColumnMm * ROSTER.atBats +
+  ROSTER.countColumnMm * 2 +
+  ROSTER.averageColumnMm; // 190
+
+/** 표 한 벌의 높이 — 팀 이름 줄 + 머리글 + 아홉 줄. */
+export const ROSTER_BLOCK_HEIGHT_MM =
+  ROSTER.teamLineHeightMm +
+  ROSTER.headerHeightMm +
+  ROSTER.rowHeightMm * ROSTER.rows;
+
+/**
+ * 타율 조견표 — 나눗셈을 못 해도 값을 찾는다.
+ *
+ * 가로가 안타, 세로가 타수다. 타석 칸이 다섯이라 타수도 다섯까지면 된다.
+ */
+export const ROSTER_GUIDE = {
+  topYMm: 252,
+  labelColumnMm: 16,
+  cellWidthMm: 14,
+  cellHeightMm: 6.5,
+  maxAtBats: 5,
+  fontMm: 2.6,
+} as const;
+
+/**
+ * 타율 — 안타 ÷ 타수를 소수 셋째 자리까지, 앞의 0을 떼고 적는다(야구 관례).
+ * 타수가 0이면 계산할 것이 없다.
+ */
+export const battingAverage = (hits: number, atBats: number): string => {
+  if (atBats <= 0 || hits > atBats) return '—';
+  const value = Math.round((hits / atBats) * 1000) / 1000;
+  if (value >= 1) return '1.000';
+  return `.${String(Math.round(value * 1000)).padStart(3, '0')}`;
+};
+
+/**
  * 선수 스탠드 한 장.
  *
  * **텐트형**이다 — 카드 한가운데를 산접기로 접으면 두 면이 마주 보며 ∧ 로 선다.
@@ -441,41 +534,46 @@ export const SCORE_TABLE_WIDTH_MM =
  * 180° 돌려 그린다(`./artwork/stands.ts`) — 접어 세웠을 때 뒤쪽에서도 바로
  * 보이게 하려는 것이다.
  *
- * 격자는 **10열 × 2행**이다. 한 줄이 곧 한 팀(`STAND_CARDS`)이라 두 줄이면 양 팀
- * 스무 명이 한 장에 다 나온다. 줄마다 이름 띠가 붙어 어느 줄을 어느 색으로
- * 칠할지가 종이 위에 남는다.
+ * 격자는 **7열 × 3행**이다(2026-09-12). 오른쪽 세로 칸을 보관함 전개도에
+ * 내주면서 열이 열 개에서 일곱 개로 줄었고, 스무 장이 7·7·6으로 흐른다. 한 줄이
+ * 곧 한 팀이던 시절은 끝났지만 **팀은 여전히 이어 붙는다** — 첫 팀 열 장이 먼저,
+ * 두 번째 팀 열 장이 그 뒤다. 팀이 바뀌는 자리마다 이름 띠가 붙어 어디까지가
+ * 누구 것인지는 종이 위에 남는다.
  *
  * **두 면이 서로 다른 그림이다**(2026-09-08 사용자 요청) — 아래 면은 수비 자세와
  * 포지션 이름표, 위 면은 타격 자세다. 접어 세우면 한쪽에서는 야수가, 반대쪽에서는
  * 타자가 보인다.
  *
- * 카드 폭 25mm는 열 장을 가로로 늘어놓고도 A4 가로에 여백이 남는 값이다
- * (10×25 + 9×3 = 277). 그림 상자(20mm) 양옆에 2.5mm씩 남아 이름표가 잘리지
- * 않는다.
+ * 카드 폭 25mm는 **판 위 마커 자리에 서는 물건**이라 줄일 수 없다 — 그림
+ * 상자(20mm) 양옆에 2.5mm씩 남아 이름표가 잘리지 않는다. 높이는 30 → 27로
+ * 줄였다(2026-09-12 사용자 허락 — "필요하다면 선수들의 크기를 조금 줄여도
+ * 좋아"): 세 줄이 보관함과 같은 높이(183mm)로 떨어져 종이에 빈자리가 남지 않고,
+ * 상자 벽(28mm)이 접은 선수(27mm)보다 높아 **다 들어간다.**
  */
 export const STAND = {
   cardWidthMm: 25,
-  /** 한 면의 높이. 카드 전체 높이는 이것의 두 배다. */
-  faceHeightMm: 30,
-  /** 한 줄에 선수 열 명 — 한 팀 전부다(`STAND_CARDS`). */
-  columns: 10,
-  /** 줄 수가 곧 팀 수다. */
-  rows: 2,
+  /** 한 면의 높이. 카드 전체 높이는 이것의 두 배다. 접어 세운 키이기도 하다. */
+  faceHeightMm: 27,
+  /** 오른쪽 보관함 칸을 빼고 남는 폭에 들어가는 열 수. 스무 장이 7·7·6이다. */
+  columns: 7,
+  rows: 3,
   /** 카드 사이 간격 — 가위가 지나갈 폭이다. */
   gapMm: 3,
-  /** 격자 위에 붙는 제목 띠의 높이. */
-  headerHeightMm: 20,
-  /** 줄마다 카드 위에 붙는 팀 이름 띠. */
-  teamBandHeightMm: 6,
-  teamFontMm: 3.4,
+  /** 격자 위에 붙는 제목 띠의 높이. 제목 한 줄과 안내 한 줄이 들어간다. */
+  headerHeightMm: 13,
+  /** 카드 위에 붙는 팀 이름 띠. 팀이 바뀌는 자리마다 하나씩이다. */
+  teamBandHeightMm: 5,
+  teamFontMm: 3.2,
   /** 그림을 앉히는 상자. 카드보다 작아 이름표와 접는선을 피한다. */
   figureWidthMm: 20,
-  figureHeightMm: 22,
+  figureHeightMm: 19.5,
   /** 접는선에서 그림 중심까지. 두 면이 이 값을 대칭으로 나눠 쓴다. */
-  figureOffsetMm: 13,
+  figureOffsetMm: 11.7,
   /** 포지션 이름표 글자 크기와 카드 아래 끝에서의 거리. */
   labelFontMm: 3,
-  labelBaselineMm: 4,
+  labelBaselineMm: 3.5,
+  /** 시트 가장자리 여백. 격자와 보관함이 이 안에 든다. */
+  sheetMarginMm: 3,
 } as const;
 
 /**
@@ -496,6 +594,66 @@ export const STAND_GRID = {
     STAND.columns * STAND.cardWidthMm + (STAND.columns - 1) * STAND.gapMm,
   heightMm: STAND.rows * STAND_ROW_HEIGHT_MM + (STAND.rows - 1) * STAND.gapMm,
 } as const;
+
+/**
+ * 선수 보관함 (2026-09-12 사용자 요청)
+ *
+ * "실제 플레이해보니까 선수들을 오려놓고 이곳저곳으로 흩어져서 게임을 안할 때
+ * 정리해둘 상자가 필요하다." 같은 종이에서 나와야 상자만 따로 잃어버리지 않으므로
+ * 선수 스탠드 시트에 함께 그린다.
+ *
+ * **뚜껑은 없다**(같은 날 사용자 결정). 대신 상자를 **축구 골대 전개도만큼 크게**
+ * 키웠다 — 전개도가 84 × 156mm로 골대 한 벌(135 × 116)과 거의 같은 넓이다.
+ * 뚜껑에 쓰던 자리를 깊이로 돌린 셈이다.
+ *
+ * 담는 방법이 달라졌다. 눕혀 쌓는 대신 **접은 채로 세워 일렬로** 꽂는다(사용자
+ * 요청). 그래서 벽이 접은 선수의 키(27mm)보다 높아야 하고(28), 안쪽 폭이 카드
+ * 폭(25)보다 조금 넓어야 하며(28), 안쪽 길이 100mm가 스무 명이 늘어서는 자리다 —
+ * 접은 카드 스무 장이 30mm쯤이라 공과 동전까지 들어간다. 눕혀 담아도 된다
+ * (편 카드 25 × 54가 100 × 28 안에 든다).
+ *
+ * 전개도는 **시트 오른쪽 세로 칸**에 선다. 가로로 누이면 폭 156mm가 카드 격자를
+ * 밀어내 스무 장이 들어가지 않는다.
+ *
+ * 풀을 쓴다. 카드는 접기만 하지만 상자는 네 귀를 붙이지 않으면 벽이 서지 않는다.
+ */
+export const STAND_BOX = {
+  tray: {
+    label: '선수 보관함',
+    innerLengthMm: 100,
+    innerWidthMm: 28,
+    depthMm: 28,
+  },
+  /** 격자와 보관함 칸 사이. 가위가 지나갈 자리다. */
+  gapMm: 4,
+  /** 귀의 바깥 모서리를 들여 사다리꼴로 만든다 — 모서리가 걸리지 않게. */
+  tabInsetMm: 2,
+  noteFontMm: 2.6,
+  noteLeadingMm: 4.6,
+} as const;
+
+/** 전개도 한 벌의 치수. */
+export interface StandTray {
+  readonly label: string;
+  readonly innerLengthMm: number;
+  readonly innerWidthMm: number;
+  readonly depthMm: number;
+}
+
+/**
+ * 전개도가 차지하는 사각형 — 바닥에 벽 넷과 귀 넷이 붙은 크기다.
+ *
+ * 시트에서는 **세워서** 쓴다: 폭이 `innerWidth + 2 × depth`, 높이가
+ * `innerLength + 2 × depth`다.
+ */
+export const trayNetMm = (
+  tray: StandTray,
+): { widthMm: number; heightMm: number } => ({
+  widthMm: tray.innerWidthMm + 2 * tray.depthMm,
+  heightMm: tray.innerLengthMm + 2 * tray.depthMm,
+});
+
+export const STAND_BOX_NET_MM = trayNetMm(STAND_BOX.tray);
 
 /**
  * 파트 id에 대응하는 정적 자산 경로.

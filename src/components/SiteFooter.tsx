@@ -1,5 +1,5 @@
 /** 모든 라우트 하단에 붙는 푸터. 왼쪽은 저작권, 오른쪽은 만든 사람에게 닿는
- * 링크(문의·후원)다. */
+ * 링크(문의)다. */
 export function SiteFooter() {
   return (
     <footer className="border-t border-border bg-secondary/40">
@@ -11,14 +11,6 @@ export function SiteFooter() {
             className="rounded-sm underline-offset-4 transition-colors hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
           >
             문의하기
-          </a>
-          <a
-            href="https://buymeacoffee.com/miconblog"
-            target="_blank"
-            rel="noreferrer noopener"
-            className="rounded-sm underline-offset-4 transition-colors hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
-          >
-            Buy Me a Coffee
           </a>
         </nav>
       </div>

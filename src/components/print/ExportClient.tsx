@@ -388,7 +388,7 @@ export function ExportClient({
               ? '에디터에서 만든 값으로 뽑는다.'
               : '아직 만든 값이 없어 도안 기본값으로 뽑는다.'}{' '}
             <Link
-              href={`/games/${game.id}/edit`}
+              href={`/games/${game.id}`}
               className="underline underline-offset-2"
             >
               에디터로 가기

@@ -18,6 +18,7 @@ import {
   renderFigure,
   type FigureMode,
 } from './player-markers.ts';
+import { renderRoster } from './roster.ts';
 import { renderScoreSheet } from './score-sheet.ts';
 import { renderStands } from './stands.ts';
 
@@ -41,6 +42,7 @@ const figureArtwork = (): Record<string, () => string> =>
 export const ARTWORK: Readonly<Record<string, () => string>> = {
   field: renderField,
   'score-sheet': renderScoreSheet,
+  roster: renderRoster,
   stands: renderStands,
   [FIELDER_CIRCLE_ARTWORK_ID]: renderFielderMarkerCircle,
   ...figureArtwork(),

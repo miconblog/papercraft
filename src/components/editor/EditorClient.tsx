@@ -173,6 +173,25 @@ function EditorForm({
   const parts = resolveParts(game, customization);
   const currentPart = parts.find((p) => p.id === currentPartId) ?? parts[0];
 
+  /**
+   * 미리보기 자리는 **가장 넓은 파트**에 맞춰 고정한다(2026-09-12 사용자 요청).
+   *
+   * 전에는 지금 보는 파트의 가로세로비로 상자를 잡아서, 야구장(세로) ↔
+   * 스코어보드(가로)를 오갈 때마다 파트 단추 줄과 아래 패널까지 통째로
+   * 넓어졌다 좁아졌다 했다 — 누르려던 단추가 그 자리에 없다.
+   *
+   * 그래서 상자는 늘 가장 넓은 파트 크기이고, 세로 파트는 그 안에서 높이를
+   * 채우며 가운데 선다. 지금 파트도 후보에 넣는 것은 크기가 값에 따라 바뀌는
+   * 동적 파트 때문이다 — 세계일주의 "지도만"이 게임판보다 납작하다.
+   */
+  const widestPart = parts.reduce(
+    (widest, part) =>
+      part.widthMm / part.heightMm > widest.widthMm / widest.heightMm
+        ? part
+        : widest,
+    currentPart,
+  );
+
   // 옵션은 **지금 보는 파트에 쓰이는 것만** 낸다(2026-09-08 사용자 요청 —
   // "점수 기록칸이나 골대 전개도를 선택하면 운동장 옵션은 모두 숨겨줘").
   // 골대 전개도처럼 고칠 것이 하나도 없는 파트에서는 두 줄이 통째로 사라진다 —
@@ -220,14 +239,21 @@ function EditorForm({
       // 높이 예산은 "화면 높이 − 위아래에 놓이는 것들"이다 — 사이트 머리글·
       // 돌아가기·제목·도구 막대·팀 줄이 대략 270px이다. 비율(80vh)로 잡았더니
       // 1000px 화면에서 팀 줄이 화면 밖으로 밀렸다(2026-09-06).
+      //
+      // 기준은 지금 파트가 아니라 **가장 넓은 파트**다 — 파트를 옮겨도 이 상자와
+      // 그 안의 단추·패널이 제자리에 있어야 한다(2026-09-12).
       style={{
-        maxWidth: `calc((100vh - 270px) * ${currentPart.widthMm} / ${currentPart.heightMm})`,
+        maxWidth: `calc((100vh - 270px) * ${widestPart.widthMm} / ${widestPart.heightMm})`,
       }}
     >
       {/* 도구 막대 — 왼쪽은 파트 선택, 오른쪽은 양 팀에 함께 걸리는 값(마커
           모양)과 되돌리기. 한 줄이고, 폭이 모자라면 오른쪽 묶음이 아래로
-          접힌다(2026-09-06 레이아웃 정리 — "불필요한 개행이 너무 많아"). */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          접힌다(2026-09-06 레이아웃 정리 — "불필요한 개행이 너무 많아").
+
+          **높이는 줄에서 가장 큰 것(마커 모양 셀렉터, `h-8`)으로 잡아 둔다**
+          (2026-09-12 사용자 요청). 그 셀렉터는 파트에 따라 사라지는데, 남는
+          것이 알약 단추(26px)뿐이라 줄이 6px 줄면서 아래가 통째로 흔들렸다. */}
+      <div className="flex min-h-8 flex-wrap items-center gap-x-4 gap-y-2">
         {game.parts.length > 1 && (
           <div
             className="flex flex-wrap gap-1.5"
@@ -284,14 +310,25 @@ function EditorForm({
       <p role="status" className="sr-only">
         {currentPart.title} 미리보기
       </p>
-      <div className="mt-2">
-        <BoardPreview
-          key={currentPart.id}
-          game={game}
-          part={currentPart}
-          customization={customization}
-          onMoveSlot={handleMoveSlot}
-        />
+      {/* 자리는 위 상자가 잡고(가장 넓은 파트), 미리보기는 그 안에서 가운데
+          선다. 폭은 **높이 예산이 허락하는 만큼**까지만 — 세로 파트를 폭에 꽉
+          채우면 화면을 한참 넘어간다. 화면이 좁아 폭이 먼저 바닥나면 `100%`가
+          이기므로, 폰에서는 전과 똑같이 폭을 꽉 채운다. */}
+      <div className="mt-2 flex justify-center">
+        <div
+          style={{
+            width: `min(100%, calc((100vh - 270px) * ${currentPart.widthMm} / ${currentPart.heightMm}))`,
+            aspectRatio: `${currentPart.widthMm} / ${currentPart.heightMm}`,
+          }}
+        >
+          <BoardPreview
+            key={currentPart.id}
+            game={game}
+            part={currentPart}
+            customization={customization}
+            onMoveSlot={handleMoveSlot}
+          />
+        </div>
       </div>
 
       {listSlots.map((slot) =>

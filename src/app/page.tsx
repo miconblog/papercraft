@@ -105,7 +105,7 @@ export default async function Home() {
               </a>
               {featured && (
                 <Link
-                  href={`/games/${featured.id}/edit`}
+                  href={`/games/${featured.id}`}
                   className="inline-flex items-center justify-center rounded-full border border-border-strong bg-popover px-6 py-3 text-sm font-medium transition-colors outline-none hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
                 >
                   바로 만들어 보기
