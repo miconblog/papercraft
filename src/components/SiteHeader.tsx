@@ -3,8 +3,8 @@ import { AdminLink } from '@/components/AdminLink';
 import { BrandMark } from '@/components/BrandMark';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
-/** 모든 라우트에 붙는 헤더. 홈(게임 목록)으로 돌아가는 링크뿐이다 — 지금은
- * 섹션이 카탈로그 하나라 그 이상의 내비게이션이 필요 없다.
+/** 모든 라우트에 붙는 헤더. 홈(게임 목록)과 공방 일지로 가는 길이다 —
+ * `IDE-023` 으로 섹션이 둘이 되면서 글로 건너갈 자리가 필요해졌다.
  *
  * 스크롤해도 위에 남는다(2026-09-07 사용자 요청). `fixed`가 아니라 `sticky`인
  * 이유는 보이는 결과가 같으면서 자리를 그대로 차지하기 때문이다 — `fixed`는
@@ -24,7 +24,15 @@ export function SiteHeader() {
           <BrandMark className="size-7 shrink-0" />
           아빠 뭐해?, 아빠 공방
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
+          {/* 글은 게임 다음이다 — 처음 온 사람이 먼저 볼 것은 게임판이고,
+              공방 일지는 그것을 만든 이야기다(IDE-023). */}
+          <Link
+            href="/blog"
+            className="rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors outline-none hover:bg-background hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
+          >
+            공방 일지
+          </Link>
           {/* 로그인한 브라우저에만 나온다. 서버는 이 판단을 하지 않는다 —
               헤더에서 쿠키를 읽으면 사이트 전체가 정적 렌더링에서 빠진다. */}
           <AdminLink />

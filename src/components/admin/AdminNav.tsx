@@ -14,12 +14,18 @@
  */
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CalendarClockIcon, GaugeIcon, Link2Icon } from 'lucide-react';
+import {
+  CalendarClockIcon,
+  GaugeIcon,
+  Link2Icon,
+  PenLineIcon,
+} from 'lucide-react';
 
 /** 화면을 늘리면 여기 한 줄만 더한다. */
 const ITEMS = [
   { href: '/admin/analytics', label: '방문 통계', icon: GaugeIcon },
   { href: '/admin/games', label: '게임 공개', icon: CalendarClockIcon },
+  { href: '/admin/posts', label: '공방 일지', icon: PenLineIcon },
   { href: '/admin/share', label: '공유 링크', icon: Link2Icon },
 ] as const;
 

@@ -8,14 +8,16 @@
  * 도 같은 경계를 쓴다 — 둘이 어긋나면 "하루 UV" 가 이틀에 걸쳐 쪼개진다.
  */
 import { createHash, createHmac } from 'node:crypto';
+import { kstDay } from '@/lib/kst';
 
-/** KST 는 서머타임이 없어서 고정 오프셋으로 충분하다. */
-const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
-
-/** `2026-09-07` — KST 기준 날짜. 이벤트의 `day` 이자 salt 회전 주기다. */
-export function analyticsDay(now: Date = new Date()): string {
-  return new Date(now.getTime() + KST_OFFSET_MS).toISOString().slice(0, 10);
-}
+/**
+ * `2026-09-07` — KST 기준 날짜. 이벤트의 `day` 이자 salt 회전 주기다.
+ *
+ * 계산은 `lib/kst.ts` 가 한다. 오프셋이 여기 한 벌, 예약 공개에 한 벌 따로
+ * 있었는데 `IDE-023` 이 셋째 사용처가 되면서 한 곳으로 모았다 — 세 곳이 같은
+ * 경계를 봐야 "오픈일의 방문 수"가 이틀에 걸쳐 쪼개지지 않는다.
+ */
+export const analyticsDay = (now: Date = new Date()): string => kstDay(now);
 
 /**
  * 그날치 salt.

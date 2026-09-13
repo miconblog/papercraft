@@ -20,4 +20,11 @@ describe('isExcludedPath', () => {
     expect(isExcludedPath('/')).toBe(false);
     expect(isExcludedPath('/games/soccer')).toBe(false);
   });
+
+  it('공방 일지는 센다 — 관리자 화면과 달리 사람이 읽으라고 쓴 글이다 (IDE-023)', () => {
+    expect(isExcludedPath('/blog')).toBe(false);
+    expect(isExcludedPath('/blog/yut-stick-balance')).toBe(false);
+    // 글을 쓰는 화면은 `/admin` 아래라 지금까지처럼 빠진다.
+    expect(isExcludedPath('/admin/posts')).toBe(true);
+  });
 });
