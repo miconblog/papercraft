@@ -5,13 +5,10 @@ import {
   HandshakeIcon,
   HeartIcon,
   PaletteIcon,
-  PenLineIcon,
   PrinterIcon,
   ScissorsIcon,
 } from 'lucide-react';
 import { GameCard } from '@/components/GameCard';
-import { PostCard } from '@/components/blog/PostCard';
-import { publishedPosts } from '@/lib/blog/posts';
 import { openGames } from '@/lib/games/open';
 import { boardOf } from '@/lib/games/format';
 import { formatPlayers, SUPPORTED_PAPER_SIZE } from '@/lib/games/format';
@@ -27,9 +24,9 @@ import { formatPlayers, SUPPORTED_PAPER_SIZE } from '@/lib/games/format';
  * **이 페이지는 정적인 채로** 60초마다 다시 그려진다 — 오픈 시각이 지나면 사람이
  * 아무것도 하지 않아도 카드가 붙는다.
  *
- * 맨 끝에 공방 일지 최근 글이 붙는다(IDE-023). **게임 목록 아래**인 것이 중요하다
- * — 처음 온 사람이 여기서 찾는 것은 뽑을 게임판이고, 글은 그것을 만든 이야기다.
- * 위로 올리면 글이 게임을 밀어낸다. 글이 없으면 이 자리는 통째로 빠진다.
+ * 공방 일지 최근 글은 **여기에 없다**(2026-09-13 사용자 요청). 랜딩은 게임판을
+ * 뽑으러 온 사람의 화면이고, 글로 가는 길은 헤더의 `공방 일지` 하나로 충분하다
+ * — 글 카드가 페이지 끝에 붙어 있으면 게임 목록 다음으로 눈이 거기에 간다.
  */
 
 /**
@@ -80,15 +77,8 @@ const STEPS = [
   },
 ] as const;
 
-/** 홈에 세우는 최근 글 수. 한 줄에 셋이라 줄이 어긋나지 않는다. */
-const RECENT_POSTS = 3;
-
 export default async function Home() {
-  // 둘 다 재검증이 걸린 `fetch` 라 나란히 부른다 — 순서에 기댈 것이 없다.
-  const [games, posts] = await Promise.all([
-    openGames(),
-    publishedPosts().then((all) => all.slice(0, RECENT_POSTS)),
-  ]);
+  const games = await openGames();
   // 히어로에 세울 그림. 열린 게임이 하나도 없어도 페이지는 서야 한다.
   const featured = games[0];
 
@@ -240,37 +230,6 @@ export default async function Home() {
           </ul>
         )}
       </section>
-
-      {/* 글이 없으면 자리째 빠진다 — 빈 섹션이 페이지 끝에 남으면 만들다 만
-          사이트로 보인다. Supabase 에 닿지 못할 때도 같다. */}
-      {posts.length > 0 && (
-        <section className="border-t border-border bg-secondary/50">
-          <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 sm:py-14">
-            <div className="flex flex-wrap items-baseline justify-between gap-3">
-              <h2 className="flex items-center gap-2 text-xl font-bold tracking-tight sm:text-2xl">
-                <PenLineIcon className="size-5 text-retro-teal" aria-hidden />
-                공방 일지
-              </h2>
-              <Link
-                href="/blog"
-                className="rounded-sm text-sm font-medium underline underline-offset-4 outline-none hover:text-retro-brick focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
-              >
-                전부 보기 →
-              </Link>
-            </div>
-            <p className="mt-2 max-w-2xl text-muted-foreground">
-              옛 인쇄본을 다시 그리며 겪은 것들. 종이로 뽑고 접고 아이와 놀아 본
-              기록이다.
-            </p>
-
-            <ul className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {posts.map((post) => (
-                <PostCard key={post.id} post={post} />
-              ))}
-            </ul>
-          </div>
-        </section>
-      )}
     </div>
   );
 }

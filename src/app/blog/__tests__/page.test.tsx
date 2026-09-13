@@ -68,7 +68,13 @@ describe('/blog', () => {
     expect(text).toContain('낸 글');
     expect(text).not.toContain('안 낸 글');
     expect(text).not.toContain('예정된 글');
-    expect(screen.getByRole('link', { name: /낸 글/ })).toHaveAttribute(
+    // 줄마다 링크가 둘이다 — 제목과 "더 읽기". 이름을 정확히 대서 제목 쪽을
+    // 집는다(더 읽기 쪽은 `낸 글 더 읽기` 라 걸리지 않는다).
+    expect(screen.getByRole('link', { name: '낸 글' })).toHaveAttribute(
+      'href',
+      '/blog/shipped',
+    );
+    expect(screen.getByRole('link', { name: '낸 글 더 읽기' })).toHaveAttribute(
       'href',
       '/blog/shipped',
     );
