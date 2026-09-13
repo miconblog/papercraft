@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { PageViews } from '@/components/analytics/PageViews';
 import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
+import { siteUrl } from '@/lib/site';
 import { THEME_INIT_SCRIPT } from '@/lib/theme';
 import './globals.css';
 
@@ -23,9 +24,8 @@ const SITE_DESCRIPTION =
   '추억의 종이 보드게임을 아이와 함께 만든다. 팀 색과 배치를 원하는 대로 바꿔 집 프린터로 정확한 크기에 맞춰 뽑는다.';
 const SITE_AUTHOR = "Daddy's Craft";
 
-// 배포 도메인은 아직 정해지지 않았다(IDE-008, blocked). 정해지면
-// NEXT_PUBLIC_SITE_URL로 넘긴다 — 그 전까지는 로컬 기준으로 절대경로를 만든다.
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+// 값은 `lib/site.ts` 가 주인이다 — `sitemap`·`robots` 가 같은 주소를 봐야 한다.
+const SITE_URL = siteUrl();
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

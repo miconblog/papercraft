@@ -1,5 +1,5 @@
 /**
- * 문지기 (IDE-013 · IDE-022)
+ * 문지기 (IDE-013 · IDE-022 · IDE-023)
  *
  * Next 16 에서 미들웨어는 `proxy` 다. 여기서 막는 것만 믿지는 않지만
  * (`/admin/analytics` 페이지도, 내보내기 API 도 스스로 확인한다), 첫 관문이 제
@@ -7,11 +7,12 @@
  *
  * 오픈 전 게임(IDE-022)은 **화면도 도안 SVG 도** 여기서 막힌다 — 페이지가
  * 스스로 판정하려면 쿠키를 읽어야 하고, 그러면 게임 화면 전체가 정적 렌더링에서
- * 빠진다.
+ * 빠진다. 아직 안 낸 글(IDE-023)도 같은 이유로 여기서 막힌다.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import { issueSession } from '@/lib/analytics/session';
+import { forgetPosts } from '@/lib/blog/posts';
 import { forgetReleases } from '@/lib/games/release';
 import { proxy } from '../proxy';
 
@@ -24,11 +25,13 @@ const request = (path: string, cookie?: string) =>
 
 beforeEach(() => {
   forgetReleases();
+  forgetPosts();
   vi.spyOn(console, 'warn').mockImplementation(() => {});
 });
 
 afterEach(() => {
   forgetReleases();
+  forgetPosts();
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
@@ -53,6 +56,41 @@ describe('proxy', () => {
     );
     expect(res.headers.get('location')).toBeNull();
     expect(res.status).toBe(200);
+  });
+
+  it('옛 경로에 갇힌 세션을 `/` 로 넓혀 준다 (IDE-023)', async () => {
+    // `IDE-022` 전에 로그인한 브라우저는 쿠키가 `/admin` 에 갇혀 있어, 관리자
+    // 화면은 열리는데 `/games`·`/blog` 미리보기만 404 가 났다. 관리자 화면을
+    // 한 번 열면 낫는다.
+    vi.stubEnv('ANALYTICS_ADMIN_PASSWORD', PASSWORD);
+    const token = issueSession(PASSWORD);
+
+    const res = await proxy(request('/admin/analytics', `dc_admin=${token}`));
+    const widened = res.cookies.get('dc_admin');
+    expect(widened?.value).toBe(token);
+    expect(widened?.path).toBe('/');
+
+    // **세션을 지우지 않는다.** `NextResponse.cookies` 는 이름만 보고 덮어써서,
+    // 옛 경로 지우기를 나란히 두면 그것만 나가고 로그인이 통째로 날아간다.
+    expect(res.headers.getSetCookie()).toHaveLength(1);
+    expect(res.headers.getSetCookie()[0]).not.toContain('Max-Age=0');
+  });
+
+  it('로그인 화면에서는 쿠키를 건드리지 않는다', async () => {
+    vi.stubEnv('ANALYTICS_ADMIN_PASSWORD', PASSWORD);
+    const res = await proxy(
+      request('/admin/login', `dc_admin=${issueSession(PASSWORD)}`),
+    );
+    expect(res.cookies.getAll('dc_admin')).toHaveLength(0);
+  });
+
+  it('위조한 쿠키는 옮겨 주지 않는다', async () => {
+    vi.stubEnv('ANALYTICS_ADMIN_PASSWORD', PASSWORD);
+    const res = await proxy(
+      request('/admin/analytics', 'dc_admin=99999999999.deadbeef'),
+    );
+    expect(res.status).toBe(307);
+    expect(res.cookies.getAll('dc_admin')).toHaveLength(0);
   });
 
   it('위조하거나 만료된 쿠키는 되돌려보낸다', async () => {
@@ -186,5 +224,109 @@ describe('proxy · 오픈 전 게임 (IDE-022)', () => {
       }),
     );
     expect(rewrittenTo(await proxy(request('/games/soccer')))).toBeNull();
+  });
+});
+
+describe('proxy · 아직 안 낸 글 (IDE-023)', () => {
+  /** 되돌려보낸 곳. 통과했으면 `null`. */
+  const rewrittenTo = (res: { headers: Headers }): string | null => {
+    const to = res.headers.get('x-middleware-rewrite');
+    return to ? new URL(to).pathname : null;
+  };
+
+  /** 낸 글 하나(`shipped`)와 안 낸 글 하나(`draft`)가 있는 상태. */
+  const twoPosts = () => {
+    vi.stubEnv('SUPABASE_URL', 'https://example.supabase.co');
+    vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'service-role-key');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () =>
+          new Response(
+            // 문지기의 질의는 `?select=slug,publish_at,hidden` 이라 **`id` 가
+            // 오지 않는다.** 대역이 진짜보다 후하면(여기에 `id` 를 넣어 두면)
+            // 줄을 버리는 버그를 못 잡는다 — 실제로 그렇게 놓쳤다(2026-09-09).
+            JSON.stringify([
+              { slug: 'shipped', publish_at: '2020-01-01T00:00:00+09:00' },
+              { slug: 'draft', publish_at: null },
+              { slug: 'later', publish_at: '2099-01-01T00:00:00+09:00' },
+              {
+                slug: 'pulled',
+                publish_at: '2020-01-01T00:00:00+09:00',
+                hidden: true,
+              },
+            ]),
+            { status: 200 },
+          ),
+      ),
+    );
+  };
+
+  it('낸 글은 그대로 열린다', async () => {
+    twoPosts();
+    expect(rewrittenTo(await proxy(request('/blog/shipped')))).toBeNull();
+  });
+
+  it('초안·게시 예정·내려 둔 글은 없는 글이 된다', async () => {
+    twoPosts();
+    for (const slug of ['draft', 'later', 'pulled']) {
+      expect(rewrittenTo(await proxy(request(`/blog/${slug}`))), slug).toBe(
+        '/blog/__closed',
+      );
+    }
+  });
+
+  it('목록은 막지 않는다 — 안 낸 글은 목록 화면이 스스로 뺀다', async () => {
+    twoPosts();
+    expect(rewrittenTo(await proxy(request('/blog')))).toBeNull();
+  });
+
+  it('한글이 섞인 주소도 같은 잣대로 본다', async () => {
+    vi.stubEnv('SUPABASE_URL', 'https://example.supabase.co');
+    vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'service-role-key');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify([
+              { slug: '윷가락', publish_at: '2020-01-01T00:00:00+09:00' },
+            ]),
+            { status: 200 },
+          ),
+      ),
+    );
+    // 브라우저는 퍼센트 인코딩해서 보낸다. 디코드하지 않으면 낸 글이 404 가 된다.
+    expect(
+      rewrittenTo(
+        await proxy(request(`/blog/${encodeURIComponent('윷가락')}`)),
+      ),
+    ).toBeNull();
+  });
+
+  it('관리자 세션이어도 안 낸 글은 여기서 안 열린다 — 미리보기는 `/admin` 아래다', async () => {
+    // 게임(IDE-022)은 오픈 전 실물을 공개 주소에서 봐야 해서 우회가 있다. 글은
+    // 미리보기를 `/admin/posts/<id>/preview` 로 옮겨서(2026-09-09 사용자 제안)
+    // **이 주소가 누구에게나 같다** — 그래서 글 화면이 스스로도 검사할 수 있다.
+    twoPosts();
+    vi.stubEnv('ANALYTICS_ADMIN_PASSWORD', PASSWORD);
+    const res = await proxy(
+      request('/blog/draft', `dc_admin=${issueSession(PASSWORD)}`),
+    );
+    expect(rewrittenTo(res)).toBe('/blog/__closed');
+  });
+
+  it('저장소에 닿지 못하면 글이 하나도 없다 — 게임과 반대 방향이다', async () => {
+    // 게임은 사고가 나면 전부 열어 준다(도안은 코드에 있다). 글은 DB 가 유일한
+    // 원본이라, 반대로 두면 사고 한 번에 안 낸 글이 세상에 나간다.
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new Error('네트워크가 끊겼다');
+      }),
+    );
+    expect(rewrittenTo(await proxy(request('/blog/shipped')))).toBe(
+      '/blog/__closed',
+    );
   });
 });

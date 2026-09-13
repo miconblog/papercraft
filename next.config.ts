@@ -1,6 +1,21 @@
 import type { NextConfig } from 'next';
+import { ACTION_BODY_LIMIT } from './src/lib/blog/uploadLimit';
 
 const nextConfig: NextConfig = {
+  /**
+   * 사진이 실린 폼을 받는다 (IDE-028).
+   *
+   * 서버 액션의 기본 본문 한도는 **1MB** 다. 공방 일지의 사진 넣기는 폰 사진과
+   * **쓰던 글 전체**를 한 폼에 실어 보내므로 그 한도에 바로 걸린다 — 사진만
+   * 못 넣는 것이 아니라 글까지 함께 못 넘어간다(2026-09-09 사용자 신고).
+   *
+   * 값은 `src/lib/blog/uploadLimit.ts` 가 주인이다. 업로드 검사와 이 한도가
+   * 갈라져 있던 것이 사고의 원인이라, 두 곳이 같은 상수를 본다.
+   */
+  experimental: {
+    serverActions: { bodySizeLimit: ACTION_BODY_LIMIT },
+  },
+
   /**
    * 옛 만들기 주소 (2026-09-12).
    *

@@ -32,12 +32,18 @@ import 'server-only';
  * 것과 게임을 언제 열지는 다른 이야기다 — 묶어 두면 수집을 끄는 순간 잡아 둔
  * 오픈일이 전부 풀린다.
  */
-import { ANALYTICS_SCHEMA, supabaseConnection } from '@/lib/analytics/config';
 import {
   ADMIN_COOKIE,
   cookieValue,
   hasAdminSession,
 } from '@/lib/analytics/session';
+import {
+  REQUEST_TTL_MS,
+  RENDER_REVALIDATE_S,
+  restRead,
+  restWrite,
+  type WriteResult,
+} from '@/lib/supabase/rest';
 
 export type Release = {
   /** 이 순간부터 열린다(epoch ms). `null` 이면 잡아 둔 날이 없다. */
@@ -57,21 +63,15 @@ export const NO_RELEASES: ReleaseMap = new Map();
  */
 export const RELEASE_TAG = 'game-release';
 
-/** 렌더 경로의 재검증 주기(초). 아래 `설계` 주석과 이슈 결정 기록이 같은 값을 말한다. */
-export const RENDER_REVALIDATE_S = 60;
-
-/** 프록시가 들고 있는 메모리 캐시의 수명(ms). */
-const REQUEST_TTL_MS = 30_000;
+/**
+ * 렌더 경로의 재검증 주기(초)와 프록시 메모의 수명(ms).
+ *
+ * `IDE-023` 의 글 게시가 같은 약속을 하게 되면서 `supabase/rest.ts` 로 옮겼다.
+ * 여기서 다시 내보내는 것은 이 모듈만 보고 쓰던 곳들을 그대로 두기 위해서다.
+ */
+export { RENDER_REVALIDATE_S };
 
 const TABLE = 'game_release';
-
-const restUrl = (base: string, query = ''): string =>
-  `${base.replace(/\/+$/, '')}/rest/v1/${TABLE}${query}`;
-
-const keyHeaders = (key: string): Record<string, string> => ({
-  apikey: key,
-  Authorization: `Bearer ${key}`,
-});
 
 /**
  * 못 읽는 날짜는 **없는 것으로 친다**. 줄을 통째로 버리지 않는 것이 중요하다 —
@@ -115,29 +115,16 @@ export function toReleaseMap(rows: unknown): ReleaseMap {
 
 /** 절대 던지지 않는다. 닿지 못하면 빈 표 = 전부 공개. */
 async function fetchReleases(init: RequestInit): Promise<ReleaseMap> {
-  const config = supabaseConnection();
-  if (!config) return NO_RELEASES;
-
-  try {
-    // 칸 이름을 적지 않고 통째로 받는다. 적어 두면 `hidden` 칸이 아직 없는
-    // DB(006 적용 전)에서 **읽기 전체가 400 으로 실패**하고, 그러면 잡아 둔
-    // 오픈일까지 한꺼번에 풀린다. 통째로 받으면 없는 칸이 그냥 빠질 뿐이다.
-    const response = await fetch(restUrl(config.url, '?select=*'), {
-      ...init,
-      headers: {
-        ...keyHeaders(config.serviceRoleKey),
-        'Accept-Profile': ANALYTICS_SCHEMA,
-      },
-    });
-    if (!response.ok) {
-      console.warn('[release] 오픈일을 읽지 못했다:', response.status);
-      return NO_RELEASES;
-    }
-    return toReleaseMap(await response.json());
-  } catch (cause) {
-    console.warn('[release] 오픈일을 읽지 못했다:', cause);
-    return NO_RELEASES;
-  }
+  // 칸 이름을 적지 않고 통째로 받는다. 적어 두면 `hidden` 칸이 아직 없는
+  // DB(006 적용 전)에서 **읽기 전체가 400 으로 실패**하고, 그러면 잡아 둔
+  // 오픈일까지 한꺼번에 풀린다. 통째로 받으면 없는 칸이 그냥 빠질 뿐이다.
+  const rows = await restRead({
+    table: TABLE,
+    query: '?select=*',
+    init,
+    label: 'release',
+  });
+  return rows === null ? NO_RELEASES : toReleaseMap(rows);
 }
 
 /**
@@ -221,82 +208,33 @@ export async function isGameVisible(
 }
 
 // ── KST 벽시계 ↔ 절대 시각 ──────────────────────────────────────────
-// 날짜 경계는 KST 다. `analyticsDay` 가 이미 같은 경계를 쓴다 — 어긋나면
-// "오픈일의 방문 수"가 이틀에 걸쳐 쪼개진다.
-
-const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
-
-/** `<input type="datetime-local">` 이 보낸 KST 벽시계 → 절대 시각. 못 읽으면 `null`. */
-export function kstLocalToInstant(value: string): number | null {
-  const matched = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})(:\d{2})?$/.exec(
-    value.trim(),
-  );
-  if (!matched) return null;
-  const ms = Date.parse(
-    `${matched[1]}T${matched[2]}${matched[3] ?? ':00'}+09:00`,
-  );
-  return Number.isNaN(ms) ? null : ms;
-}
-
-/** 절대 시각 → `datetime-local` 에 다시 채워 넣을 KST 벽시계(`2026-09-10T00:00`). */
-export const instantToKstLocal = (ms: number): string =>
-  new Date(ms + KST_OFFSET_MS).toISOString().slice(0, 16);
-
-/**
- * 오늘 0시(KST) — 관리자 화면의 빈 칸 기본값이다.
- *
- * 화면에서 `Date.now()` 를 직접 부르지 않으려고 여기 둔다. 렌더 중에 부르면
- * 순수성 규칙(`react-hooks/purity`)에 걸리고, 그 규칙이 짚는 것도 맞다 —
- * "지금"은 데이터지 그리는 일이 아니다.
- */
-export const todayKstMidnight = (now: number = Date.now()): string =>
-  `${instantToKstLocal(now).slice(0, 10)}T00:00`;
-
-/** 사람이 읽을 KST 표기. 시간대를 안 적으면 브라우저 시각으로 오해한다. */
-export const formatKst = (ms: number): string =>
-  `${instantToKstLocal(ms).replace('T', ' ')} KST`;
+// 계산은 `lib/kst.ts` 가 주인이다 — `IDE-023` 의 글 게시 시각이 셋째 사용처가
+// 되면서 오프셋을 한 곳으로 모았다. 여기서 다시 내보내는 것은 이 모듈만 보고
+// 쓰던 화면들(`admin/games`)을 그대로 두기 위해서다.
+export {
+  formatKst,
+  instantToKstLocal,
+  kstLocalToInstant,
+  todayKstMidnight,
+} from '@/lib/kst';
 
 // ── 쓰기 ────────────────────────────────────────────────────────────
 // 관리자 화면에서만 부른다. 읽기와 달리 실패를 감추지 않는다 — 저장이 조용히
 // 실패하면 관리자는 날을 잡아 뒀다고 믿는다.
 
-export type WriteResult = { ok: true } | { ok: false; message: string };
+export type { WriteResult };
 
-const DISABLED: WriteResult = {
-  ok: false,
-  message:
-    '저장소에 닿지 못했습니다. 환경변수(SUPABASE_URL · SUPABASE_SERVICE_ROLE_KEY)를 확인하세요.',
-};
-
-async function write(path: string, init: RequestInit): Promise<WriteResult> {
-  const config = supabaseConnection();
-  if (!config) return DISABLED;
-
-  try {
-    const response = await fetch(restUrl(config.url, path), {
-      ...init,
-      cache: 'no-store',
-      headers: {
-        ...keyHeaders(config.serviceRoleKey),
-        'Content-Profile': ANALYTICS_SCHEMA,
-        'Content-Type': 'application/json',
-        ...init.headers,
-      },
-    });
-    if (!response.ok) {
-      const body = await response.text().catch(() => '');
-      console.warn('[release] 오픈일을 쓰지 못했다:', response.status, body);
-      return {
-        ok: false,
-        message: `저장하지 못했습니다 (${response.status}).`,
-      };
-    }
-    forgetReleases();
-    return { ok: true };
-  } catch (cause) {
-    console.warn('[release] 오픈일을 쓰지 못했다:', cause);
-    return { ok: false, message: '저장하지 못했습니다.' };
-  }
+async function write(query: string, init: RequestInit): Promise<WriteResult> {
+  const result = await restWrite({
+    table: TABLE,
+    query,
+    init,
+    label: 'release',
+  });
+  // 성공했든 아니든 메모를 버린다. 실패한 줄 알았는데 실제로 들어간 경우까지
+  // 30초 동안 옛 값을 보여 주지 않는다.
+  forgetReleases();
+  return result;
 }
 
 /**
