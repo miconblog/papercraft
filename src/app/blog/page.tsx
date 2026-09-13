@@ -1,7 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { PenLineIcon } from 'lucide-react';
-import { PostCard } from '@/components/blog/PostCard';
+import { PostListItem } from '@/components/blog/PostListItem';
 import { publishedPosts } from '@/lib/blog/posts';
 
 /**
@@ -12,8 +10,17 @@ import { publishedPosts } from '@/lib/blog/posts';
  * 필요 없고, 주소만 보고 무엇이 있는 곳인지 안다.
  *
  * 안 낸 글은 `publishedPosts` 가 뺀다. **60초마다 다시 그려지므로** 게시
- * 시각이 지나면 사람이 아무것도 하지 않아도 카드가 붙는다 — 홈의 게임 목록과
+ * 시각이 지나면 사람이 아무것도 하지 않아도 글이 붙는다 — 홈의 게임 목록과
  * 같은 방식이다(IDE-022).
+ *
+ * 생김새는 카드 그리드가 아니라 **한 줄에 한 편씩 쌓는 목록**이다(2026-09-13
+ * 사용자 요청). 홈의 최근 글은 카드 그대로다 — 거기서는 게임 카드 옆에 서므로
+ * 같은 모양이어야 하지만, 여기서는 글만 있어서 한 편에 폭을 다 줄 수 있다.
+ *
+ * 화면 맨 위에 머리말이 없다 — 돌아가는 링크도, 제목도, 소개 문구도 빼고 글
+ * 목록으로 바로 시작한다(2026-09-13 사용자 요청). `TITLE` 과 `DESCRIPTION` 은
+ * 지우지 않는다. 탭 제목과 공유 카드·검색 결과가 그대로 쓰는 값이라, 화면에서
+ * 안 보인다고 해서 없어도 되는 문구가 아니다.
  */
 /**
  * 60초마다 다시 그린다 — `RENDER_REVALIDATE_S` 와 같은 값이다(리터럴이어야
@@ -42,25 +49,13 @@ export default async function BlogIndexPage() {
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
-      <Link href="/" className="text-sm text-muted-foreground hover:underline">
-        ← 게임 목록으로
-      </Link>
-
-      <h1 className="mt-4 flex items-center gap-2 text-3xl font-bold tracking-tight">
-        <PenLineIcon className="size-7 text-retro-teal" aria-hidden />
-        {TITLE}
-      </h1>
-      <p className="mt-3 max-w-2xl leading-7 text-muted-foreground">
-        {DESCRIPTION}
-      </p>
-
       {posts.length === 0 ? (
         // Supabase 에 닿지 못해도 여기까지는 뜬다 — 글 자리만 빈다.
-        <p className="mt-10 text-muted-foreground">아직 쓴 글이 없다.</p>
+        <p className="text-muted-foreground">아직 쓴 글이 없다.</p>
       ) : (
-        <ul className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="divide-y divide-border">
           {posts.map((post) => (
-            <PostCard key={post.id} post={post} />
+            <PostListItem key={post.id} post={post} />
           ))}
         </ul>
       )}
