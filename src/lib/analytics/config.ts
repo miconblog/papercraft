@@ -59,6 +59,19 @@ export function analyticsConfig(
   return { ...connection, hashSalt };
 }
 
+/**
+ * 방문자 해시에 섞는 비밀값만. **`ANALYTICS_ENABLED` 를 보지 않는다** (IDE-029).
+ *
+ * `supabaseConnection` 과 같은 이유다 — 그 스위치는 "방문을 세지 않는다"는
+ * 뜻이고, 이 비밀값을 쓰는 곳이 수집 말고 하나 더 생겼다. 댓글 도배 제한이
+ * 같은 해시로 "같은 브라우저"를 가리는데(`lib/comments/actions.ts`), 그것이
+ * 스위치에 묶여 있으면 **수집을 끄는 순간 도배 제한도 함께 풀린다.**
+ *
+ * 없으면 `null` 이고, 그때는 제한이 없다 — 로컬과 CI 는 키 없이 돌아야 한다.
+ */
+export const hashSalt = (env: Env = process.env): string | null =>
+  trimmed(env.ANALYTICS_HASH_SALT) || null;
+
 /** `/admin/analytics` 비밀번호. 없으면 그 경로는 존재하지 않는다(404). */
 export const adminPassword = (env: Env = process.env): string | null =>
   trimmed(env.ANALYTICS_ADMIN_PASSWORD) || null;
