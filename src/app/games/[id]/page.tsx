@@ -1,9 +1,13 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { gameIds, getGame } from '@/lib/games';
 import { movableSlots } from '@/lib/schema';
+import { CommentSection } from '@/components/comments/CommentSection';
+import { CommentSectionFallback } from '@/components/comments/CommentSectionFallback';
 import { EditorClient } from '@/components/editor/EditorClient';
+import { ShareSection } from '@/components/share/ShareSection';
 
 type Params = { id: string };
 type Props = { params: Promise<Params> };
@@ -80,6 +84,24 @@ export default async function EditGamePage({ params }: Props) {
         )}
       </div>
       <EditorClient game={game} />
+
+      {/* 만들기가 끝난 자리에 나누기와 이야기를 놓는다 (IDE-029).
+          미리보기 위로 올리면 만들러 온 사람의 길을 막고, 미리보기는 이 화면에서
+          폭을 전부 쓰는 물건이라 옆에 세울 자리도 없다. */}
+      <div className="mt-10 space-y-10 border-t border-border pt-8">
+        <ShareSection
+          path={`/games/${game.id}`}
+          title={game.title}
+          description={game.tagline}
+          // 공유 카드의 그림은 `opengraph-image.tsx` 가 그리는 그것이다 —
+          // 카카오톡 카드와 다른 그림을 쓰면 같은 링크가 앱마다 달라 보인다.
+          imagePath={`/games/${game.id}/opengraph-image`}
+        />
+        {/* 댓글만 경계 뒤에 둔다 — 미리보기와 폼은 저장소를 기다리지 않는다. */}
+        <Suspense fallback={<CommentSectionFallback />}>
+          <CommentSection kind="game" targetId={game.id} />
+        </Suspense>
+      </div>
     </div>
   );
 }

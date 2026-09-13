@@ -1,7 +1,11 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { PostArticle } from '@/components/blog/PostArticle';
+import { CommentSection } from '@/components/comments/CommentSection';
+import { CommentSectionFallback } from '@/components/comments/CommentSectionFallback';
+import { ShareSection } from '@/components/share/ShareSection';
 import { isPublished, postBySlug, type Post } from '@/lib/blog/posts';
 import { postSummary } from '@/lib/blog/summary';
 
@@ -89,6 +93,24 @@ export default async function PostPage({ params }: Props) {
 
       <div className="mt-6">
         <PostArticle post={post} />
+      </div>
+
+      {/* 글을 다 읽은 자리에 나누기와 이야기를 놓는다 (IDE-029).
+          게임 화면과 **같은 컴포넌트**다 — 두 화면에서 댓글 모양이 달라지면
+          같은 사이트로 안 읽힌다. */}
+      <div className="mt-12 space-y-10 border-t border-border pt-8">
+        <ShareSection
+          path={`/blog/${post.slug}`}
+          title={post.title}
+          description={postSummary(post)}
+          // 대표 사진이 있으면 그것, 없으면 사이트 공유 이미지다 —
+          // `generateMetadata` 가 OG 에 세우는 것과 같은 순서다.
+          imagePath={post.coverUrl ?? '/opengraph-image'}
+        />
+        {/* 댓글만 경계 뒤에 둔다 — 글은 저장소를 한 번 더 기다리지 않는다. */}
+        <Suspense fallback={<CommentSectionFallback />}>
+          <CommentSection kind="post" targetId={post.id} />
+        </Suspense>
       </div>
     </article>
   );
