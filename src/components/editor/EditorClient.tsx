@@ -295,10 +295,12 @@ function EditorForm({
             )}
           </div>
         )}
-        <div className="ml-auto flex flex-wrap items-center gap-x-4 gap-y-2">
-          {hasUngroupedSlots && (
-            <CustomizationForm {...formProps} groupIds={[]} />
-          )}
+        {/* 되돌리기·출력하기는 **늘 첫 줄 오른쪽 끝**이다(2026-09-16 사용자
+            요청). 고칠 값과 한 묶음에 넣어 두었더니, 값이 많은 판(나만의 홀)
+            에서 그 묶음이 접히면서 두 단추가 마지막 줄 왼쪽으로 밀려났다 —
+            판을 옮길 때마다 찾아야 하는 자리가 된다. 값은 아래 줄로 내려보내고
+            이 둘만 위에 남긴다. */}
+        <div className="ml-auto flex items-center gap-x-4 gap-y-2">
           {/* 되돌리기는 **고칠 값이 있는 파트에서만** 낸다(2026-09-16 사용자
               요청). 골프의 미리 그린 홀 판이나 윷놀이 말판처럼 판에서 손댈
               것이 하나도 없는 자리에서는 되돌릴 것도 없는데 단추만 떠 있었다.
@@ -318,6 +320,13 @@ function EditorForm({
           <PrintDialog game={game} customization={customization} />
         </div>
       </div>
+      {/* 판에 걸린 값. 첫 줄과 나누어 두면 값이 몇 줄로 늘어나도 위의 두 단추가
+          제자리를 지킨다. */}
+      {hasUngroupedSlots && (
+        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <CustomizationForm {...formProps} groupIds={[]} />
+        </div>
+      )}
       {hasErrors && (
         <p className="mt-2 text-sm text-destructive">
           빨간 글씨로 표시된 값을 고쳐야 인쇄물이 정확하다.

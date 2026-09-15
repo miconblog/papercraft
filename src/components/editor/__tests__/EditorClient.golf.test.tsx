@@ -57,6 +57,28 @@ describe('골프 — 홀 열여덟 장을 셀렉트로 고른다', () => {
     expect(previewBox().style.aspectRatio).toBe('210 / 297');
   });
 
+  it('되돌리기·출력하기가 파트 줄에 남고 값은 아래로 내려간다 (IDE-032)', async () => {
+    const user = userEvent.setup();
+    render(<EditorClient game={game} />);
+
+    await user.click(screen.getByLabelText('홀 판 고르기'));
+    await user.click(await screen.findByRole('option', { name: '나만의 홀' }));
+
+    // 값이 많은 판에서 두 단추가 값 묶음에 딸려 접히면 마지막 줄 왼쪽으로
+    // 밀려난다(2026-09-16 사용자 제보). 같은 줄에 남으려면 **파트 선택과 한
+    // 상자**에 있고 값은 그 바깥이어야 한다 — jsdom에는 레이아웃이 없으니
+    // 그 구조를 본다.
+    const bar = screen.getByRole('group', {
+      name: '편집할 파트 선택',
+    }).parentElement!;
+    expect(bar).toContainElement(screen.getByRole('button', { name: /출력/ }));
+    expect(bar).toContainElement(
+      screen.getByRole('button', { name: '기본값으로 되돌리기' }),
+    );
+    expect(bar).not.toContainElement(screen.getByLabelText('홀 번호'));
+    expect(bar).not.toContainElement(screen.getByLabelText('파'));
+  });
+
   it('되돌리기는 고칠 값이 있는 파트에서만 나온다 (IDE-032)', async () => {
     const user = userEvent.setup();
     render(<EditorClient game={game} />);
