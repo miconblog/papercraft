@@ -77,7 +77,9 @@ export const TYPE = {
  */
 export const PANEL = {
   widthMm: 52,
-  heightMm: 52,
+  // 코스 이름 칸을 빼면서 6mm 낮아졌다(2026-09-16 사용자 요청 — "코스 이름
+  // 인풋은 의미가 없는거 같아"). 카드가 작을수록 앉을 빈자리를 찾기 쉽다.
+  heightMm: 46,
   /** 모서리 둥글기. 코스 위에 얹힌 종이처럼 보이게 한다. */
   cornerMm: 2.5,
   /** 코스 요소에서 이만큼은 떨어져 앉는다. */
@@ -98,20 +100,12 @@ export const PANEL = {
   statFontMm: 3.2,
 
   ruleTopYMm: 24,
-  ruleBottomYMm: 45,
   ruleInsetMm: 4,
 
   /** 타수 이름 — 두 열 세 행. */
   termColumnsXMm: [6, 28] as const,
   termRowsYMm: [29.5, 35.5, 41.5] as const,
   termFontMm: 3,
-
-  /** 코스 이름 슬롯이 앉는 자리와 그 밑줄. */
-  courseNameYMm: 49,
-  courseNameFontMm: 3.2,
-  courseNameMaxWidthMm: 40,
-  courseRuleYMm: 51,
-  courseRuleInsetMm: 8,
 } as const;
 
 /**
@@ -827,12 +821,6 @@ export const SCORE_CARD = {
   titleXMm: 15,
   titleYMm: 13,
   titleFontMm: 6.5,
-  /** 코스 이름 슬롯. 제목 오른쪽 끝에 붙는다. */
-  courseNameXMm: 282,
-  courseNameYMm: 13,
-  courseNameFontMm: 4.4,
-  courseNameMaxWidthMm: 110,
-
   tableXMm: 15,
   /** 왼쪽 항목 열 — "홀 / 파 / 거리"와 사람 이름이 앉는다. */
   labelColumnMm: 36,

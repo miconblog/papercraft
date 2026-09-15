@@ -35,7 +35,6 @@ import {
   RULE_COLOR,
   group,
   line,
-  rect,
   svgDocument,
   text,
 } from '../../../shared/svg.ts';
@@ -254,11 +253,6 @@ export const renderScoreCard = (): string =>
             'font-weight': 'bold',
           },
         ),
-        rect(SCORE_CARD.titleXMm + 46, SCORE_CARD.titleYMm + 3.5, 100, 0.3, {
-          fill: RULE_COLOR,
-          stroke: 'none',
-        }),
-
         ...renderTable(SCORE_CARD.outTableYMm, OUT_HOLES, 'OUT'),
         ...renderTable(SCORE_CARD.inTableYMm, IN_HOLES, 'IN'),
         ...renderSumBox(),

@@ -35,7 +35,6 @@ import {
   INK,
   HOLES,
   NAME_NUMBER_INSET_MM,
-  PANEL,
   PLAYER_COUNT,
   PLAYER_LABELS,
   SCORE_CARD,
@@ -89,33 +88,6 @@ const holeParts = HOLES.map((hole, index) => ({
   maxScale: 3,
   artwork: artworkPath(holePartId(hole.number)),
 }));
-
-/**
- * 코스 이름이 홀 판마다 한 번씩, 기록표에 한 번 앉는다.
- *
- * 홀 판에서는 **카드 안**이다(2026-09-15). 카드가 홀마다 다른 자리에 앉으므로
- * 좌표도 홀마다 다르다 — `hole.panel`을 읽어 그 안의 같은 자리를 가리킨다.
- */
-const courseNamePlacements = [
-  ...HOLES.map((hole) => ({
-    partId: holePartId(hole.number),
-    mode: 'text' as const,
-    xMm: hole.panel[0] + PANEL.widthMm / 2,
-    yMm: hole.panel[1] + PANEL.courseNameYMm,
-    align: 'center' as const,
-    fontSizeMm: PANEL.courseNameFontMm,
-    maxWidthMm: PANEL.courseNameMaxWidthMm,
-  })),
-  {
-    partId: SCORE_CARD_PART_ID,
-    mode: 'text' as const,
-    xMm: SCORE_CARD.courseNameXMm,
-    yMm: SCORE_CARD.courseNameYMm,
-    align: 'end' as const,
-    fontSizeMm: SCORE_CARD.courseNameFontMm,
-    maxWidthMm: SCORE_CARD.courseNameMaxWidthMm,
-  },
-];
 
 const tableEdges = scoreColumnEdges();
 const sumEdges = sumColumnEdges();
@@ -350,20 +322,17 @@ export default defineGame({
     },
   ],
 
-  slots: [
-    {
-      id: 'course-name',
-      kind: 'text',
-      label: '코스 이름',
-      help: '홀 판 열여덟 장과 기록표에 함께 찍힌다. 비워 두면 아무것도 인쇄되지 않는다.',
-      maxLength: 14,
-      default: '',
-      placeholder: '우리 골프장',
-      placements: courseNamePlacements,
-    },
-    ...playerSlots,
-    ...customSlots,
-  ],
+  /**
+   * 고칠 값은 **사람 이름 넷과 나만의 홀**뿐이다.
+   *
+   * 코스 이름 칸이 있었지만 뺐다(2026-09-16 사용자 요청 — "코스 이름 인풋은
+   * 의미가 없는거 같아"). 한 번 적고 나면 다시 볼 일이 없는 값이라, 열아홉
+   * 장에 같은 글자를 찍자고 입력 칸을 두는 것이 품에 비해 남는 게 없었다.
+   *
+   * 그래서 **미리 그린 홀 판에는 고칠 값이 하나도 없다** — 윷놀이 말판과 같다.
+   * 값은 기록표(사람 이름)와 나만의 홀(판을 짓는 값 여덟)에 있다.
+   */
+  slots: [...playerSlots, ...customSlots],
 });
 
 /** 코스 전체 거리. 소개 페이지와 테스트가 쓴다. */

@@ -93,16 +93,16 @@
 <circle cx="165.16" cy="91.005" r="5.274" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
 <line x1="164.008" y1="132.08" x2="164.008" y2="134.767" stroke="#3f7c43" stroke-width="0.45" />
 <circle cx="164.008" cy="129.969" r="3.838" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="175.586" y1="64.433" x2="175.586" y2="67.675" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="175.586" cy="61.885" r="4.632" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
 <line x1="188.2" y1="119.825" x2="188.2" y2="122.245" stroke="#3f7c43" stroke-width="0.45" />
 <circle cx="188.2" cy="117.924" r="3.457" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="199.507" y1="62.187" x2="199.507" y2="64.414" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="199.507" cy="60.436" r="3.182" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
 <line x1="174.101" y1="80.85" x2="174.101" y2="84.419" stroke="#3f7c43" stroke-width="0.45" />
 <circle cx="174.101" cy="78.046" r="5.098" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
 <line x1="171.789" y1="148.231" x2="171.789" y2="151.256" stroke="#3f7c43" stroke-width="0.45" />
 <circle cx="171.789" cy="145.855" r="4.321" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
-<line x1="196.476" y1="161.171" x2="196.476" y2="163.792" stroke="#3f7c43" stroke-width="0.45" />
-<circle cx="196.476" cy="159.112" r="3.745" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
-<line x1="198.208" y1="183.58" x2="198.208" y2="186.579" stroke="#3f7c43" stroke-width="0.45" />
-<circle cx="198.208" cy="181.224" r="4.283" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
 <line x1="152.135" y1="235.19" x2="152.135" y2="237.397" stroke="#3f7c43" stroke-width="0.45" />
 <circle cx="152.135" cy="233.456" r="3.153" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
 <line x1="62.231" y1="274.127" x2="62.231" y2="277.32" stroke="#3f7c43" stroke-width="0.45" />
@@ -141,20 +141,18 @@
 <circle cx="95.6" cy="69.5" r="2.4" fill="#1a1a1a" stroke="none" />
 <line x1="95.6" y1="69.5" x2="95.6" y2="53.5" stroke="#1a1a1a" stroke-width="0.6" />
 <path d="M95.6 53.5 L104.6 56.5 L95.6 59.5 Z" fill="#1a1a1a" stroke="none" />
-<rect x="145" y="9" width="52" height="52" fill="#ffffff" stroke="#6b7280" stroke-width="0.4" rx="2.5" />
+<rect x="145" y="9" width="52" height="46" fill="#ffffff" stroke="#6b7280" stroke-width="0.4" rx="2.5" />
 <text x="155" y="23" font-size="12" dominant-baseline="central" text-anchor="middle" font-weight="bold">8</text>
 <text x="155" y="30.5" font-size="2.6" dominant-baseline="central" fill="#6b7280" text-anchor="middle">번 홀</text>
 <text x="164" y="20" font-size="4.6" dominant-baseline="central" text-anchor="start" font-weight="bold">좁은 문</text>
 <text x="164" y="27.5" font-size="3.2" dominant-baseline="central" fill="#6b7280" text-anchor="start">파 4 · 340야드</text>
 <line x1="149" y1="33" x2="193" y2="33" stroke="#6b7280" stroke-width="0.25" />
-<line x1="149" y1="54" x2="193" y2="54" stroke="#6b7280" stroke-width="0.25" />
 <text x="151" y="38.5" font-size="3" dominant-baseline="central" text-anchor="start" fill="#6b7280">1타 홀인원</text>
 <text x="151" y="44.5" font-size="3" dominant-baseline="central" text-anchor="start" fill="#6b7280">2타 이글</text>
 <text x="151" y="50.5" font-size="3" dominant-baseline="central" text-anchor="start" fill="#6b7280">3타 버디</text>
 <text x="173" y="38.5" font-size="3" dominant-baseline="central" text-anchor="start" font-weight="bold" fill="#1a1a1a">4타 파</text>
 <text x="173" y="44.5" font-size="3" dominant-baseline="central" text-anchor="start" fill="#6b7280">5타 보기</text>
 <text x="173" y="50.5" font-size="3" dominant-baseline="central" text-anchor="start" fill="#6b7280">6타 더블보기</text>
-<line x1="153" y1="60" x2="189" y2="60" stroke="#6b7280" stroke-width="0.25" />
 </g>
 <g id="pc-slot" />
 </svg>

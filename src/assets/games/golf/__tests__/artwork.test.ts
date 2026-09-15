@@ -635,43 +635,17 @@ describe('기록표', () => {
     }
   });
 
-  it('코스 이름은 홀 판 열여덟 장과 기록표에 함께 찍힌다', () => {
-    const slot = game.slots.find((s) => s.id === 'course-name')!;
-    expect(slot.placements).toHaveLength(HOLES.length + 1);
+  it('미리 그린 홀 판에는 고칠 값이 없다 (IDE-032)', () => {
+    // 코스 이름 칸을 뺐다(2026-09-16 사용자 요청) — 한 번 적고 나면 다시 볼
+    // 일이 없는 값이라 열아홉 장에 같은 글자를 찍자고 입력 칸을 둘 이유가
+    // 없었다. 윷놀이 말판처럼 판에서는 고칠 것이 없고, 값은 기록표와 나만의
+    // 홀에 있다.
     for (const hole of HOLES) {
-      expect(
-        slot.placements.some((p) => p.partId === holePartId(hole.number)),
-      ).toBe(true);
+      expect(slotsOfPart(game, holePartId(hole.number))).toHaveLength(0);
     }
-  });
-
-  it('코스 이름이 홀마다 제 카드 안에 앉는다', () => {
-    const slot = game.slots.find((s) => s.id === 'course-name')!;
-    for (const hole of HOLES) {
-      const placement = slot.placements.find(
-        (p) => p.partId === holePartId(hole.number),
-      )!;
-      expect(placement.mode).toBe('text');
-      if (placement.mode !== 'text') return;
-      const panel: Rect = {
-        xMm: hole.panel[0],
-        yMm: hole.panel[1],
-        widthMm: PANEL.widthMm,
-        heightMm: PANEL.heightMm,
-      };
-      expect(
-        rectContains(panel, { x: placement.xMm, y: placement.yMm }),
-        `${hole.number}번 홀의 코스 이름이 카드 밖에 찍힌다`,
-      ).toBe(true);
-    }
-  });
-
-  it('홀 판에도 고칠 값이 하나는 있다 — 에디터가 빈 화면을 내지 않는다', () => {
-    for (const hole of HOLES) {
-      expect(slotsOfPart(game, holePartId(hole.number)).length).toBeGreaterThan(
-        0,
-      );
-    }
+    expect(game.slots.some((s) => s.id === 'course-name')).toBe(false);
+    expect(slotsOfPart(game, 'score-card').length).toBeGreaterThan(0);
+    expect(slotsOfPart(game, CUSTOM_HOLE.partId).length).toBeGreaterThan(0);
   });
 });
 

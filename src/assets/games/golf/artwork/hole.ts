@@ -521,14 +521,12 @@ function infoPanel(hole: HoleSpec): string[] {
       { fill: RULE_COLOR, 'text-anchor': 'start' },
     ),
 
-    ...[PANEL.ruleTopYMm, PANEL.ruleBottomYMm].map((dy) =>
-      line(
-        px + PANEL.ruleInsetMm,
-        py + dy,
-        px + PANEL.widthMm - PANEL.ruleInsetMm,
-        py + dy,
-        { stroke: RULE_COLOR, 'stroke-width': 0.25 },
-      ),
+    line(
+      px + PANEL.ruleInsetMm,
+      py + PANEL.ruleTopYMm,
+      px + PANEL.widthMm - PANEL.ruleInsetMm,
+      py + PANEL.ruleTopYMm,
+      { stroke: RULE_COLOR, 'stroke-width': 0.25 },
     ),
 
     // 타수 이름 — 두 열 세 행. 왼쪽 열을 다 채우고 오른쪽으로 넘어간다.
@@ -545,15 +543,6 @@ function infoPanel(hole: HoleSpec): string[] {
           fill: term.label === '파' ? INK_COLOR : RULE_COLOR,
         },
       ),
-    ),
-
-    // 코스 이름 슬롯의 밑줄. 값이 비어 있어도 아이가 손으로 쓸 수 있다.
-    line(
-      px + PANEL.courseRuleInsetMm,
-      py + PANEL.courseRuleYMm,
-      px + PANEL.widthMm - PANEL.courseRuleInsetMm,
-      py + PANEL.courseRuleYMm,
-      { stroke: RULE_COLOR, 'stroke-width': 0.25 },
     ),
   ];
 }

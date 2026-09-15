@@ -86,20 +86,18 @@
 <circle cx="108.1" cy="54.5" r="2.4" fill="#1a1a1a" stroke="none" />
 <line x1="108.1" y1="54.5" x2="108.1" y2="38.5" stroke="#1a1a1a" stroke-width="0.6" />
 <path d="M108.1 38.5 L117.1 41.5 L108.1 44.5 Z" fill="#1a1a1a" stroke="none" />
-<rect x="9" y="9" width="52" height="52" fill="#ffffff" stroke="#6b7280" stroke-width="0.4" rx="2.5" />
+<rect x="9" y="9" width="52" height="46" fill="#ffffff" stroke="#6b7280" stroke-width="0.4" rx="2.5" />
 <text x="19" y="23" font-size="12" dominant-baseline="central" text-anchor="middle" font-weight="bold">17</text>
 <text x="19" y="30.5" font-size="2.6" dominant-baseline="central" fill="#6b7280" text-anchor="middle">번 홀</text>
 <text x="28" y="20" font-size="4.6" dominant-baseline="central" text-anchor="start" font-weight="bold">마지막 긴 홀</text>
 <text x="28" y="27.5" font-size="3.2" dominant-baseline="central" fill="#6b7280" text-anchor="start">파 5 · 505야드</text>
 <line x1="13" y1="33" x2="57" y2="33" stroke="#6b7280" stroke-width="0.25" />
-<line x1="13" y1="54" x2="57" y2="54" stroke="#6b7280" stroke-width="0.25" />
 <text x="15" y="38.5" font-size="3" dominant-baseline="central" text-anchor="start" fill="#6b7280">2타 알바트로스</text>
 <text x="15" y="44.5" font-size="3" dominant-baseline="central" text-anchor="start" fill="#6b7280">3타 이글</text>
 <text x="15" y="50.5" font-size="3" dominant-baseline="central" text-anchor="start" fill="#6b7280">4타 버디</text>
 <text x="37" y="38.5" font-size="3" dominant-baseline="central" text-anchor="start" font-weight="bold" fill="#1a1a1a">5타 파</text>
 <text x="37" y="44.5" font-size="3" dominant-baseline="central" text-anchor="start" fill="#6b7280">6타 보기</text>
 <text x="37" y="50.5" font-size="3" dominant-baseline="central" text-anchor="start" fill="#6b7280">7타 더블보기</text>
-<line x1="17" y1="60" x2="53" y2="60" stroke="#6b7280" stroke-width="0.25" />
 </g>
 <g id="pc-slot" />
 </svg>

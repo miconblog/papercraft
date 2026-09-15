@@ -109,20 +109,18 @@
 <circle cx="67.5" cy="82" r="2.4" fill="#1a1a1a" stroke="none" />
 <line x1="67.5" y1="82" x2="67.5" y2="66" stroke="#1a1a1a" stroke-width="0.6" />
 <path d="M67.5 66 L76.5 69 L67.5 72 Z" fill="#1a1a1a" stroke="none" />
-<rect x="93" y="9" width="52" height="52" fill="#ffffff" stroke="#6b7280" stroke-width="0.4" rx="2.5" />
+<rect x="93" y="9" width="52" height="46" fill="#ffffff" stroke="#6b7280" stroke-width="0.4" rx="2.5" />
 <text x="103" y="23" font-size="12" dominant-baseline="central" text-anchor="middle" font-weight="bold">5</text>
 <text x="103" y="30.5" font-size="2.6" dominant-baseline="central" fill="#6b7280" text-anchor="middle">번 홀</text>
 <text x="112" y="20" font-size="4.6" dominant-baseline="central" text-anchor="start" font-weight="bold">모래 언덕</text>
 <text x="112" y="27.5" font-size="3.2" dominant-baseline="central" fill="#6b7280" text-anchor="start">파 4 · 400야드</text>
 <line x1="97" y1="33" x2="141" y2="33" stroke="#6b7280" stroke-width="0.25" />
-<line x1="97" y1="54" x2="141" y2="54" stroke="#6b7280" stroke-width="0.25" />
 <text x="99" y="38.5" font-size="3" dominant-baseline="central" text-anchor="start" fill="#6b7280">1타 홀인원</text>
 <text x="99" y="44.5" font-size="3" dominant-baseline="central" text-anchor="start" fill="#6b7280">2타 이글</text>
 <text x="99" y="50.5" font-size="3" dominant-baseline="central" text-anchor="start" fill="#6b7280">3타 버디</text>
 <text x="121" y="38.5" font-size="3" dominant-baseline="central" text-anchor="start" font-weight="bold" fill="#1a1a1a">4타 파</text>
 <text x="121" y="44.5" font-size="3" dominant-baseline="central" text-anchor="start" fill="#6b7280">5타 보기</text>
 <text x="121" y="50.5" font-size="3" dominant-baseline="central" text-anchor="start" fill="#6b7280">6타 더블보기</text>
-<line x1="101" y1="60" x2="137" y2="60" stroke="#6b7280" stroke-width="0.25" />
 </g>
 <g id="pc-slot" />
 </svg>

@@ -57,12 +57,12 @@ describe('골프 — 홀 열여덟 장을 셀렉트로 고른다', () => {
     expect(previewBox().style.aspectRatio).toBe('210 / 297');
   });
 
-  it('홀 판에서 고칠 값은 코스 이름 하나다', async () => {
+  it('홀 판에는 고칠 값이 없고, 기록표로 가면 이름 칸이 나온다', async () => {
     const user = userEvent.setup();
     render(<EditorClient game={game} />);
 
-    expect(screen.getByLabelText('코스 이름')).toBeInTheDocument();
-    // 사람 이름은 기록표에만 있다 — 홀 판에서는 나오지 않는다.
+    // 코스 이름 칸을 뺐다(2026-09-16) — 미리 그린 판에서 고칠 것은 없다.
+    expect(screen.queryByLabelText('코스 이름')).toBeNull();
     expect(screen.queryByLabelText('1번 선수')).toBeNull();
 
     await user.click(screen.getByRole('button', { name: '기록표' }));
