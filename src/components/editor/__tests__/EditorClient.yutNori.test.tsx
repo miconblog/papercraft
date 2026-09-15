@@ -40,9 +40,11 @@ describe('윷놀이 — 판에 고칠 값이 없는 에디터', () => {
     for (const title of ['말판', '말 · 네 편', '게임 방법']) {
       expect(screen.getByRole('button', { name: title })).toBeInTheDocument();
     }
+    // 말판에는 고칠 값이 없으니 되돌리기도 나오지 않는다(2026-09-16) —
+    // 말 시트로 옮기면 값과 함께 단추도 돌아온다(아래 검사).
     expect(
-      screen.getByRole('button', { name: '기본값으로 되돌리기' }),
-    ).toBeInTheDocument();
+      screen.queryByRole('button', { name: '기본값으로 되돌리기' }),
+    ).toBeNull();
     expect(screen.getByRole('button', { name: /출력/ })).toBeInTheDocument();
 
     // 판에 걸린 슬롯이 없으므로 편 입력은 아직 안 나온다.
@@ -62,6 +64,9 @@ describe('윷놀이 — 판에 고칠 값이 없는 에디터', () => {
     render(<EditorClient game={game} />);
 
     await user.click(screen.getByRole('button', { name: '말 · 네 편' }));
+    expect(
+      screen.getByRole('button', { name: '기본값으로 되돌리기' }),
+    ).toBeInTheDocument();
     for (let n = 1; n <= 4; n += 1) {
       expect(screen.getByLabelText(`${n}편 이름`)).toBeInTheDocument();
       expect(screen.getByLabelText(`${n}편 색`)).toBeInTheDocument();

@@ -3,13 +3,18 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   dynamicSourceSlots,
+  pointsOf,
   resolveVariant,
   slotsOfPart,
   styleSetBounds,
+  toFlatPoints,
   type GameCustomization,
   type GameDefinition,
+  type MmPoint,
   type Part,
+  type Slot,
   type SlotPoint,
+  type SlotValue,
 } from '@/lib/schema';
 import {
   groupColorOf,
@@ -36,6 +41,41 @@ import { ROTATION_STEP_DEG, rotatedPoint } from '@/lib/customization/movement';
  * 잠깐이라도 남지 않게 컴포넌트를 통째로 다시 마운트한다 — effect 안에서
  * 상태를 곧장 초기화하는 대신 마운트 자체를 새로 하는 쪽을 택했다.
  */
+/**
+ * 점 손잡이의 id (IDE-031).
+ *
+ * 드래그 훅(`useMarkerDrag`)은 "슬롯 하나에 점 하나"를 다루는데 점 슬롯은
+ * 슬롯 하나에 점이 여럿이다. 훅을 두 벌로 만드는 대신 **id에 차례를 실어**
+ * 같은 훅을 쓴다 — 끄는 동안 무엇을 잡고 있는지도 이 id 하나로 알 수 있다.
+ */
+const handleId = (slotId: string, index: number) => `points:${slotId}:${index}`;
+
+const parseHandleId = (
+  id: string,
+): { slotId: string; index: number } | null => {
+  if (!id.startsWith('points:')) return null;
+  const at = id.lastIndexOf(':');
+  const index = Number(id.slice(at + 1));
+  if (!Number.isInteger(index)) return null;
+  return { slotId: id.slice('points:'.length, at), index };
+};
+
+interface PointBox {
+  readonly xMm: number;
+  readonly yMm: number;
+  readonly widthMm: number;
+  readonly heightMm: number;
+}
+
+/** 점이 제 상자를 벗어나지 않게 붙든다. 저장 검증과 같은 경계다. */
+const clampToBox = (box: PointBox, point: MmPoint): MmPoint => ({
+  xMm: Math.min(Math.max(point.xMm, box.xMm), box.xMm + box.widthMm),
+  yMm: Math.min(Math.max(point.yMm, box.yMm), box.yMm + box.heightMm),
+});
+
+/** 화살표 키로 옮기는 거리. Shift를 누르면 다섯 배다. */
+const POINT_NUDGE_MM = 1;
+
 export interface BoardPreviewProps {
   game: GameDefinition;
   part: Part;
@@ -53,6 +93,14 @@ export interface BoardPreviewProps {
    * 제 나름대로 잘라 내면 저장 검증과 어긋날 수 있다.
    */
   onMoveSlot?: (slotId: string, point: SlotPoint) => void;
+  /**
+   * 판 위의 점 손잡이를 끌었을 때 (IDE-031).
+   *
+   * 점 슬롯(`points`)은 값 자체가 좌표의 목록이라 마커처럼 `positions`로 가지
+   * 않고 **값이 통째로 바뀐다**. 주지 않으면 손잡이가 나오지 않는다 — 인쇄
+   * 미리보기처럼 보기만 하는 곳에서는 판을 고칠 수 없어야 한다.
+   */
+  onChangeValue?: (slotId: string, value: SlotValue) => void;
 }
 
 const textAnchorOf = { start: 'start', center: 'middle', end: 'end' } as const;
@@ -79,6 +127,7 @@ export function BoardPreview({
   customization,
   interactive = true,
   onMoveSlot,
+  onChangeValue,
 }: BoardPreviewProps) {
   const [background, setBackground] = useState<string | null>(null);
   // 마커 스타일 변형(원형·일러스트 등)의 아트워크 원문. 경로 → SVG 문자열.
@@ -220,8 +269,9 @@ export function BoardPreview({
     onMoveSlot?.(slotId, rotatedPoint(point, deltaDeg));
   };
 
-  // 확대·축소·이동 — 지도 앱과 같은 손맛(IDE-016). 보기 전용 미리보기(인쇄 화면)
-  // 에서는 끈다 — 타일 경계 오버레이가 이 상자 밖에 있어 함께 움직이지 않는다.
+  const zoomEnabled = interactive && part.zoomable;
+
+  // 확대·축소·이동 — 지도 앱과 같은 손맛(IDE-016).
   const {
     containerRef,
     viewport,
@@ -233,19 +283,58 @@ export function BoardPreview({
     canZoomOut,
     containerHandlers,
     stageStyle,
-  } = useMapViewport({ enabled: interactive });
+    // 확대·축소는 **파트가 켠 것만** 쓴다(2026-09-15 사용자 요청). 보기 전용
+    // 미리보기(인쇄 화면)에서도 끈다 — 타일 경계 오버레이가 이 상자 밖에 있어
+    // 함께 움직이지 않는다.
+  } = useMapViewport({ enabled: zoomEnabled });
 
   const { surfaceRef, draggingSlotId, markerHandlers } = useMarkerDrag({
-    onMove: (slotId, point) => onMoveSlot?.(slotId, point),
-    onTap: (slotId, point, shiftKey) =>
+    onMove: (slotId, point) => {
+      const handle = parseHandleId(slotId);
+      if (handle) {
+        movePointHandle(handle.slotId, handle.index, point);
+        return;
+      }
+      onMoveSlot?.(slotId, point);
+    },
+    onTap: (slotId, point, shiftKey) => {
+      // 점 손잡이는 눌러도 돌지 않는다 — 점에는 각도가 없다.
+      if (parseHandleId(slotId)) return;
       rotateSlot(
         slotId,
         point,
         shiftKey ? -ROTATION_STEP_DEG : ROTATION_STEP_DEG,
-      ),
+      );
+    },
     partWidthMm: part.widthMm,
     partHeightMm: part.heightMm,
   });
+
+  /**
+   * 이 파트에서 판 위로 끌어 놓는 점들 (IDE-031).
+   *
+   * 값이 곧 좌표의 목록이라 마커처럼 `positions`를 거치지 않는다 — 끌면 슬롯
+   * 값이 통째로 다시 만들어진다.
+   */
+  const pointSlots = slotsOfPart(game, part.id).filter(
+    (slot): slot is Extract<Slot, { kind: 'points' }> =>
+      slot.kind === 'points' &&
+      slot.placements.some(
+        (pl) => pl.mode === 'control' && pl.partId === part.id,
+      ),
+  );
+  const pointsEditable = interactive && onChangeValue !== undefined;
+
+  const movePointHandle = (slotId: string, index: number, point: SlotPoint) => {
+    const slot = pointSlots.find((s) => s.id === slotId);
+    if (!slot || !onChangeValue) return;
+    const points = pointsOf(customization.values[slot.id]);
+    if (index < 0 || index >= points.length) return;
+    const next = points.map((p, i) =>
+      i === index ? clampToBox(slot.box, point) : p,
+    );
+    onChangeValue(slot.id, toFlatPoints(next));
+  };
 
   /**
    * 화살표 키로 옮기고 `r`로 돌린다. 드래그·클릭만 두면 키보드로는 배치를
@@ -295,7 +384,9 @@ export function BoardPreview({
       ref={containerRef}
       className={
         'relative w-full overflow-hidden rounded-lg border border-border bg-paper ' +
-        (interactive
+        // 커서도 **확대를 켠 파트에서만** 바뀐다(2026-09-15). 단추만 빼고 커서를
+        // 두었더니 누를 수 없는 판 위에서 돋보기가 따라다녔다.
+        (zoomEnabled
           ? panning
             ? 'cursor-grabbing'
             : zoomed
@@ -306,15 +397,20 @@ export function BoardPreview({
       style={{
         aspectRatio: `${part.widthMm} / ${part.heightMm}`,
         // 브라우저의 스크롤·핀치가 우리 제스처를 가로채지 못하게 — 지도 앱과 같다.
-        touchAction: interactive ? 'none' : undefined,
+        // 확대를 켜지 않은 판에서는 **그대로 둔다**: 가로챌 제스처가 없는데
+        // 막아 두면 손가락으로 페이지를 넘길 수 없다(마커를 끄는 손짓은 마커
+        // 자신이 막는다).
+        touchAction: zoomEnabled ? 'none' : undefined,
       }}
       role={interactive ? 'group' : undefined}
       aria-label={
         interactive
-          ? `${part.title} 미리보기 — 휠이나 +·- 키로 확대·축소, 빈 곳을 끌어서 이동, 0 키로 원래 크기`
+          ? zoomEnabled
+            ? `${part.title} 미리보기 — 휠이나 +·- 키로 확대·축소, 빈 곳을 끌어서 이동, 0 키로 원래 크기`
+            : `${part.title} 미리보기 — 배율 100%에서 ${part.widthMm}×${part.heightMm}mm`
           : undefined
       }
-      tabIndex={interactive ? 0 : undefined}
+      tabIndex={zoomEnabled ? 0 : undefined}
       {...containerHandlers}
     >
       {/* 배경과 마커 오버레이를 한 무대에 놓고 무대를 통째로 확대·이동한다 —
@@ -519,10 +615,80 @@ export function BoardPreview({
                 return null;
               }),
           )}
+
+          {/* 점 손잡이 — 커스텀 홀의 길목·벙커·연못·카드 자리(IDE-031).
+              마커 뒤에 그려 늘 위에 온다. 인쇄물에는 나오지 않는다. */}
+          {pointsEditable &&
+            pointSlots.map((slot) =>
+              pointsOf(customization.values[slot.id]).map((p, index) => {
+                const id = handleId(slot.id, index);
+                const held = draggingSlotId === id;
+                return (
+                  <g
+                    key={id}
+                    className={held ? 'cursor-grabbing' : 'cursor-grab'}
+                    style={{ touchAction: 'none' }}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`${slot.handle.noun} ${index + 1} — 가로 ${Math.round(p.xMm)}mm, 세로 ${Math.round(p.yMm)}mm. 끌거나 화살표 키로 옮긴다`}
+                    onKeyDown={(event) => {
+                      const step = event.shiftKey
+                        ? POINT_NUDGE_MM * 5
+                        : POINT_NUDGE_MM;
+                      const delta =
+                        event.key === 'ArrowLeft'
+                          ? { x: -step, y: 0 }
+                          : event.key === 'ArrowRight'
+                            ? { x: step, y: 0 }
+                            : event.key === 'ArrowUp'
+                              ? { x: 0, y: -step }
+                              : event.key === 'ArrowDown'
+                                ? { x: 0, y: step }
+                                : null;
+                      if (!delta) return;
+                      event.preventDefault();
+                      movePointHandle(slot.id, index, {
+                        xMm: p.xMm + delta.x,
+                        yMm: p.yMm + delta.y,
+                      });
+                    }}
+                    {...markerHandlers(id, { xMm: p.xMm, yMm: p.yMm })}
+                  >
+                    {/* 코스 위에서도 손잡이가 보이도록 흰 테를 먼저 깐다. */}
+                    <circle
+                      cx={p.xMm}
+                      cy={p.yMm}
+                      r={slot.handle.radiusMm + 1.4}
+                      fill="#ffffff"
+                      fillOpacity={0.9}
+                    />
+                    <circle
+                      cx={p.xMm}
+                      cy={p.yMm}
+                      r={slot.handle.radiusMm}
+                      fill={slot.handle.color}
+                      stroke={held ? '#2563eb' : '#ffffff'}
+                      strokeWidth={held ? 1.2 : 0.7}
+                    />
+                    <text
+                      x={p.xMm}
+                      y={p.yMm}
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fontSize={slot.handle.radiusMm * 1.1}
+                      fill="#ffffff"
+                      style={{ pointerEvents: 'none', userSelect: 'none' }}
+                    >
+                      {index + 1}
+                    </text>
+                  </g>
+                );
+              }),
+            )}
         </svg>
       </div>
 
-      {interactive && (
+      {zoomEnabled && (
         <div
           className="absolute bottom-2 right-2 flex flex-col overflow-hidden rounded-md border border-border bg-paper/95 shadow-sm"
           role="group"

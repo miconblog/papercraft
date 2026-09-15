@@ -2,7 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { getGame } from '@/lib/games';
-import { defaultCustomization, type GameDefinition } from '@/lib/schema';
+import {
+  defaultCustomization,
+  isBoardLike,
+  type GameDefinition,
+} from '@/lib/schema';
 import { saveCustomization } from '@/lib/customization/storage';
 import { ExportClient } from '../ExportClient';
 
@@ -157,5 +161,76 @@ describe('내보내기 화면 (IDE-007)', () => {
     }
     expect(screen.getByRole('button', { name: 'PDF 내려받기' })).toBeDisabled();
     expect(screen.getByText(/파트를 하나 이상 고른다/)).toBeInTheDocument();
+  });
+});
+
+describe('고를 것이 없는 묶음 (IDE-032)', () => {
+  it('부속이 하나도 없으면 “부속만” 단추를 내지 않는다', () => {
+    // 골프는 오리고 접을 것이 없다. 단추를 그대로 두면 눌렀을 때 아무것도
+    // 고르지 않은 채가 되어 인쇄가 막힌다.
+    const golf = getGame('golf')!;
+    expect(golf.parts.some((p) => !isBoardLike(p.kind))).toBe(false);
+
+    render(<ExportClient game={golf} />);
+    // 첫 화면은 전부 골라 둔 상태라 '전체'가 '전체 해제'로 서 있다.
+    expect(screen.getByRole('button', { name: /^전체/ })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: '게임판만' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '부속만' })).toBeNull();
+  });
+
+  it('부속이 있는 게임에는 그대로 낸다', () => {
+    render(<ExportClient game={getGame('soccer')!} />);
+    expect(screen.getByRole('button', { name: '부속만' })).toBeInTheDocument();
+  });
+});
+
+describe('전체 단추는 토글이다 (IDE-032)', () => {
+  const checkedRows = () =>
+    screen
+      .getAllByRole('checkbox')
+      .filter((box) => (box as HTMLInputElement).checked);
+
+  it('전부 고른 채 다시 누르면 전부 풀리고, 한 번 더 누르면 돌아온다', async () => {
+    const user = userEvent.setup();
+    render(<ExportClient game={game} />);
+
+    expect(checkedRows()).toHaveLength(game.parts.length);
+    const toggle = screen.getByRole('button', { name: /^전체/ });
+    expect(toggle).toHaveTextContent('전체 해제');
+    expect(toggle).toHaveAttribute('aria-pressed', 'true');
+
+    await user.click(toggle);
+    expect(checkedRows()).toHaveLength(0);
+    expect(screen.getByRole('button', { name: /^전체/ })).toHaveTextContent(
+      '전체',
+    );
+
+    await user.click(screen.getByRole('button', { name: /^전체/ }));
+    expect(checkedRows()).toHaveLength(game.parts.length);
+  });
+
+  it('전부 푼 동안에는 PDF를 내려받을 수 없다', async () => {
+    const user = userEvent.setup();
+    render(<ExportClient game={game} />);
+
+    await user.click(screen.getByRole('button', { name: /^전체/ }));
+    expect(screen.getByRole('button', { name: /PDF 내려받기/ })).toBeDisabled();
+    expect(
+      screen.getByText('뽑을 파트를 하나 이상 고른다.'),
+    ).toBeInTheDocument();
+  });
+
+  it('다른 묶음 단추는 토글이 아니다 — 누를 때마다 그 묶음으로 바꾼다', async () => {
+    const user = userEvent.setup();
+    render(<ExportClient game={game} />);
+
+    const accessories = game.parts.filter((p) => !isBoardLike(p.kind)).length;
+    await user.click(screen.getByRole('button', { name: '부속만' }));
+    expect(checkedRows()).toHaveLength(accessories);
+
+    await user.click(screen.getByRole('button', { name: '부속만' }));
+    expect(checkedRows()).toHaveLength(accessories);
   });
 });

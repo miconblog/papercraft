@@ -1,6 +1,11 @@
 'use client';
 
-import type { Slot, SlotValue } from '@/lib/schema';
+import {
+  pointsOf,
+  toFlatPoints,
+  type Slot,
+  type SlotValue,
+} from '@/lib/schema';
 import {
   Select,
   SelectContent,
@@ -41,6 +46,25 @@ export interface SlotFieldProps {
 
 /** 폼 입력에 붙는 id. 미리보기에서 슬롯을 누르면 이 id로 포커스를 옮긴다. */
 export const slotFieldId = (slotId: string): string => `slot-field-${slotId}`;
+
+/**
+ * 새로 놓는 점의 자리 (IDE-031).
+ *
+ * 상자 한가운데에 겹쳐 쌓으면 손잡이가 서로를 가려 끌 수가 없다. 개수에 따라
+ * 조금씩 어긋나게 두어 **놓자마자 집을 수 있게** 한다.
+ */
+function nextSpot(
+  box: { xMm: number; yMm: number; widthMm: number; heightMm: number },
+  points: readonly { xMm: number; yMm: number }[],
+): { xMm: number; yMm: number } {
+  const n = points.length;
+  const x = box.xMm + box.widthMm * (0.3 + 0.2 * (n % 3));
+  const y = box.yMm + box.heightMm * (0.3 + 0.12 * Math.floor(n / 3));
+  return {
+    xMm: Math.min(Math.max(x, box.xMm), box.xMm + box.widthMm),
+    yMm: Math.min(Math.max(y, box.yMm), box.yMm + box.heightMm),
+  };
+}
 
 export function SlotField({
   slot,
@@ -234,6 +258,45 @@ function SlotInput({
       // 조작은 판 아래 패널(`OutlineSlotPanel`)이 맡는다 — 좌표 배열을 손으로
       // 칠 칸은 없다.
       return null;
+
+    case 'points': {
+      // 자리는 판 위에서 끈다(IDE-031). 여기서 하는 일은 **몇 개를 놓을지**뿐이다
+      // — 손잡이를 끄는 동안 폼에 좌표가 숫자로 흐르면 읽을 것이 너무 많다.
+      const points = pointsOf(value);
+      const add = () => {
+        const next = [...points, nextSpot(slot.box, points)];
+        onChange(toFlatPoints(next));
+      };
+      const remove = () => onChange(toFlatPoints(points.slice(0, -1)));
+      const pill =
+        'rounded-full border border-border px-2.5 py-1 text-xs font-medium outline-none transition-colors hover:border-primary disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current';
+
+      return (
+        <div className="flex items-center gap-2" id={fieldId}>
+          <span className="text-sm tabular-nums text-muted-foreground">
+            {points.length}개
+          </span>
+          <button
+            type="button"
+            className={pill}
+            onClick={add}
+            disabled={points.length >= slot.max}
+            aria-label={`${slot.handle.noun} 하나 더 놓기`}
+          >
+            + 하나 더
+          </button>
+          <button
+            type="button"
+            className={pill}
+            onClick={remove}
+            disabled={points.length <= slot.min}
+            aria-label={`${slot.handle.noun} 마지막 것 빼기`}
+          >
+            − 빼기
+          </button>
+        </div>
+      );
+    }
 
     case 'choice':
       return (

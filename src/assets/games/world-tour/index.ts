@@ -145,6 +145,9 @@ export default defineGame({
     {
       id: BOARD_PART_ID,
       kind: 'board',
+      // 화면에서 확대해 볼 수 있는 유일한 판이다(2026-09-15). 도시 100개짜리
+      // A2 판은 칸이 손톱만 해서 지도 앱 같은 조작이 없으면 고를 수가 없다.
+      zoomable: true,
       title: '게임판',
       description:
         '로빈슨 도법 태평양 중심 세계지도 위에 서울에서 출발해 세계를 한 바퀴 ' +

@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   defaultCustomization,
+  isBoardLike,
   resolveParts,
   type GameCustomization,
   type GameDefinition,
@@ -128,16 +129,31 @@ export function ExportClient({
       prev.map((s) => (s.partId === partId ? { ...s, ...patch } : s)),
     );
 
-  const selectGroup = (kind: 'all' | 'board' | 'accessories') =>
+  /** 전부 골라 둔 상태인가. '전체' 단추가 해제로 바뀌는 기준이다. */
+  const allSelected =
+    game.parts.length > 0 && selections.length === game.parts.length;
+
+  const selectGroup = (kind: 'all' | 'board' | 'accessories') => {
+    // **'전체'는 토글이다**(2026-09-16 사용자 요청). 전부 골라 둔 채 한 번 더
+    // 누르면 전부 푼다 — 골프처럼 스물한 장짜리 게임에서 두어 장만 뽑으려면
+    // 하나씩 끄는 것보다 전부 끄고 고르는 편이 빠르다. 나머지 둘은 "그 묶음으로
+    // 바꾼다"는 뜻이라 토글이 아니다.
+    if (kind === 'all' && allSelected) {
+      setSelections([]);
+      return;
+    }
     setSelections(
       game.parts
         .filter(
           (p) =>
             kind === 'all' ||
-            (kind === 'board' ? p.kind === 'board' : p.kind !== 'board'),
+            // 가위가 드는가로 나눈다 — 골프의 홀 열여덟 장(`sheet`)은 보드와
+            // 같이 '게임판만'에 든다(IDE-030).
+            (kind === 'board' ? isBoardLike(p.kind) : !isBoardLike(p.kind)),
         )
         .map(defaultSelection),
     );
+  };
 
   // 고른 파트만 미리 볼 수 있다. 고른 것이 사라지면 첫 파트로 되돌아간다.
   const previewable = parts.filter((p) =>
@@ -202,16 +218,37 @@ export function ExportClient({
                   ['board', '게임판만'],
                   ['accessories', '부속만'],
                 ] as const
-              ).map(([kind, label]) => (
-                <button
-                  key={kind}
-                  type="button"
-                  onClick={() => selectGroup(kind)}
-                  className="rounded-full border border-border px-3 py-1 text-xs font-medium outline-none transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
-                >
-                  {label}
-                </button>
-              ))}
+              )
+                // 고를 것이 없는 묶음은 단추를 내지 않는다. 골프처럼 오리고
+                // 접을 부속이 하나도 없는 게임에서 '부속만'을 누르면 아무것도
+                // 고르지 않은 채가 되어 인쇄가 막힌다(IDE-032).
+                .filter(
+                  ([kind]) =>
+                    kind === 'all' ||
+                    game.parts.some((p) =>
+                      kind === 'board'
+                        ? isBoardLike(p.kind)
+                        : !isBoardLike(p.kind),
+                    ),
+                )
+                .map(([kind, label]) => (
+                  <button
+                    key={kind}
+                    type="button"
+                    onClick={() => selectGroup(kind)}
+                    // '전체'만 눌린 상태를 갖는다 — 지금 전부 고른 채라면 다시
+                    // 눌러 전부 풀 수 있다는 뜻이다.
+                    aria-pressed={kind === 'all' ? allSelected : undefined}
+                    className={
+                      'rounded-full border px-3 py-1 text-xs font-medium outline-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current ' +
+                      (kind === 'all' && allSelected
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'border-border hover:border-primary')
+                    }
+                  >
+                    {kind === 'all' && allSelected ? '전체 해제' : label}
+                  </button>
+                ))}
             </div>
           </div>
           <ul aria-label="뽑을 파트" className="mt-3 space-y-2">

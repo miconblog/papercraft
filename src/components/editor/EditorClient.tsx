@@ -24,6 +24,8 @@ import {
 import { useHydrated } from '@/lib/customization/useHydrated';
 import { useStoredCustomization } from '@/lib/customization/useStoredCustomization';
 import { PrintDialog } from '@/components/print/PrintDialog';
+import { PartSeriesSelect } from './PartSeriesSelect';
+import { groupPartsBySeries } from '@/lib/games/format';
 import {
   CustomizationForm,
   formGroupsFor,
@@ -171,6 +173,10 @@ function EditorForm({
   // 변형이 있는 파트는 지금 값의 모습이다(IDE-016) — 도시 수를 바꾸면 미리보기의
   // 크기·그림과 파트 버튼의 제목이 함께 바뀐다. 파트 id는 원본 그대로다.
   const parts = resolveParts(game, customization);
+
+  // 파트 줄에 놓일 묶음. 파트 하나짜리는 단추가 되고, 같은 `series`를 단
+  // 여럿은 셀렉트 하나가 된다(IDE-030).
+  const partGroups = groupPartsBySeries(parts);
   const currentPart = parts.find((p) => p.id === currentPartId) ?? parts[0];
 
   /**
@@ -260,40 +266,67 @@ function EditorForm({
             role="group"
             aria-label="편집할 파트 선택"
           >
-            {parts.map((part) => (
-              <button
-                key={part.id}
-                type="button"
-                onClick={() => setCurrentPartId(part.id)}
-                aria-pressed={part.id === currentPartId}
-                className={
-                  'rounded-full px-3 py-1 text-xs font-medium outline-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current ' +
-                  (part.id === currentPartId
-                    ? 'bg-primary text-primary-foreground'
-                    : 'border border-border hover:border-primary')
-                }
-              >
-                {part.title}
-              </button>
-            ))}
+            {/* 같은 묶음(`series`)을 단 파트는 셀렉트 하나로 접힌다 — 골프의
+                홀 판 열여덟 장이 그렇다(IDE-030). 나머지는 단추 그대로다. */}
+            {partGroups.map((group) =>
+              group.parts.length === 1 ? (
+                <button
+                  key={group.parts[0].id}
+                  type="button"
+                  onClick={() => setCurrentPartId(group.parts[0].id)}
+                  aria-pressed={group.parts[0].id === currentPartId}
+                  className={
+                    'rounded-full px-3 py-1 text-xs font-medium outline-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current ' +
+                    (group.parts[0].id === currentPartId
+                      ? 'bg-primary text-primary-foreground'
+                      : 'border border-border hover:border-primary')
+                  }
+                >
+                  {group.parts[0].title}
+                </button>
+              ) : (
+                <PartSeriesSelect
+                  key={group.label}
+                  group={group}
+                  currentPartId={currentPartId}
+                  onSelect={setCurrentPartId}
+                />
+              ),
+            )}
           </div>
         )}
-        <div className="ml-auto flex flex-wrap items-center gap-x-4 gap-y-2">
-          {hasUngroupedSlots && (
-            <CustomizationForm {...formProps} groupIds={[]} />
+        {/* 되돌리기·출력하기는 **늘 첫 줄 오른쪽 끝**이다(2026-09-16 사용자
+            요청). 고칠 값과 한 묶음에 넣어 두었더니, 값이 많은 판(나만의 홀)
+            에서 그 묶음이 접히면서 두 단추가 마지막 줄 왼쪽으로 밀려났다 —
+            판을 옮길 때마다 찾아야 하는 자리가 된다. 값은 아래 줄로 내려보내고
+            이 둘만 위에 남긴다. */}
+        <div className="ml-auto flex items-center gap-x-4 gap-y-2">
+          {/* 되돌리기는 **고칠 값이 있는 파트에서만** 낸다(2026-09-16 사용자
+              요청). 골프의 미리 그린 홀 판이나 윷놀이 말판처럼 판에서 손댈
+              것이 하나도 없는 자리에서는 되돌릴 것도 없는데 단추만 떠 있었다.
+              누르면 여전히 **커스터마이즈 전체**가 기본값으로 돌아간다 — 값이
+              있는 파트로 옮겨 누르면 되므로 기능이 줄지는 않는다. */}
+          {partSlots.length > 0 && (
+            <button
+              type="button"
+              onClick={handleReset}
+              className="rounded-full border border-border px-3 py-1 text-xs font-medium outline-none transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
+            >
+              기본값으로 되돌리기
+            </button>
           )}
-          <button
-            type="button"
-            onClick={handleReset}
-            className="rounded-full border border-border px-3 py-1 text-xs font-medium outline-none transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
-          >
-            기본값으로 되돌리기
-          </button>
           {/* 인쇄는 여기서 모달로 연다 — 페이지를 옮기지 않는다(2026-09-06 사용자
               요청). 지금 화면의 값을 그대로 넘겨 "보이는 그대로 뽑힌다". */}
           <PrintDialog game={game} customization={customization} />
         </div>
       </div>
+      {/* 판에 걸린 값. 첫 줄과 나누어 두면 값이 몇 줄로 늘어나도 위의 두 단추가
+          제자리를 지킨다. */}
+      {hasUngroupedSlots && (
+        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <CustomizationForm {...formProps} groupIds={[]} />
+        </div>
+      )}
       {hasErrors && (
         <p className="mt-2 text-sm text-destructive">
           빨간 글씨로 표시된 값을 고쳐야 인쇄물이 정확하다.
@@ -327,6 +360,9 @@ function EditorForm({
             part={currentPart}
             customization={customization}
             onMoveSlot={handleMoveSlot}
+            // 판 위의 점 손잡이(커스텀 홀의 길목·벙커·연못·카드)도 여기서
+            // 값으로 돌아온다 — 마커와 달리 좌표가 값 자체다(IDE-031).
+            onChangeValue={handleChange}
           />
         </div>
       </div>

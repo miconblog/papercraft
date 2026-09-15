@@ -11,11 +11,24 @@ import { mmLength, rectMm, slug } from './units';
 
 /**
  * - `board` — 핵심 게임판. 게임마다 정확히 1개다. 오리거나 접지 않는다.
+ * - `sheet` — 보드와 같은 낱장인데 **보드가 아닌 것**. 오리지도 접지도 않는다.
  * - `cutout` — 오려서 쓰는 부속(점수 기록칸, 게임 방법, 공 마커).
  * - `buildable` — 오리고 접어서 세우는 조립물(골대·주사위 전개도).
+ *
+ * `sheet`는 골프(IDE-030)가 데려왔다. 골프는 **판이 열여덟 장**이다 — 홀 하나가
+ * A4 한 장이고, 열여덟 장이 다 나와야 한 라운드가 된다. 보드는 정확히 1개라
+ * 나머지 열일곱을 담을 종류가 없었고, `cutout`으로 두면 오릴 데가 없는 판에
+ * 오림선을 그려야 했다. 그래서 "보드처럼 그냥 쓰는 낱장"을 종류로 세웠다.
+ *
+ * 쓰는 쪽에서 갈리는 것은 **가위가 드는가**다(`isBoardLike`) — 인쇄 화면의
+ * '게임판만 · 부속만'과 PDF 파일 이름이 그 선으로 나뉜다.
  */
-export const partKind = z.enum(['board', 'cutout', 'buildable']);
+export const partKind = z.enum(['board', 'sheet', 'cutout', 'buildable']);
 export type PartKind = z.infer<typeof partKind>;
+
+/** 그대로 쓰는 낱장인가(보드·시트). 거짓이면 가위가 드는 부속이다. */
+export const isBoardLike = (kind: PartKind): boolean =>
+  kind === 'board' || kind === 'sheet';
 
 export const orientation = z.enum(['portrait', 'landscape']);
 export type Orientation = z.infer<typeof orientation>;
@@ -154,6 +167,34 @@ export const part = z
     /** 내보내기의 '몇 벌' 기본값. 잃어버리기 쉬운 작은 부속은 1보다 크게 잡는다. */
     defaultCopies: z.number().int().positive().default(1),
 
+    /**
+     * 같은 성격의 파트를 **한 묶음으로 보이게 하는 이름** (IDE-030).
+     *
+     * 골프의 홀 판 열여덟 장이 처음 쓴다. 만들기 화면의 파트 줄은 파트마다
+     * 단추 하나인데, 열여덟 개가 늘어서자 고를 것이 아니라 벽이 되었다
+     * (2026-09-15 사용자 요청 — "홀 선택은 셀렉트 박스로"). 같은 묶음 이름을
+     * 단 파트는 단추 대신 **셀렉트 하나로 접힌다**.
+     *
+     * 접는 것은 화면뿐이다 — 인쇄는 여전히 파트마다 한 줄이고, 열여덟 장을
+     * 한 번에 뽑을 수 있다. 묶음은 UI의 편의이지 인쇄 단위가 아니다.
+     *
+     * 혼자인 묶음은 뜻이 없다(단추 하나를 셀렉트로 바꿀 이유가 없다). 검증이
+     * 막는다.
+     */
+    series: z.string().min(1).max(20).optional(),
+
+    /**
+     * 만들기 화면의 미리보기를 **확대해 볼 수 있는가** (IDE-016 · 2026-09-15).
+     *
+     * 세계일주 게임판만 켠다. A4 한 장에 도시 50개, A2에 100개라 화면에서는
+     * 칸이 손톱만 해서 지도 앱 같은 조작(휠·핀치·이동)이 필요했다.
+     *
+     * 다른 게임에는 **없는 편이 낫다**(사용자 요청) — 판 하나가 화면에 다 들어와
+     * 확대할 일이 없는데 우하단에 단추 두 개가 늘 떠 있었다. 판을 끌어 옮기는
+     * 조작이 마커를 끄는 조작과 헷갈리기도 한다.
+     */
+    zoomable: z.boolean().default(false),
+
     /** 이 파트가 쓰는 표시 종류. 파트 종류에 맞지 않으면 검증에서 걸린다. */
     marks: z.array(markKind).default([]),
 
@@ -263,12 +304,12 @@ export const part = z
 
     // 보드는 오리지도 접지도 않는다. 타일 재단선은 인쇄 규격(IDE-002)이 용지 위에
     // 그리는 것이라 도안 표시가 아니다.
-    if (p.kind === 'board' && p.marks.length > 0) {
+    if (isBoardLike(p.kind) && p.marks.length > 0) {
       ctx.issues.push({
         code: 'custom',
         input: p,
         path: ['marks'],
-        message: '보드 파트에는 오림선·접는선·풀칠면을 두지 않는다',
+        message: `${p.kind === 'board' ? '보드' : '낱장'} 파트에는 오림선·접는선·풀칠면을 두지 않는다`,
       });
     }
     if (p.kind === 'cutout' && !p.marks.includes('cut')) {

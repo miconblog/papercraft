@@ -23,8 +23,45 @@ export function formatPlayers(players: GameDefinition['players']): string {
   return `${players.min}~${players.max}인용`;
 }
 
+/**
+ * 만들기 화면의 파트 줄에 놓일 묶음. 파트 하나짜리 묶음은 단추가 되고, 여럿인
+ * 묶음은 셀렉트 하나가 된다(IDE-030).
+ */
+export interface PartGroup {
+  /** 셀렉트에 붙는 이름. 단독 파트면 그 파트의 제목이다. */
+  readonly label: string;
+  readonly parts: readonly Part[];
+}
+
+/**
+ * 파트를 `series`로 묶는다. **도안이 선언한 차례를 지킨다** — 묶음은 그 이름이
+ * 처음 나온 자리에 앉고, 묶음에 속하지 않은 파트는 제자리에 남는다. 화면의
+ * 차례가 인쇄물의 차례와 어긋나면 "세 번째 판"이 서로 다른 것을 가리킨다.
+ */
+export function groupPartsBySeries(parts: readonly Part[]): PartGroup[] {
+  const groups: { label: string; parts: Part[] }[] = [];
+  const bySeries = new Map<string, { label: string; parts: Part[] }>();
+  for (const part of parts) {
+    if (!part.series) {
+      groups.push({ label: part.title, parts: [part] });
+      continue;
+    }
+    const existing = bySeries.get(part.series);
+    if (existing) {
+      existing.parts.push(part);
+      continue;
+    }
+    const group = { label: part.series, parts: [part] };
+    bySeries.set(part.series, group);
+    groups.push(group);
+  }
+  return groups;
+}
+
 export const PART_KIND_LABEL: Record<Part['kind'], string> = {
   board: '게임판',
+  // 보드와 같은 낱장이되 보드가 아닌 것 — 골프의 2~18번 홀과 기록표가 그렇다.
+  sheet: '낱장 게임판',
   cutout: '오려 쓰는 부속',
   buildable: '접어 세우는 조립물',
 };

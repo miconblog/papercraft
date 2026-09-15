@@ -1087,3 +1087,107 @@ describe('숫자 슬롯의 값 단추 (IDE-020)', () => {
     ).toContain('값 단추가 중복된다');
   });
 });
+
+describe('파트 묶음 (IDE-030)', () => {
+  const twoParts = (first?: string, second?: string) => ({
+    parts: [
+      { ...makeGame().parts[0], series: first },
+      {
+        id: 'sheet-2',
+        kind: 'sheet' as const,
+        title: '둘째 장',
+        widthMm: 210,
+        heightMm: 297,
+        orientation: 'portrait' as const,
+        series: second,
+      },
+    ],
+  });
+
+  it('같은 이름을 단 파트가 둘이면 통과한다', () => {
+    expect(() => parseGame(makeGame(twoParts('홀 판', '홀 판')))).not.toThrow();
+  });
+
+  it('묶음에 파트가 하나뿐이면 걸러진다 — 접을 것이 없다', () => {
+    expect(issuesOf(makeGame(twoParts('홀 판', undefined)))).toMatch(
+      /파트 묶음/,
+    );
+  });
+});
+
+describe('점 슬롯 (IDE-031)', () => {
+  const pointsGame = (overrides: Record<string, unknown> = {}) =>
+    makeGame({
+      parts: [{ ...makeGame().parts[0], dynamic: {} }],
+      slots: [
+        {
+          id: 'spots',
+          kind: 'points' as const,
+          label: '자리',
+          box: {
+            partId: 'board',
+            xMm: 10,
+            yMm: 10,
+            widthMm: 100,
+            heightMm: 100,
+          },
+          min: 1,
+          max: 4,
+          handle: { color: '#336699', noun: '자리' },
+          default: [20, 20, 40, 40],
+          placements: [{ partId: 'board', mode: 'control' as const }],
+          ...overrides,
+        },
+      ],
+    });
+
+  it('상자 안의 점이면 통과한다', () => {
+    expect(() => parseGame(pointsGame())).not.toThrow();
+  });
+
+  it('기본값이 상자 밖이면 걸러진다 — 첫 화면부터 오류일 수는 없다', () => {
+    expect(issuesOf(pointsGame({ default: [20, 20, 400, 40] }))).toMatch(
+      /놓을 수 있는 자리/,
+    );
+  });
+
+  it('좌표가 짝을 이루지 않으면 걸러진다', () => {
+    expect(issuesOf(pointsGame({ default: [20, 20, 40] }))).toMatch(/짝/);
+  });
+
+  it('개수 제한을 넘는 기본값은 걸러진다', () => {
+    expect(
+      issuesOf(
+        pointsGame({ default: [20, 20, 30, 30, 40, 40, 50, 50, 60, 60] }),
+      ),
+    ).toMatch(/4개까지/);
+  });
+
+  it('점은 글자로도 마커로도 그릴 수 없다 — 그리는 것은 파트의 dynamic이다', () => {
+    expect(
+      issuesOf(
+        pointsGame({
+          placements: [
+            { partId: 'board', mode: 'text', xMm: 20, yMm: 20, fontSizeMm: 4 },
+          ],
+        }),
+      ),
+    ).toMatch(/points 슬롯에는 'text' 배치를 쓸 수 없다/);
+  });
+
+  it('상자가 가리키는 파트에 control 배치가 없으면 걸러진다', () => {
+    expect(
+      issuesOf(
+        pointsGame({
+          box: {
+            partId: 'nowhere',
+            xMm: 10,
+            yMm: 10,
+            widthMm: 100,
+            heightMm: 100,
+          },
+        }),
+      ),
+    ).toMatch(/없는 파트를 가리킨다/);
+  });
+});

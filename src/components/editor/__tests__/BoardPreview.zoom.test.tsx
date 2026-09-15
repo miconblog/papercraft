@@ -11,7 +11,16 @@ import { getGame } from '@/lib/games';
 import { BoardPreview } from '../BoardPreview';
 
 const game = getGame('soccer')!;
-const board = game.parts.find((p) => p.kind === 'board')!;
+/**
+ * 확대·축소는 **파트가 켠 것만** 쓴다(2026-09-15). 실제로 켠 판은 세계일주
+ * 게임판 하나뿐인데, 그 판에는 마커가 없어 "마커 위에서 시작한 끌기" 같은
+ * 조작을 함께 볼 수가 없다. 그래서 여기서는 **마커가 있는 운동장에 그 스위치만
+ * 덧씌워** 확대 조작 자체를 본다 — 누가 켜는지는 아래 마지막 검사가 본다.
+ */
+const board = {
+  ...game.parts.find((p) => p.kind === 'board')!,
+  zoomable: true,
+};
 
 const WIDTH = 594;
 const HEIGHT = 420;
@@ -207,5 +216,48 @@ describe('BoardPreview — 확대·축소·이동', () => {
     setup(false);
     expect(screen.queryByRole('button', { name: '확대' })).toBeNull();
     expect(screen.queryByRole('group', { name: /확대·축소/ })).toBeNull();
+  });
+});
+
+describe('확대·축소를 켜지 않은 파트', () => {
+  it('우하단 단추가 없다 — 판이 화면에 다 들어오는 게임에는 쓸 일이 없다', () => {
+    const plain = game.parts.find((p) => p.kind === 'board')!;
+    expect(plain.zoomable).toBe(false);
+    render(
+      <BoardPreview
+        game={game}
+        part={plain}
+        customization={defaultCustomization(game)}
+        interactive
+        onMoveSlot={vi.fn()}
+      />,
+    );
+    expect(
+      screen.queryByRole('group', { name: '미리보기 확대·축소' }),
+    ).toBeNull();
+    expect(screen.queryByRole('button', { name: '확대' })).toBeNull();
+
+    // 단추만 빼면 누를 수 없는 판 위에서 돋보기 커서가 따라다닌다
+    // (2026-09-15 사용자 제보). 손가락 제스처를 막아 두는 것도 함께 푼다.
+    const box = screen.getByRole('group', { name: /미리보기 —/ });
+    expect(box.className).not.toContain('cursor-zoom-in');
+    expect(box.className).not.toContain('cursor-grab');
+    expect(box.style.touchAction).toBe('');
+  });
+
+  it('세계일주 게임판만 켜 두었다', () => {
+    const zoomable = [
+      'soccer',
+      'baseball',
+      'world-tour',
+      'yut-nori',
+      'dot-to-dot',
+      'golf',
+    ]
+      .flatMap((id) => getGame(id)!.parts.map((p) => ({ id, part: p })))
+      .filter((entry) => entry.part.zoomable);
+    expect(zoomable.map((e) => `${e.id}/${e.part.id}`)).toEqual([
+      'world-tour/board',
+    ]);
   });
 });

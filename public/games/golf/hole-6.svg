@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 자동 생성 파일. 고치려면 src/assets/games/soccer/artwork/ 를 고치고 `npm run artwork` 를 돌린다. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="297mm" viewBox="0 0 210 297" font-family="Noto Sans KR">
+<title>골프 게임판 · 6번 홀 (파 3)</title>
+<g id="pc-art" fill="#1a1a1a" stroke="none">
+<rect x="6" y="6" width="198" height="285" fill="#f4f9f1" stroke="#9aa3ad" stroke-width="0.4" stroke-dasharray="3 2" />
+<path d="M84 262 L84 259.3 L84 255.87 L84 251.82 L84 247.28 L84 242.35 L84 237.16 L84 231.82 L84 226.44 L84 221.16 L84 216.08 L84 211.32 L84 207 L84 202.89 L84 198.7 L84 194.5 L84 190.33 L84 186.25 L84 182.31 L84 178.56 L84 177.1 L85.6 169.06 L90.15 162.25 L96.96 157.7 L105 156.1 L113.04 157.7 L119.85 162.25 L124.4 169.06 L126 177.1 L126 178.56 L126 182.31 L126 186.25 L126 190.33 L126 194.5 L126 198.7 L126 202.89 L126 207 L126 211.32 L126 216.08 L126 221.16 L126 226.44 L126 231.82 L126 237.16 L126 242.35 L126 247.28 L126 251.82 L126 255.87 L126 259.3 L126 262 L124.4 270.04 L119.85 276.85 L113.04 281.4 L105 283 L96.96 281.4 L90.15 276.85 L85.6 270.04 Z" fill="#ddefd8" stroke="#4f9d54" stroke-width="0.4" />
+<path d="M151 164.5 L150.61 169.46 L149.43 174.34 L147.5 179.04 L144.84 183.5 L141.49 187.63 L137.53 191.37 L133 194.65 L128 197.41 L122.6 199.61 L116.91 201.21 L111 202.17 L105 202.5 L99 202.17 L93.09 201.21 L87.4 199.61 L82 197.41 L77 194.65 L72.47 191.37 L68.51 187.63 L65.16 183.5 L62.5 179.04 L60.57 174.34 L59.39 169.46 L59 164.5 L59.39 159.54 L60.57 154.66 L62.5 149.96 L65.16 145.5 L68.51 141.37 L72.47 137.63 L77 134.35 L82 131.59 L87.4 129.39 L93.09 127.79 L99 126.83 L105 126.5 L111 126.83 L116.91 127.79 L122.6 129.39 L128 131.59 L133 134.35 L137.53 137.63 L141.49 141.37 L144.84 145.5 L147.5 149.96 L149.43 154.66 L150.61 159.54 Z" fill="#e3eefb" stroke="#3d7ab8" stroke-width="0.4" />
+<path d="M81.18 140.94 L84.16 141.44 L87.13 141.77 L90.11 141.82 L93.09 141.58 L96.07 141.12 L99.04 140.6 L102.02 140.19 L105 140.04 L107.98 140.19 L110.96 140.6 L113.93 141.12 L116.91 141.58 L119.89 141.82 L122.87 141.77 L125.84 141.44 L128.82 140.94" fill="none" stroke="#3d7ab8" stroke-width="0.3" />
+<text x="105" y="186.56" font-size="3" dominant-baseline="central" fill="#2f6ba5" text-anchor="middle" font-weight="bold">+1타</text>
+<text x="105" y="191.165" font-size="2.3" dominant-baseline="central" fill="#2f6ba5" text-anchor="middle">앞자리에서 다시</text>
+<path d="M133.5 164.5 L133.26 167.83 L132.53 171.1 L131.33 174.26 L129.68 177.25 L127.61 180.02 L125.15 182.53 L122.35 184.73 L119.25 186.58 L115.91 188.06 L112.38 189.13 L108.72 189.78 L105 190 L101.28 189.78 L97.62 189.13 L94.09 188.06 L90.75 186.58 L87.65 184.73 L84.85 182.53 L82.39 180.02 L80.32 177.25 L78.67 174.26 L77.47 171.1 L76.74 167.83 L76.5 164.5 L76.74 161.17 L77.47 157.9 L78.67 154.74 L80.32 151.75 L82.39 148.98 L84.85 146.47 L87.65 144.27 L90.75 142.42 L94.09 140.94 L97.62 139.87 L101.28 139.22 L105 139 L108.72 139.22 L112.38 139.87 L115.91 140.94 L119.25 142.42 L122.35 144.27 L125.15 146.47 L127.61 148.98 L129.68 151.75 L131.33 154.74 L132.53 157.9 L133.26 161.17 Z" fill="#ddefd8" stroke="none" />
+<path d="M129 164.5 L128.79 167.24 L128.18 169.94 L127.17 172.54 L125.78 175 L124.04 177.28 L121.97 179.35 L119.61 181.16 L117 182.69 L114.18 183.9 L111.21 184.78 L108.13 185.32 L105 185.5 L101.87 185.32 L98.79 184.78 L95.82 183.9 L93 182.69 L90.39 181.16 L88.03 179.35 L85.96 177.28 L84.22 175 L82.83 172.54 L81.82 169.94 L81.21 167.24 L81 164.5 L81.21 161.76 L81.82 159.06 L82.83 156.46 L84.22 154 L85.96 151.72 L88.03 149.65 L90.39 147.84 L93 146.31 L95.82 145.1 L98.79 144.22 L101.87 143.68 L105 143.5 L108.13 143.68 L111.21 144.22 L114.18 145.1 L117 146.31 L119.61 147.84 L121.97 149.65 L124.04 151.72 L125.78 154 L127.17 156.46 L128.18 159.06 L128.79 161.76 Z" fill="#bfe2bb" stroke="#2f7d32" stroke-width="0.5" />
+<line x1="27.847" y1="97.137" x2="27.847" y2="100.564" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="27.847" cy="94.445" r="4.895" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="40.502" y1="94.097" x2="40.502" y2="96.44" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="40.502" cy="92.256" r="3.347" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="39.833" y1="71.616" x2="39.833" y2="74.607" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="39.833" cy="69.265" r="4.274" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="66.853" y1="99.539" x2="66.853" y2="102.172" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="66.853" cy="97.47" r="3.762" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="16.137" y1="95.993" x2="16.137" y2="98.368" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="16.137" cy="94.127" r="3.393" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="53.832" y1="95.278" x2="53.832" y2="98.808" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="53.832" cy="92.505" r="5.042" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="53.564" y1="63.694" x2="53.564" y2="66.854" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="53.564" cy="61.211" r="4.514" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="20.567" y1="73.718" x2="20.567" y2="76.211" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="20.567" cy="71.759" r="3.562" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="64.922" y1="70.629" x2="64.922" y2="73.593" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="64.922" cy="68.3" r="4.234" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="66.075" y1="37.837" x2="66.075" y2="40.625" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="66.075" cy="35.647" r="3.983" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="10.538" y1="108.37" x2="10.538" y2="110.62" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="10.538" cy="106.602" r="3.215" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="10.476" y1="62.18" x2="10.476" y2="64.526" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="10.476" cy="60.338" r="3.35" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="67.503" y1="14.733" x2="67.503" y2="17.664" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="67.503" cy="12.43" r="4.188" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="61.181" y1="80.84" x2="61.181" y2="83.058" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="61.181" cy="79.097" r="3.168" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="177.995" y1="106.854" x2="177.995" y2="108.964" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="177.995" cy="105.195" r="3.016" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="144.055" y1="101.321" x2="144.055" y2="104.662" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="144.055" cy="98.697" r="4.772" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="156.646" y1="37.235" x2="156.646" y2="40.649" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="156.646" cy="34.553" r="4.877" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="167.339" y1="82.816" x2="167.339" y2="85.445" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="167.339" cy="80.749" r="3.757" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="196.053" y1="36.558" x2="196.053" y2="39.941" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="196.053" cy="33.899" r="4.833" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="180.051" y1="57.31" x2="180.051" y2="61.168" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="180.051" cy="54.279" r="5.511" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="167.868" y1="25.544" x2="167.868" y2="28.659" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="167.868" cy="23.096" r="4.45" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="158.336" y1="96.509" x2="158.336" y2="100.252" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="158.336" cy="93.569" r="5.347" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="155.864" y1="63.02" x2="155.864" y2="66.745" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="155.864" cy="60.093" r="5.322" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="162.406" y1="14.067" x2="162.406" y2="16.353" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="162.406" cy="12.271" r="3.265" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="165.832" y1="47.948" x2="165.832" y2="50.212" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="165.832" cy="46.169" r="3.234" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="183.195" y1="95.987" x2="183.195" y2="99.772" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="183.195" cy="93.013" r="5.407" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="195.5" y1="16.819" x2="195.5" y2="20.349" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="195.5" cy="14.045" r="5.044" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="153.646" y1="108.404" x2="153.646" y2="110.935" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="153.646" cy="106.415" r="3.616" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="138.558" y1="20.947" x2="138.558" y2="23.238" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="138.558" cy="19.148" r="3.272" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="178.054" y1="231.034" x2="178.054" y2="233.845" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="178.054" cy="228.826" r="4.015" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="37.934" y1="177.765" x2="37.934" y2="181.662" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="37.934" cy="174.703" r="5.567" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="107.936" y1="13.863" x2="107.936" y2="15.866" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="107.936" cy="12.289" r="2.862" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="146.276" y1="257.982" x2="146.276" y2="261.523" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="146.276" cy="255.2" r="5.058" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="136.726" y1="77.38" x2="136.726" y2="80.162" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="136.726" cy="75.194" r="3.975" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="74.869" y1="288.428" x2="74.869" y2="290.789" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="74.869" cy="286.572" r="3.373" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="60.284" y1="250.531" x2="60.284" y2="253.731" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="60.284" cy="248.017" r="4.571" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="167.231" y1="169.597" x2="167.231" y2="171.826" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="167.231" cy="167.846" r="3.184" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="15.357" y1="248.32" x2="15.357" y2="251.857" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="15.357" cy="245.54" r="5.054" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="169.749" y1="207.229" x2="169.749" y2="209.331" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="169.749" cy="205.577" r="3.003" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="135.103" y1="49.168" x2="135.103" y2="51.645" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="135.103" cy="47.221" r="3.539" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="106.167" y1="48.14" x2="106.167" y2="51.389" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="106.167" cy="45.588" r="4.641" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<line x1="157.741" y1="134.894" x2="157.741" y2="138.253" stroke="#3f7c43" stroke-width="0.45" />
+<circle cx="157.741" cy="132.255" r="4.798" fill="#e4f0df" stroke="#3f7c43" stroke-width="0.35" />
+<text x="10" y="286.5" font-size="3" dominant-baseline="central" fill="#9aa3ad" text-anchor="start">O.B. +1타 · 친 자리에서 다시</text>
+<text x="195" y="286.5" font-size="3" dominant-baseline="central" fill="#9aa3ad" text-anchor="middle">O.B.</text>
+<path d="M92 268.5 L92 255.5 L118 255.5 L118 268.5 Z" fill="#ffffff" stroke="#4f9d54" stroke-width="0.4" />
+<circle cx="97" cy="262" r="1.4" fill="#4f9d54" stroke="none" />
+<circle cx="113" cy="262" r="1.4" fill="#4f9d54" stroke="none" />
+<text x="105" y="271.5" font-size="3" dominant-baseline="central" fill="#6b7280" text-anchor="middle">티</text>
+<circle cx="105" cy="160.8" r="8" fill="#ffffff" stroke="#1a1a1a" stroke-width="0.5" />
+<circle cx="105" cy="160.8" r="2.4" fill="#1a1a1a" stroke="none" />
+<line x1="105" y1="160.8" x2="105" y2="144.8" stroke="#1a1a1a" stroke-width="0.6" />
+<path d="M105 144.8 L114 147.8 L105 150.8 Z" fill="#1a1a1a" stroke="none" />
+<rect x="9" y="9" width="52" height="46" fill="#ffffff" stroke="#6b7280" stroke-width="0.4" rx="2.5" />
+<text x="19" y="23" font-size="12" dominant-baseline="central" text-anchor="middle" font-weight="bold">6</text>
+<text x="19" y="30.5" font-size="2.6" dominant-baseline="central" fill="#6b7280" text-anchor="middle">번 홀</text>
+<text x="28" y="20" font-size="4.6" dominant-baseline="central" text-anchor="start" font-weight="bold">작은 섬</text>
+<text x="28" y="27.5" font-size="3.2" dominant-baseline="central" fill="#6b7280" text-anchor="start">파 3 · 135야드</text>
+<line x1="13" y1="33" x2="57" y2="33" stroke="#6b7280" stroke-width="0.25" />
+<text x="15" y="38.5" font-size="3" dominant-baseline="central" text-anchor="start" fill="#6b7280">1타 홀인원</text>
+<text x="15" y="44.5" font-size="3" dominant-baseline="central" text-anchor="start" fill="#6b7280">2타 버디</text>
+<text x="15" y="50.5" font-size="3" dominant-baseline="central" text-anchor="start" font-weight="bold" fill="#1a1a1a">3타 파</text>
+<text x="37" y="38.5" font-size="3" dominant-baseline="central" text-anchor="start" fill="#6b7280">4타 보기</text>
+<text x="37" y="44.5" font-size="3" dominant-baseline="central" text-anchor="start" fill="#6b7280">5타 더블보기</text>
+</g>
+<g id="pc-slot" />
+</svg>

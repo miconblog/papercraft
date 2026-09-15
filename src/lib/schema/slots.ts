@@ -13,6 +13,7 @@
  */
 import { z } from 'zod';
 import { mmCoord, mmLength, hexColor, rectMm, slug } from './units';
+export { pointsOf, toFlatPoints, type MmPoint } from './points';
 
 export const textAlign = z.enum(['start', 'center', 'end']);
 
@@ -281,6 +282,41 @@ export const outlineSlot = z.strictObject({
   default: z.union([z.array(z.number()), z.array(z.array(z.number()))]),
 });
 
+/**
+ * 점 슬롯 — **판 위에서 끌어 놓는 점들** (IDE-031).
+ *
+ * 골프의 커스텀 홀이 처음 쓴다. 티와 그린을 잇는 중심선, 벙커 자리, 연못
+ * 자리, 홀 정보 카드 자리가 모두 이 슬롯이다 — 사용자가 미리보기 판 위에서
+ * 손잡이를 끌어 제 홀을 짓는다.
+ *
+ * `outline`과 값의 생김새가 같다(납작한 `[x0, y0, x1, y1, …]`, 파트 로컬 mm).
+ * 다른 것은 **무엇이 값을 만드는가**다. 윤곽은 사진에서 계산돼 나오고 사람은
+ * 그것을 손대지 않지만, 점은 사람이 하나씩 끌어 놓는다. 그래서 이쪽에는
+ * 손잡이의 생김새(`handle`)가 있고, 개수를 사람이 늘리고 줄인다(`min`·`max`).
+ *
+ * 마커 슬롯과도 다르다. 마커는 **슬롯 하나에 점 하나**이고 값(등번호)을 함께
+ * 그리지만, 점 슬롯은 **슬롯 하나에 점 여럿**이고 그려지는 것은 점이 아니라
+ * 그 점들에서 나온 그림이다(파트의 `dynamic`이 그린다). 배치가 `control`뿐인
+ * 것도 그래서다.
+ */
+export const pointsSlot = z.strictObject({
+  ...slotBase,
+  kind: z.literal('points'),
+  /** 점이 앉을 수 있는 자리. 끌어도 이 상자를 벗어나지 않는다. */
+  box: outlineBox,
+  /** 점의 최소 개수. 중심선처럼 없으면 그림이 안 되는 값은 2 이상이다. */
+  min: z.number().int().min(0).default(0),
+  max: z.number().int().positive(),
+  /** 판 위에 그릴 손잡이. 화면에만 쓰이고 인쇄물에는 나오지 않는다. */
+  handle: z.strictObject({
+    color: hexColor,
+    radiusMm: mmLength.default(3.5),
+    /** 점 하나를 가리키는 말. 손잡이의 이름표가 된다("벙커 2"). */
+    noun: z.string().min(1).max(8),
+  }),
+  default: z.array(z.number()),
+});
+
 export const slot = z
   .discriminatedUnion('kind', [
     textSlot,
@@ -289,6 +325,7 @@ export const slot = z
     choiceSlot,
     listSlot,
     outlineSlot,
+    pointsSlot,
   ])
   .check((ctx) => {
     const s = ctx.value;
@@ -495,18 +532,38 @@ export const slot = z
       }
     }
 
+    if (s.kind === 'points') {
+      const reason = validatePointsValue(s, s.default);
+      if (reason) {
+        ctx.issues.push({
+          code: 'custom',
+          input: s,
+          path: ['default'],
+          message: `기본값이 제 제약을 어긴다: ${reason}`,
+        });
+      }
+    }
+
     // kind와 placement 방식의 조합. 색을 글자로 그리거나 선택지를 마커로 놓는 건
     // 렌더러가 처리할 수 없다.
     //
     // `number`에 `control`이 있는 것은 점 잇기의 점 개수 때문이다(IDE-019) —
     // 값이 글자로 찍히는 게 아니라 **판 전체를 다시 그리게 한다**.
+    //
+    // `text`에도 `control`이 있는 것은 골프의 나만의 홀 때문이다(IDE-031).
+    // 홀 이름은 글자로 찍히지만 그 자리가 **값에 따라 움직인다** — 카드가
+    // 사용자가 끄는 자리에 앉으므로 좌표를 도안에 미리 적을 수 없고, 판을
+    // 그리는 렌더러가 카드와 함께 그린다.
     const allowed: Record<typeof s.kind, ReadonlyArray<Placement['mode']>> = {
-      text: ['text', 'marker'],
+      text: ['text', 'marker', 'control'],
       number: ['text', 'marker', 'control'],
       color: ['paint'],
       choice: ['control', 'text'],
       list: ['control'],
       outline: ['control'],
+      // 점은 판 위에서 끄는 손잡이일 뿐, 그려지는 것은 그 점들에서 나온
+      // 그림이다(파트의 `dynamic`이 그린다) — 윤곽·목록과 같은 규약이다.
+      points: ['control'],
     };
     for (const [i, pl] of s.placements.entries()) {
       if (!allowed[s.kind].includes(pl.mode)) {
@@ -545,7 +602,11 @@ export type ListValue = ListEntry[];
  */
 export type OutlineRing = number[];
 export type OutlineValue = OutlineRing | OutlineRing[];
-export type SlotValue = string | number | ListValue | OutlineValue;
+/** 점 슬롯의 값 — 납작한 `[x0, y0, x1, y1, …]`. 윤곽과 같은 생김새다. */
+export type PointsValue = number[];
+
+export type SlotValue =
+  string | number | ListValue | OutlineValue | PointsValue;
 
 export const listEntryId = (entry: ListEntry): string =>
   typeof entry === 'string' ? entry : entry.id;
@@ -651,7 +712,37 @@ export function validateSlotValue(s: Slot, value: unknown): string | null {
     }
     case 'outline':
       return validateOutlineValue(s, value);
+    case 'points':
+      return validatePointsValue(s, value);
   }
+}
+
+/** 점 슬롯의 값 — 짝수 길이의 좌표 배열이고, 모든 점이 상자 안이어야 한다. */
+export function validatePointsValue(
+  s: z.infer<typeof pointsSlot>,
+  value: unknown,
+): string | null {
+  if (!Array.isArray(value) || value.some((n) => typeof n !== 'number'))
+    return '좌표의 목록이어야 한다';
+  const flat = value as number[];
+  if (flat.length % 2 !== 0) return '좌표는 x·y 짝으로 온다';
+  const count = flat.length / 2;
+  if (count < s.min) return `${s.min}개 이상이어야 한다`;
+  if (count > s.max) return `${s.max}개까지 놓을 수 있다`;
+  for (let i = 0; i < flat.length; i += 2) {
+    const [x, y] = [flat[i], flat[i + 1]];
+    if (!Number.isFinite(x) || !Number.isFinite(y))
+      return '좌표가 숫자가 아니다';
+    if (
+      x < s.box.xMm ||
+      x > s.box.xMm + s.box.widthMm ||
+      y < s.box.yMm ||
+      y > s.box.yMm + s.box.heightMm
+    ) {
+      return '점이 놓을 수 있는 자리를 벗어났다';
+    }
+  }
+  return null;
 }
 
 /** 숫자 하나가 숫자 슬롯의 제약을 지키는지. 기본값·값 단추·사용자 입력이 함께 쓴다. */
