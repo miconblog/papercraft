@@ -205,16 +205,29 @@ export function ExportClient({
                   ['board', '게임판만'],
                   ['accessories', '부속만'],
                 ] as const
-              ).map(([kind, label]) => (
-                <button
-                  key={kind}
-                  type="button"
-                  onClick={() => selectGroup(kind)}
-                  className="rounded-full border border-border px-3 py-1 text-xs font-medium outline-none transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
-                >
-                  {label}
-                </button>
-              ))}
+              )
+                // 고를 것이 없는 묶음은 단추를 내지 않는다. 골프처럼 오리고
+                // 접을 부속이 하나도 없는 게임에서 '부속만'을 누르면 아무것도
+                // 고르지 않은 채가 되어 인쇄가 막힌다(IDE-032).
+                .filter(
+                  ([kind]) =>
+                    kind === 'all' ||
+                    game.parts.some((p) =>
+                      kind === 'board'
+                        ? isBoardLike(p.kind)
+                        : !isBoardLike(p.kind),
+                    ),
+                )
+                .map(([kind, label]) => (
+                  <button
+                    key={kind}
+                    type="button"
+                    onClick={() => selectGroup(kind)}
+                    className="rounded-full border border-border px-3 py-1 text-xs font-medium outline-none transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
+                  >
+                    {label}
+                  </button>
+                ))}
             </div>
           </div>
           <ul aria-label="뽑을 파트" className="mt-3 space-y-2">

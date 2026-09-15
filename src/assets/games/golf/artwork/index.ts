@@ -10,7 +10,6 @@
  */
 import { HOLE_ARTWORK } from './hole.ts';
 import { renderScoreCard } from './score-card.ts';
-import { renderBalls } from './balls.ts';
 import { renderCustomHoleDefault } from './dynamic.ts';
 
 export { artworkPath } from '../dimensions.ts';
@@ -23,5 +22,4 @@ export const ARTWORK: Readonly<Record<string, () => string>> = {
   // 소개 페이지와 인쇄 미리보기가 값이 오기 전에 그것을 쓴다.
   'custom-hole': renderCustomHoleDefault,
   'score-card': renderScoreCard,
-  balls: renderBalls,
 };

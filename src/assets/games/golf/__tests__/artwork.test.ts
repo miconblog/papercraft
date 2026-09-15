@@ -26,7 +26,6 @@ import {
 import { ARTWORK } from '../artwork';
 import { layoutHole } from '../artwork/hole';
 import { cardFitsBoard, customHoleSpec, CUSTOM_SLOT } from '../artwork/dynamic';
-import { ballCenters } from '../artwork/balls';
 import {
   clearanceFromPolygon,
   grow,
@@ -47,7 +46,7 @@ import {
   COURSE_PAR,
   CUSTOM_HOLE,
   CUSTOM_HOLE_DEFAULTS,
-  BALL_SHEET,
+  BALL_DIAMETER_MM,
   HOLES,
   IN_HOLES,
   OUT_HOLES,
@@ -81,7 +80,7 @@ const inCourse = (p: Pt): boolean =>
   p.y <= COURSE_AREA.yMm + COURSE_AREA.heightMm;
 
 describe('도안 구조', () => {
-  it('판 열여덟 장과 기록표가 낱장이고, 부속은 오림용 하나다', () => {
+  it('판 열여덟 장과 기록표가 낱장이고, 부속은 하나도 없다', () => {
     expect(game.parts.filter((p) => p.kind === 'board')).toHaveLength(1);
     // 보드는 1번 홀이다 — 썸네일과 소개 페이지가 가리킬 대표 판이다.
     expect(game.parts[0].id).toBe(holePartId(1));
@@ -89,11 +88,11 @@ describe('도안 구조', () => {
     expect(game.parts.filter((p) => p.kind === 'sheet')).toHaveLength(
       HOLES.length - 1 + 2,
     );
-    // 깃대를 빼면서 접을 것이 없어졌다(IDE-032) — 남은 부속은 공 한 장이다.
-    expect(game.parts.filter((p) => p.kind === 'cutout')).toHaveLength(1);
+    // 깃대에 이어 공까지 뺐다(IDE-032) — 부속이 하나도 없는 첫 게임이다.
+    expect(game.parts.filter((p) => p.kind === 'cutout')).toHaveLength(0);
     expect(game.parts.filter((p) => p.kind === 'buildable')).toHaveLength(0);
     expect(game.parts.filter((p) => isBoardLike(p.kind))).toHaveLength(
-      HOLES.length + 2,
+      game.parts.length,
     );
   });
 
@@ -105,9 +104,9 @@ describe('도안 구조', () => {
     expect(new Set(grouped.map((p) => p.series)).size).toBe(1);
     // 기록표와 부속은 묶이지 않는다 — 단추 하나씩으로 남는다.
     expect(partOf('score-card').series).toBeUndefined();
-    expect(partOf('balls').series).toBeUndefined();
+    expect(partOf('score-card').series).toBeUndefined();
     // 접히는 것은 화면뿐이다. 인쇄는 파트마다 한 줄이라 한 번에 다 뽑는다.
-    expect(game.parts).toHaveLength(HOLES.length + 3);
+    expect(game.parts).toHaveLength(HOLES.length + 2);
   });
 
   it('홀 판은 낱장이라 오림선도 접는선도 없다', () => {
@@ -676,38 +675,26 @@ describe('기록표', () => {
   });
 });
 
-describe('공 (IDE-032)', () => {
-  it('공이 모두 오림 여백 안에 있다', () => {
-    const { widthMm, heightMm, cutInsetMm, ballRadiusMm } = BALL_SHEET;
-    for (const ball of ballCenters()) {
-      expect(ball.x - ballRadiusMm).toBeGreaterThan(cutInsetMm);
-      expect(ball.x + ballRadiusMm).toBeLessThan(widthMm - cutInsetMm);
-      expect(ball.y - ballRadiusMm).toBeGreaterThan(cutInsetMm);
-      expect(ball.y + ballRadiusMm).toBeLessThan(heightMm - cutInsetMm);
-    }
-  });
-
-  it('공이 제목 줄 아래에서 시작한다', () => {
-    const top = BALL_SHEET.ballOriginYMm - BALL_SHEET.ballRadiusMm;
-    expect(top).toBeGreaterThan(BALL_SHEET.titleYMm + 6);
-  });
-
-  it('공이 홀 원보다 작다 — 들어갈 수 있어야 한다', () => {
-    expect(BALL_SHEET.ballRadiusMm).toBeLessThan(COURSE.cupRadiusMm);
-  });
-
-  it('사람 넷이 쳐도 잃어버릴 공이 남는다', () => {
-    expect(ballCenters().length).toBeGreaterThanOrEqual(PLAYER_COUNT * 3);
-  });
-
-  it('깃대는 더 이상 부속이 아니다 — 접을 것이 없으니 오림용이다', () => {
-    // 사용자가 한 라운드 쳐 보고 뺐다(2026-09-15). 홀이 어디인지는 판에 그린
-    // 깃발이 알린다.
-    const part = partOf('balls');
-    expect(part.kind).toBe('cutout');
-    expect(part.marks).toEqual(['cut']);
-    expect(game.parts.some((p) => p.kind === 'buildable')).toBe(false);
+describe('인쇄물 (IDE-032)', () => {
+  it('오리고 접을 것이 하나도 없다 — 판과 기록표뿐이다', () => {
+    // 깃대에 이어 공까지 뺐다(2026-09-15 사용자 요청). 공은 집에 있는 작고
+    // 납작한 것으로 쓴다 — 축구 게임판이 공을 준비물로 돌린 것과 같다.
+    expect(game.parts.every((p) => isBoardLike(p.kind))).toBe(true);
+    expect(game.parts.some((p) => p.marks.length > 0)).toBe(false);
+    expect(ARTWORK['balls']).toBeUndefined();
     expect(ARTWORK['flag-and-ball']).toBeUndefined();
+  });
+
+  it('준비물이 공을 대신할 것을 일러 준다', () => {
+    const supplies = game.supplies.join(' ');
+    expect(supplies).toContain('연필');
+    expect(supplies).toContain(String(BALL_DIAMETER_MM));
+    // 오릴 것이 없으니 가위도 없다.
+    expect(supplies).not.toContain('가위');
+  });
+
+  it('홀 원이 공보다 커서 들어갈 수 있다', () => {
+    expect(COURSE.cupRadiusMm * 2).toBeGreaterThan(BALL_DIAMETER_MM);
   });
 });
 

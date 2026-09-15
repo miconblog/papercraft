@@ -15,7 +15,7 @@
  * 놀 수 있다.
  */
 import type { RuleBlock } from '@/lib/schema';
-import { COURSE_PAR, HOLES } from './dimensions';
+import { BALL_DIAMETER_MM, COURSE_PAR, HOLES } from './dimensions';
 import { PENALTY, SCORE_TERMS } from './scoring';
 
 export const RULES_TITLE = '골프 게임판 · 게임 방법';
@@ -40,23 +40,17 @@ export const TERM_LINES: readonly string[] = [
 
 export const RULES: readonly RuleBlock[] = [
   { kind: 'heading', text: '준비물' },
-  { kind: 'bullet', text: '연필 1자루(공을 튕기는 도구) · 가위' },
+  { kind: 'bullet', text: '연필 1자루 — 공을 튕기는 도구다.' },
   {
     kind: 'bullet',
-    text: `홀 판 ${HOLES.length}장(1번 홀부터 18번 홀까지) · 기록표 1장 · 공 1장. 판은 한 번에 다 뽑아도 되고, 칠 홀만 뽑아도 된다.`,
+    text: `공으로 쓸 작고 납작한 것 하나 — 지름 ${BALL_DIAMETER_MM}mm쯤이면 홀에 들어간다. 두꺼운 종이를 동그랗게 오려 써도 되고, 동전이나 작은 단추도 된다.`,
+  },
+  {
+    kind: 'bullet',
+    text: `뽑을 것은 홀 판 ${HOLES.length}장(1번 홀부터 18번 홀까지)과 기록표 1장뿐이다. 오리거나 접을 것은 없다. 판은 한 번에 다 뽑아도 되고, 칠 홀만 뽑아도 된다.`,
   },
   { kind: 'bullet', text: '1~4명이 함께 친다. 혼자서도 칠 수 있다.' },
   { kind: 'bullet', text: PAPER_NOTE },
-
-  { kind: 'heading', text: '공 만들기' },
-  {
-    kind: 'step',
-    text: '공 시트를 두꺼운 종이에 뽑아 동그라미를 따라 오린다. 한 장에 열여섯 개가 들어 있다.',
-  },
-  {
-    kind: 'bullet',
-    text: '두꺼운 종이일수록 연필로 튕겼을 때 잘 미끄러진다. 잃어버리기 쉬우니 넉넉히 오려 둔다.',
-  },
 
   { kind: 'heading', text: '차리기' },
   {

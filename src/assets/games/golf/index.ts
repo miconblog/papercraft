@@ -33,7 +33,6 @@ import {
   CUSTOM_HOLE,
   CUSTOM_HOLE_DEFAULTS,
   INK,
-  BALL_SHEET,
   HOLES,
   NAME_NUMBER_INSET_MM,
   PANEL,
@@ -53,7 +52,6 @@ import {
 /** 홀 판 열여덟 장을 만들기 화면에서 한 묶음으로 보이게 하는 이름. */
 const HOLE_SERIES = '홀 판';
 const SCORE_CARD_PART_ID = 'score-card';
-const BALL_PART_ID = 'balls';
 
 /** 홀마다 성격이 하나씩 다르다 — 소개 페이지의 구성 목록이 이 줄을 읽는다. */
 function holeDescription(hole: HoleSpec): string {
@@ -303,7 +301,9 @@ export default defineGame({
     '넷이 ' +
     '함께 쳐도 된다.',
   players: { min: 1, max: 4 },
-  supplies: ['연필', '가위', '두꺼운 종이(공을 오릴 것)'],
+  // 인쇄물은 판과 기록표뿐이다 — 공은 집에 있는 것으로 쓴다(2026-09-15 사용자
+  // 요청). 오리고 접을 것이 없으니 가위도 준비물에서 빠졌다.
+  supplies: ['연필', '공으로 쓸 작고 납작한 것(지름 12mm쯤)'],
   // 카탈로그 썸네일은 1번 홀이다 — 만들어 낸 아이콘보다 실제로 인쇄될 판이
   // 정직한 미리보기다(축구·야구와 같은 선택).
   thumbnail: artworkPath(holePartId(1)),
@@ -347,26 +347,6 @@ export default defineGame({
       minScale: 0.85,
       maxScale: 2,
       artwork: artworkPath(SCORE_CARD_PART_ID),
-    },
-    {
-      id: BALL_PART_ID,
-      kind: 'cutout',
-      title: '공',
-      description:
-        '오려 쓰는 공 열여섯 개. 지름 12mm라 홀 원(지름 16mm)에 닿아 멈추면 ' +
-        '들어간 것이다. 두꺼운 종이에 뽑으면 연필로 튕겼을 때 더 잘 미끄러진다. ' +
-        '잃어버리기 쉬워 기본 두 벌이다. ' +
-        '깃대는 두지 않는다 — 홀이 어디인지는 판에 그린 깃발이 알린다.',
-      widthMm: BALL_SHEET.widthMm,
-      heightMm: BALL_SHEET.heightMm,
-      // 정사각 시트다. 규격은 `widthMm >= heightMm`를 가로로 읽으므로
-      // 정사각은 landscape다(윷놀이 말판과 같다).
-      orientation: 'landscape',
-      minScale: 0.8,
-      maxScale: 2,
-      defaultCopies: 2,
-      marks: ['cut'],
-      artwork: artworkPath(BALL_PART_ID),
     },
   ],
 

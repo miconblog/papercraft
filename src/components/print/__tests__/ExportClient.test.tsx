@@ -2,7 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { getGame } from '@/lib/games';
-import { defaultCustomization, type GameDefinition } from '@/lib/schema';
+import {
+  defaultCustomization,
+  isBoardLike,
+  type GameDefinition,
+} from '@/lib/schema';
 import { saveCustomization } from '@/lib/customization/storage';
 import { ExportClient } from '../ExportClient';
 
@@ -157,5 +161,26 @@ describe('내보내기 화면 (IDE-007)', () => {
     }
     expect(screen.getByRole('button', { name: 'PDF 내려받기' })).toBeDisabled();
     expect(screen.getByText(/파트를 하나 이상 고른다/)).toBeInTheDocument();
+  });
+});
+
+describe('고를 것이 없는 묶음 (IDE-032)', () => {
+  it('부속이 하나도 없으면 “부속만” 단추를 내지 않는다', () => {
+    // 골프는 오리고 접을 것이 없다. 단추를 그대로 두면 눌렀을 때 아무것도
+    // 고르지 않은 채가 되어 인쇄가 막힌다.
+    const golf = getGame('golf')!;
+    expect(golf.parts.some((p) => !isBoardLike(p.kind))).toBe(false);
+
+    render(<ExportClient game={golf} />);
+    expect(screen.getByRole('button', { name: '전체' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: '게임판만' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '부속만' })).toBeNull();
+  });
+
+  it('부속이 있는 게임에는 그대로 낸다', () => {
+    render(<ExportClient game={getGame('soccer')!} />);
+    expect(screen.getByRole('button', { name: '부속만' })).toBeInTheDocument();
   });
 });

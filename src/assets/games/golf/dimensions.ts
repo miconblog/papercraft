@@ -114,6 +114,18 @@ export const PANEL = {
   courseRuleInsetMm: 8,
 } as const;
 
+/**
+ * 공의 지름 — **인쇄물이 아니라 준비물**이다 (IDE-032).
+ *
+ * 공 시트도 뺐다(2026-09-15 사용자 요청 — "공도 필요없어"). 집에 있는 작고
+ * 납작한 것으로 치면 되고, 두꺼운 종이를 동그랗게 오려 써도 된다. 축구
+ * 게임판이 공을 준비물로 돌린 것과 같은 처분이다.
+ *
+ * 값이 남아 있는 것은 **홀 원이 이보다 커야** 하기 때문이다 — 준비물 안내와
+ * 홀 크기가 같은 수를 읽어야 "닿아 멈추면 들어간 것"이 성립한다.
+ */
+export const BALL_DIAMETER_MM = 12;
+
 /** 코스 요소의 크기와 농도. */
 export const COURSE = {
   /** 홀 원 — 공(지름 12mm)이 걸쳐 멈추면 홀아웃이다. */
@@ -940,85 +952,6 @@ export const sumRowCenterY = (index: number): number =>
 
 /** 이름이 앉는 칸의 가로 중심 — 왼쪽 끝의 번호를 비켜 오른쪽으로 치우친다. */
 export const NAME_NUMBER_INSET_MM = 7;
-
-/**
- * 공 — **작은 한 장**이다.
- *
- * 처음에는 깃대 두 벌이 함께 있었다. 사용자가 한 라운드 쳐 보고 뺐다
- * (2026-09-15) — "깃대는 필요 없을것 같아". 홀이 어디인지는 판에 그려진 깃발
- * 그림으로 충분했고, 세워 둔 종이 깃대는 공에 밀려 넘어지기만 했다.
- *
- * 남은 것은 지름 12mm 원판 열여섯이다. 두꺼운 종이에 뽑아 오리면 연필로
- * 튕겼을 때 미끄러지고, 홀 원(반지름 8mm)에 걸쳐 멈추면 홀아웃이다. 넷이 쳐도
- * 잃어버릴 몫이 남아야 해서 사람 수의 네 배를 넣었다.
- */
-export const BALL_SHEET = {
-  widthMm: 100,
-  heightMm: 100,
-  cutInsetMm: 4,
-
-  titleXMm: 12,
-  titleYMm: 13,
-  titleFontMm: 4.6,
-  noteFontMm: 2.8,
-
-  ballRadiusMm: 6,
-  ballGapMm: 4,
-  ballOriginXMm: 20,
-  ballOriginYMm: 34,
-  ballColumns: 4,
-  ballRows: 4,
-} as const;
-
-/**
- * 깃대와 공 — **A5 가로 한 장**이다.
- *
- * 깃대는 A자로 세우는 종이 텐트다. 홀 **뒤쪽**에 세워 과녁이 되고, 공이 홀에
- * 들어가는 길은 막지 않는다. 두 벌을 넣은 것은 잃어버리기 때문이고, 그래서
- * 이 파트만 기본 벌 수가 2다.
- *
- * 공은 지름 12mm 원판 열두 개다. 두꺼운 종이에 뽑아 오리면 연필로 튕겼을 때
- * 미끄러지고, 홀 원(반지름 8mm)에 걸쳐 멈추면 홀아웃이다. 넷이 쳐도 잃어버릴
- * 몫이 남아야 해서 사람 수의 세 배를 넣었다.
- */
-export const FLAG_SHEET = {
-  widthMm: 210,
-  heightMm: 148,
-  cutInsetMm: 4,
-
-  titleXMm: 12,
-  titleYMm: 12,
-  titleFontMm: 4.6,
-  noteFontMm: 2.8,
-
-  /** 깃대 텐트 한 벌 — 몸통 폭 × 한 면 높이. 꼭대기가 산접기다. */
-  poleWidthMm: 15,
-  poleHeightMm: 46,
-  /** 바닥 탭. 바깥으로 꺾어 눕히면 텐트가 선다. */
-  poleTabMm: 11,
-  /** 깃발 — 몸통 옆으로 튀어나온 삼각형. 실루엣째로 오린다. */
-  flagWidthMm: 17,
-  flagHeightMm: 11,
-  /** 깃발 위 여백(몸통 꼭대기에서 깃발 아래까지). */
-  flagInsetMm: 5,
-  /** 깃대 두 벌의 왼쪽 x. */
-  poleXsMm: [24, 76] as const,
-  /**
-   * 텐트 꼭대기 접는선의 y. 위아래로 한 면씩 펼쳐진다.
-   *
-   * 전개도 위 끝(꼭대기 − 면 높이 − 탭)이 제목 줄 아래로 내려오는 값이어야
-   * 한다. 74였을 때 오림선이 안내 글자를 뚫고 올라갔다.
-   */
-  poleFoldYMm: 80,
-
-  /** 공 원판. */
-  ballRadiusMm: 6,
-  ballGapMm: 4,
-  ballOriginXMm: 132,
-  ballOriginYMm: 46,
-  ballColumns: 4,
-  ballRows: 3,
-} as const;
 
 /**
  * 나만의 홀 — **판 위에서 끌어 짓는 홀** (IDE-031)

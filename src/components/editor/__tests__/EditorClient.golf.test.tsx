@@ -38,9 +38,9 @@ describe('골프 — 홀 열여덟 장을 셀렉트로 고른다', () => {
     // 열여덟 장이 단추로 늘어서지 않는다 — 그것이 이 셀렉트를 만든 이유다.
     expect(screen.queryByRole('button', { name: /^7번 홀/ })).toBeNull();
 
-    for (const title of ['기록표', '공']) {
-      expect(screen.getByRole('button', { name: title })).toBeInTheDocument();
-    }
+    // 묶이지 않은 파트는 기록표 하나뿐이다 — 오리고 접을 부속이 없다(IDE-032).
+    expect(screen.getByRole('button', { name: '기록표' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '공' })).toBeNull();
   });
 
   it('첫 화면은 1번 홀이고, 고른 홀이 미리보기에 뜬다', async () => {
@@ -143,9 +143,9 @@ describe('골프 — 홀 열여덟 장을 셀렉트로 고른다', () => {
 
     await user.click(screen.getByLabelText('홀 판 고르기'));
     await user.click(await screen.findByRole('option', { name: /^12번 홀/ }));
-    await user.click(screen.getByRole('button', { name: '공' }));
+    await user.click(screen.getByRole('button', { name: '기록표' }));
 
-    expect(previewBox().getAttribute('aria-label')).toContain('공');
+    expect(previewBox().getAttribute('aria-label')).toContain('기록표');
     // 묶음이 활성이 아니어도 무엇을 고를 수 있는 자리인지 보여 준다.
     expect(screen.getByLabelText('홀 판 고르기')).toBeInTheDocument();
 
