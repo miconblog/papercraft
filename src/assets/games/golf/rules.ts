@@ -6,6 +6,9 @@
  * 판마다 홀 정보 카드에 **그 홀의 타수 이름**이 인쇄되어 있어, 치는 동안 필요한
  * 것은 판 위에 있다.
  *
+ * 벌타 문구는 `scoring.ts`의 `PENALTY`에서 온다 — **판에 적히는 말과 같은
+ * 표**다(IDE-032). 한쪽만 고치면 종이와 설명이 어긋난다.
+ *
  * 축구·야구와 같은 손놀림을 쓴다(2026-09-15 사용자 요청 — "게임방식은 축구와
  * 야구게임과 유사하게 연필로 튕겨서"). 다른 것은 **목표가 상대가 아니라
  * 자기 타수**라는 점이다. 그래서 여럿이 쳐도 서로를 방해하지 않고, 혼자서도
@@ -13,7 +16,7 @@
  */
 import type { RuleBlock } from '@/lib/schema';
 import { COURSE_PAR, HOLES } from './dimensions';
-import { SCORE_TERMS } from './scoring';
+import { PENALTY, SCORE_TERMS } from './scoring';
 
 export const RULES_TITLE = '골프 게임판 · 게임 방법';
 
@@ -40,31 +43,19 @@ export const RULES: readonly RuleBlock[] = [
   { kind: 'bullet', text: '연필 1자루(공을 튕기는 도구) · 가위' },
   {
     kind: 'bullet',
-    text: `홀 판 ${HOLES.length}장(1번 홀부터 18번 홀까지) · 기록표 1장 · 깃대와 공 1장. 판은 한 번에 다 뽑아도 되고, 칠 홀만 뽑아도 된다.`,
+    text: `홀 판 ${HOLES.length}장(1번 홀부터 18번 홀까지) · 기록표 1장 · 공 1장. 판은 한 번에 다 뽑아도 되고, 칠 홀만 뽑아도 된다.`,
   },
   { kind: 'bullet', text: '1~4명이 함께 친다. 혼자서도 칠 수 있다.' },
   { kind: 'bullet', text: PAPER_NOTE },
 
-  { kind: 'heading', text: '깃대 세우기' },
+  { kind: 'heading', text: '공 만들기' },
   {
     kind: 'step',
-    text: '깃대 전개도를 바깥 실선을 따라 오린다. 깃발 두 장이 옆으로 튀어나온 모양 그대로 오리면 된다.',
+    text: '공 시트를 두꺼운 종이에 뽑아 동그라미를 따라 오린다. 한 장에 열여섯 개가 들어 있다.',
   },
   {
-    kind: 'step',
-    text: '가운데 일점쇄선을 산접기로 접는다 — 인쇄면이 바깥으로 오게 접어 두 면이 등을 맞댄다.',
-  },
-  {
-    kind: 'step',
-    text: '양 끝 파선을 바깥으로 꺾어 바닥에 눕힌다. A자로 벌려 세우면 깃대가 선다.',
-  },
-  {
-    kind: 'step',
-    text: '깃대는 홀 **뒤쪽**에 세운다. 홀 앞이나 위에 놓으면 공이 들어갈 길을 막는다.',
-  },
-  {
-    kind: 'step',
-    text: '공은 두꺼운 종이에 뽑아 오려 쓴다. 한 장에 열두 개가 들어 있다.',
+    kind: 'bullet',
+    text: '두꺼운 종이일수록 연필로 튕겼을 때 잘 미끄러진다. 잃어버리기 쉬우니 넉넉히 오려 둔다.',
   },
 
   { kind: 'heading', text: '차리기' },
@@ -72,7 +63,6 @@ export const RULES: readonly RuleBlock[] = [
     kind: 'step',
     text: '이번에 칠 홀의 판을 책상에 펼친다. 1번 홀부터 차례로 친다.',
   },
-  { kind: 'step', text: '깃대를 그린 위 홀 뒤에 세운다.' },
   { kind: 'step', text: '공을 판 아래쪽 티잉 그라운드(티) 안에 놓는다.' },
   {
     kind: 'step',
@@ -94,10 +84,14 @@ export const RULES: readonly RuleBlock[] = [
   },
   {
     kind: 'bullet',
-    text: '공이 홀(깃대 아래 동그라미)에 닿은 채로 멈추면 홀아웃이다. 그때까지 친 횟수가 그 홀의 타수다.',
+    text: '공이 홀(깃발 아래 동그라미)에 닿은 채로 멈추면 홀아웃이다. 그때까지 친 횟수가 그 홀의 타수다.',
   },
 
   { kind: 'heading', text: '땅에 따라 — 벌타' },
+  {
+    kind: 'bullet',
+    text: '벌타는 **판에도 적혀 있다** — 모래와 물 위에 그 자리에서 어떻게 되는지가 쓰여 있어, 치다 말고 이 페이지를 펼 일이 없다.',
+  },
   {
     kind: 'bullet',
     text: '페어웨이(옅은 초록 길)와 그린(진한 초록)에 멈추면 그대로 친다. 벌타는 없다.',
@@ -108,15 +102,15 @@ export const RULES: readonly RuleBlock[] = [
   },
   {
     kind: 'bullet',
-    text: '벙커(모래)에 멈추면 1벌타다. 공은 그 자리에 두고 타수에 1을 더한다.',
+    text: `벙커(모래)에 멈추면 1벌타다 — 판의 모래에 \`${PENALTY.bunker.mark}\`라고 적혀 있다. 공은 그 자리에 두고 타수에 1을 더한다.`,
   },
   {
     kind: 'bullet',
-    text: '물(연못·개울)에 들어가면 1벌타다. 물에 들어가기 바로 전 자리에 공을 놓고 다시 친다.',
+    text: `물(연못·개울)에 들어가면 1벌타다 — 판의 물에 \`${PENALTY.water.mark} · ${PENALTY.water.note}\`라고 적혀 있다. 물에 들어가기 바로 전 자리에 공을 놓고 다시 친다.`,
   },
   {
     kind: 'bullet',
-    text: 'O.B. — 점선 밖으로 나가면 1벌타다. 직전에 쳤던 자리에 공을 놓고 다시 친다.',
+    text: `O.B. — 점선 밖으로 나가면 1벌타다. 판 아래 모서리에 \`${PENALTY.ob.mark} · ${PENALTY.ob.note}\`라고 적혀 있다.`,
   },
   {
     kind: 'bullet',

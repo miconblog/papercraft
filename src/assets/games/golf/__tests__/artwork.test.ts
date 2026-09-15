@@ -2,7 +2,7 @@
  * 골프 게임판 도안 검증 (IDE-030)
  *
  * 종이 없이 확인할 수 있는 것을 여기서 강제한다. 실물이 있어야 아는 것(연필로
- * 튕겼을 때 홀에 들어가는 맛 · 깃대가 실제로 서는지 · 가독성 하한의 실측)은
+ * 튕겼을 때 홀에 들어가는 맛 · 가독성 하한의 실측)은
  * 이슈에 ⚠︎로 남는다.
  *
  * **규격을 어기지 않는지는 `parseGame`이 보고, 이 판으로 골프를 칠 수 있는지는
@@ -26,7 +26,7 @@ import {
 import { ARTWORK } from '../artwork';
 import { layoutHole } from '../artwork/hole';
 import { cardFitsBoard, customHoleSpec, CUSTOM_SLOT } from '../artwork/dynamic';
-import { ballCenters } from '../artwork/flag-and-ball';
+import { ballCenters } from '../artwork/balls';
 import {
   clearanceFromPolygon,
   grow,
@@ -47,7 +47,7 @@ import {
   COURSE_PAR,
   CUSTOM_HOLE,
   CUSTOM_HOLE_DEFAULTS,
-  FLAG_SHEET,
+  BALL_SHEET,
   HOLES,
   IN_HOLES,
   OUT_HOLES,
@@ -66,7 +66,7 @@ import {
   type HoleSpec,
 } from '../dimensions';
 import { RULES } from '../rules';
-import { termsForPar } from '../scoring';
+import { PENALTY, termsForPar } from '../scoring';
 import { estimateTextWidthMm } from '../../../shared/svg';
 
 const game = getGame('golf')!;
@@ -81,7 +81,7 @@ const inCourse = (p: Pt): boolean =>
   p.y <= COURSE_AREA.yMm + COURSE_AREA.heightMm;
 
 describe('도안 구조', () => {
-  it('판 열여덟 장과 기록표가 낱장이고, 부속은 조립물 하나다', () => {
+  it('판 열여덟 장과 기록표가 낱장이고, 부속은 오림용 하나다', () => {
     expect(game.parts.filter((p) => p.kind === 'board')).toHaveLength(1);
     // 보드는 1번 홀이다 — 썸네일과 소개 페이지가 가리킬 대표 판이다.
     expect(game.parts[0].id).toBe(holePartId(1));
@@ -89,7 +89,9 @@ describe('도안 구조', () => {
     expect(game.parts.filter((p) => p.kind === 'sheet')).toHaveLength(
       HOLES.length - 1 + 2,
     );
-    expect(game.parts.filter((p) => p.kind === 'buildable')).toHaveLength(1);
+    // 깃대를 빼면서 접을 것이 없어졌다(IDE-032) — 남은 부속은 공 한 장이다.
+    expect(game.parts.filter((p) => p.kind === 'cutout')).toHaveLength(1);
+    expect(game.parts.filter((p) => p.kind === 'buildable')).toHaveLength(0);
     expect(game.parts.filter((p) => isBoardLike(p.kind))).toHaveLength(
       HOLES.length + 2,
     );
@@ -103,7 +105,7 @@ describe('도안 구조', () => {
     expect(new Set(grouped.map((p) => p.series)).size).toBe(1);
     // 기록표와 부속은 묶이지 않는다 — 단추 하나씩으로 남는다.
     expect(partOf('score-card').series).toBeUndefined();
-    expect(partOf('flag-and-ball').series).toBeUndefined();
+    expect(partOf('balls').series).toBeUndefined();
     // 접히는 것은 화면뿐이다. 인쇄는 파트마다 한 줄이라 한 번에 다 뽑는다.
     expect(game.parts).toHaveLength(HOLES.length + 3);
   });
@@ -411,6 +413,41 @@ describe('홀 판 배치', () => {
   });
 });
 
+describe('땅에 적힌 처분 (IDE-032)', () => {
+  const svgOf = (partId: string) => ARTWORK[partId]();
+
+  it('벙커가 있는 홀의 판에 +1타가 적힌다', () => {
+    const hole = HOLES.find((h) => h.bunkers.length > 0)!;
+    expect(svgOf(holePartId(hole.number))).toContain(PENALTY.bunker.mark);
+  });
+
+  it('물이 있는 홀의 판에 되돌아갈 자리까지 적힌다', () => {
+    const hole = HOLES.find((h) => h.ponds.length > 0 || h.streams.length > 0)!;
+    const svg = svgOf(holePartId(hole.number));
+    expect(svg).toContain(PENALTY.water.mark);
+    expect(svg).toContain(PENALTY.water.note!);
+  });
+
+  it('열여덟 판 모두에 O.B. 처분이 적힌다', () => {
+    for (const hole of HOLES) {
+      const svg = svgOf(holePartId(hole.number));
+      expect(svg, `${hole.number}번 홀`).toContain(PENALTY.ob.mark);
+      expect(svg, `${hole.number}번 홀`).toContain(PENALTY.ob.note);
+    }
+  });
+
+  it('처분 글자가 제 땅보다 크지 않다', () => {
+    // 글자가 도형보다 크면 아무 말도 안 하느니만 못하다 — 가장 작은 벙커에서도
+    // '+1타'가 들어가야 한다.
+    const smallest = Math.min(
+      ...HOLES.flatMap((h) => h.bunkers.map((b) => b.rxMm)),
+    );
+    expect(
+      estimateTextWidthMm(PENALTY.bunker.mark, COURSE.penaltyFontMm),
+    ).toBeLessThan(smallest * 1.7);
+  });
+});
+
 describe('점수의 이름', () => {
   it('한 타에 넣으면 무엇이든 홀인원이다', () => {
     for (const par of [3, 4, 5]) {
@@ -639,45 +676,38 @@ describe('기록표', () => {
   });
 });
 
-describe('깃대와 공', () => {
-  it('오림선 안의 모든 것이 시트 안에 있다', () => {
-    const { widthMm, heightMm, cutInsetMm } = FLAG_SHEET;
+describe('공 (IDE-032)', () => {
+  it('공이 모두 오림 여백 안에 있다', () => {
+    const { widthMm, heightMm, cutInsetMm, ballRadiusMm } = BALL_SHEET;
     for (const ball of ballCenters()) {
-      expect(ball.x - FLAG_SHEET.ballRadiusMm).toBeGreaterThan(cutInsetMm);
-      expect(ball.x + FLAG_SHEET.ballRadiusMm).toBeLessThan(
-        widthMm - cutInsetMm,
-      );
-      expect(ball.y - FLAG_SHEET.ballRadiusMm).toBeGreaterThan(cutInsetMm);
-      expect(ball.y + FLAG_SHEET.ballRadiusMm).toBeLessThan(
-        heightMm - cutInsetMm,
-      );
-    }
-    const top =
-      FLAG_SHEET.poleFoldYMm - FLAG_SHEET.poleHeightMm - FLAG_SHEET.poleTabMm;
-    const bottom =
-      FLAG_SHEET.poleFoldYMm + FLAG_SHEET.poleHeightMm + FLAG_SHEET.poleTabMm;
-    expect(top).toBeGreaterThan(cutInsetMm);
-    expect(bottom).toBeLessThan(heightMm - cutInsetMm);
-    for (const x of FLAG_SHEET.poleXsMm) {
-      expect(x).toBeGreaterThan(cutInsetMm);
-      expect(x + FLAG_SHEET.poleWidthMm + FLAG_SHEET.flagWidthMm).toBeLessThan(
-        widthMm - cutInsetMm,
-      );
+      expect(ball.x - ballRadiusMm).toBeGreaterThan(cutInsetMm);
+      expect(ball.x + ballRadiusMm).toBeLessThan(widthMm - cutInsetMm);
+      expect(ball.y - ballRadiusMm).toBeGreaterThan(cutInsetMm);
+      expect(ball.y + ballRadiusMm).toBeLessThan(heightMm - cutInsetMm);
     }
   });
 
-  it('깃대 전개도가 제목 줄을 침범하지 않는다', () => {
-    const top =
-      FLAG_SHEET.poleFoldYMm - FLAG_SHEET.poleHeightMm - FLAG_SHEET.poleTabMm;
-    expect(top).toBeGreaterThan(FLAG_SHEET.titleYMm + 6);
+  it('공이 제목 줄 아래에서 시작한다', () => {
+    const top = BALL_SHEET.ballOriginYMm - BALL_SHEET.ballRadiusMm;
+    expect(top).toBeGreaterThan(BALL_SHEET.titleYMm + 6);
   });
 
   it('공이 홀 원보다 작다 — 들어갈 수 있어야 한다', () => {
-    expect(FLAG_SHEET.ballRadiusMm).toBeLessThan(COURSE.cupRadiusMm);
+    expect(BALL_SHEET.ballRadiusMm).toBeLessThan(COURSE.cupRadiusMm);
   });
 
   it('사람 넷이 쳐도 잃어버릴 공이 남는다', () => {
-    expect(ballCenters().length).toBeGreaterThanOrEqual(PLAYER_COUNT * 2);
+    expect(ballCenters().length).toBeGreaterThanOrEqual(PLAYER_COUNT * 3);
+  });
+
+  it('깃대는 더 이상 부속이 아니다 — 접을 것이 없으니 오림용이다', () => {
+    // 사용자가 한 라운드 쳐 보고 뺐다(2026-09-15). 홀이 어디인지는 판에 그린
+    // 깃발이 알린다.
+    const part = partOf('balls');
+    expect(part.kind).toBe('cutout');
+    expect(part.marks).toEqual(['cut']);
+    expect(game.parts.some((p) => p.kind === 'buildable')).toBe(false);
+    expect(ARTWORK['flag-and-ball']).toBeUndefined();
   });
 });
 
@@ -709,8 +739,17 @@ describe('게임 방법', () => {
     }
   });
 
-  it('깃대는 홀 뒤에 세운다고 적혀 있다 — 앞에 세우면 길을 막는다', () => {
-    expect(ruleText).toContain('홀 **뒤쪽**에 세운다');
+  it('벌타 처분이 판의 표시와 같은 말을 쓴다 (IDE-032)', () => {
+    // 규칙문과 판이 `PENALTY` 한 표를 읽는다 — 한쪽만 고치면 종이와 설명이
+    // 어긋나고, 그 어긋남은 치는 중에야 드러난다.
+    expect(ruleText).toContain(PENALTY.bunker.mark);
+    expect(ruleText).toContain(PENALTY.water.note);
+    expect(ruleText).toContain(PENALTY.ob.note);
+    expect(ruleText).toContain('판에도 적혀 있다');
+  });
+
+  it('깃대를 세우라는 말이 남아 있지 않다', () => {
+    expect(ruleText).not.toContain('깃대');
   });
 });
 

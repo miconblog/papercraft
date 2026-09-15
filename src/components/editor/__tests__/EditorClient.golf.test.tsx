@@ -38,7 +38,7 @@ describe('골프 — 홀 열여덟 장을 셀렉트로 고른다', () => {
     // 열여덟 장이 단추로 늘어서지 않는다 — 그것이 이 셀렉트를 만든 이유다.
     expect(screen.queryByRole('button', { name: /^7번 홀/ })).toBeNull();
 
-    for (const title of ['기록표', '깃대와 공']) {
+    for (const title of ['기록표', '공']) {
       expect(screen.getByRole('button', { name: title })).toBeInTheDocument();
     }
   });
@@ -143,9 +143,9 @@ describe('골프 — 홀 열여덟 장을 셀렉트로 고른다', () => {
 
     await user.click(screen.getByLabelText('홀 판 고르기'));
     await user.click(await screen.findByRole('option', { name: /^12번 홀/ }));
-    await user.click(screen.getByRole('button', { name: '깃대와 공' }));
+    await user.click(screen.getByRole('button', { name: '공' }));
 
-    expect(previewBox().getAttribute('aria-label')).toContain('깃대와 공');
+    expect(previewBox().getAttribute('aria-label')).toContain('공');
     // 묶음이 활성이 아니어도 무엇을 고를 수 있는 자리인지 보여 준다.
     expect(screen.getByLabelText('홀 판 고르기')).toBeInTheDocument();
 

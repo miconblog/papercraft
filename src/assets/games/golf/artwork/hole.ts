@@ -24,7 +24,7 @@ import {
   type HoleSpec,
   type Xy,
 } from '../dimensions.ts';
-import { termsForPar } from '../scoring.ts';
+import { PENALTY, termsForPar } from '../scoring.ts';
 import {
   ART_LAYER_ID,
   INK_COLOR,
@@ -36,6 +36,7 @@ import {
   rect,
   svgDocument,
   text,
+  estimateTextWidthMm,
 } from '../../../shared/svg.ts';
 import { SLOT_LAYER_ID } from '../../../../lib/schema/marks.ts';
 import {
@@ -185,12 +186,34 @@ export function layoutHole(hole: HoleSpec): HoleLayout {
   };
 
   /**
+   * O.B. 처분이 적히는 아래 두 모서리 (IDE-032).
+   *
+   * 글자가 나무보다 나중에 그려져 가려지지는 않지만, 연한 잎 위의 회색 글자는
+   * 흐려서 읽히지 않는다. **자리를 비우는 편이 낫다.**
+   */
+  const obLabelBoxes: Rect[] = [
+    {
+      xMm: COURSE_AREA.xMm,
+      yMm: COURSE_AREA.yMm + COURSE_AREA.heightMm - 10,
+      widthMm: 54,
+      heightMm: 10,
+    },
+    {
+      xMm: COURSE_AREA.xMm + COURSE_AREA.widthMm - 22,
+      yMm: COURSE_AREA.yMm + COURSE_AREA.heightMm - 10,
+      widthMm: 22,
+      heightMm: 10,
+    },
+  ];
+
+  /**
    * 나무가 앉으면 안 되는 자리. 코스에서 놀이가 일어나는 면 전부와 **홀 정보
    * 카드**다 — 카드는 코스 위에 얹히므로 그 밑에 나무를 심으면 가려진다.
    */
   const blocked = (p: Pt, r: number): boolean => {
     const pad = COURSE.treeClearanceMm + r;
     if (rectContains(grow(panelRect, r + 1), p)) return true;
+    if (obLabelBoxes.some((box) => rectContains(grow(box, r), p))) return true;
     if (
       p.x - r < COURSE_AREA.xMm + 1 ||
       p.x + r > COURSE_AREA.xMm + COURSE_AREA.widthMm - 1 ||
@@ -274,12 +297,81 @@ export function layoutHole(hole: HoleSpec): HoleLayout {
 }
 
 /**
+ * 땅 위에 적는 처분 (IDE-032).
+ *
+ * 사용자가 쳐 보고 청했다 — 벌타와 되돌아가는 자리를 **땅 모양에 같이** 적어
+ * 설명서를 왔다 갔다 하지 않게 해 달라고. 그래서 모래에는 `+1타`가, 물에는
+ * `+1타`와 `앞자리에서 다시`가 적힌다.
+ *
+ * 글자가 도형보다 크면 아무 말도 안 하느니만 못하므로 **들어갈 때만 적는다** —
+ * 폭이 모자라면 두 줄 중 아랫줄을 버리고, 그래도 모자라면 통째로 뺀다.
+ */
+function penaltyMark(
+  center: Pt,
+  penalty: { mark: string; note: string | null },
+  widthMm: number,
+  color: string,
+): string[] {
+  const markFont = COURSE.penaltyFontMm;
+  const noteFont = COURSE.penaltyNoteFontMm;
+  if (estimateTextWidthMm(penalty.mark, markFont) > widthMm) return [];
+
+  const note =
+    penalty.note !== null &&
+    estimateTextWidthMm(penalty.note, noteFont) <= widthMm
+      ? penalty.note
+      : null;
+  const shift = note === null ? 0 : markFont * 0.5;
+
+  return [
+    text(penalty.mark, center.x, center.y - shift, markFont, {
+      fill: color,
+      'text-anchor': 'middle',
+      'font-weight': 'bold',
+    }),
+    ...(note === null
+      ? []
+      : [
+          text(note, center.x, center.y + noteFont * 1.35, noteFont, {
+            fill: color,
+            'text-anchor': 'middle',
+          }),
+        ]),
+  ];
+}
+
+/**
+ * 물의 처분을 적을 자리.
+ *
+ * 연못 한가운데가 첫 후보지만 6번 홀은 거기에 섬 그린이 떠 있다. 그린에 물리면
+ * 아래쪽으로, 그래도 물리면 위쪽으로 비킨다 — 물 위 어딘가에는 적혀야 한다.
+ */
+function waterLabelSpot(e: EllipseSpec, green: readonly Pt[]): Pt | null {
+  const candidates: Pt[] = [
+    pt(e.xMm, e.yMm),
+    pt(e.xMm, e.yMm + e.ryMm * 0.62),
+    pt(e.xMm, e.yMm - e.ryMm * 0.62),
+  ];
+  return candidates.find((c) => !pointInPolygon(green, c)) ?? null;
+}
+
+/** 개울의 처분을 적을 자리 — 중심선의 가운데다. 띠가 코스를 가로지르므로 판 한복판이 된다. */
+function streamLabelSpot(points: readonly Xy[]): Pt {
+  const [x, y] = points[Math.floor(points.length / 2)];
+  return pt(x, y);
+}
+
+/**
  * 연못 안의 물결. 클립을 쓰지 않고 타원 폭을 재서 선 길이를 맞춘다.
  *
  * 그린에 가리는 줄은 **통째로 뺀다**. 6번 홀은 그린이 연못 한가운데 떠 있는
  * 섬이라, 그리고 지우면 양옆에 토막 난 선만 남는다.
  */
-function pondRipples(e: EllipseSpec, green: readonly Pt[]): string[] {
+function pondRipples(
+  e: EllipseSpec,
+  green: readonly Pt[],
+  labelAt: Pt | null,
+): string[] {
   const rot = ((e.rotDeg ?? 0) * Math.PI) / 180;
   const cos = Math.cos(rot);
   const sin = Math.sin(rot);
@@ -297,6 +389,17 @@ function pondRipples(e: EllipseSpec, green: readonly Pt[]): string[] {
     });
     // 한 점이라도 그린에 물리면 그 줄은 그리지 않는다.
     if (points.some((p) => pointInPolygon(green, p))) return [];
+    // 처분을 적은 자리도 비운다 — 물결 위에 글자를 얹으면 둘 다 안 읽힌다.
+    if (
+      labelAt !== null &&
+      points.some(
+        (p) =>
+          Math.abs(p.y - labelAt.y) < COURSE.penaltyClearMm &&
+          Math.abs(p.x - labelAt.x) < COURSE.penaltyClearMm * 2.6,
+      )
+    ) {
+      return [];
+    }
     return [
       path(openPath(points), {
         fill: 'none',
@@ -307,7 +410,11 @@ function pondRipples(e: EllipseSpec, green: readonly Pt[]): string[] {
   });
 }
 
-/** 벙커 안의 모래알. 홀 번호를 씨앗으로 흩어 홀마다 다르게 보이게 한다. */
+/**
+ * 벙커 안의 모래알. 홀 번호를 씨앗으로 흩어 홀마다 다르게 보이게 한다.
+ *
+ * 가운데는 비운다 — 거기에 처분(`+1타`)이 적힌다(IDE-032).
+ */
 function bunkerGrains(e: EllipseSpec, seed: number): string[] {
   const grains: string[] = [];
   let a = seed;
@@ -317,7 +424,8 @@ function bunkerGrains(e: EllipseSpec, seed: number): string[] {
   };
   for (let i = 0; i < 7; i++) {
     const t = next() * Math.PI * 2;
-    const r = Math.sqrt(next()) * 0.72;
+    // 안쪽 절반은 글자 자리라 바깥 테두리 쪽에만 흩는다.
+    const r = 0.58 + Math.sqrt(next()) * 0.3;
     const rot = ((e.rotDeg ?? 0) * Math.PI) / 180;
     const x = Math.cos(t) * e.rxMm * r;
     const y = Math.sin(t) * e.ryMm * r;
@@ -475,17 +583,6 @@ export function renderHole(hole: HoleSpec): string {
         ),
         // O.B. 표시는 아래 두 모서리에 둔다 — 위쪽은 홀 정보 카드가 앉는
         // 자리이고, 페어웨이의 티 쪽 끝은 가운데라 모서리가 비어 있다.
-        ...[COURSE_AREA.xMm + 9, COURSE_AREA.xMm + COURSE_AREA.widthMm - 9].map(
-          (x) =>
-            text(
-              'O.B.',
-              x,
-              COURSE_AREA.yMm + COURSE_AREA.heightMm - 4.5,
-              TYPE.markerFontMm,
-              { fill: INK.obStroke, 'text-anchor': 'middle' },
-            ),
-        ),
-
         // 페어웨이.
         path(closedPath(layout.fairway), {
           fill: INK.fairwayFill,
@@ -494,21 +591,36 @@ export function renderHole(hole: HoleSpec): string {
         }),
 
         // 물 — 페어웨이 위에 온다(3번 홀의 연못이 페어웨이를 가로지른다).
-        ...layout.streams.map((s) =>
+        ...layout.streams.flatMap((s, i) => [
           path(closedPath(s), {
             fill: INK.waterFill,
             stroke: INK.waterStroke,
             'stroke-width': 0.4,
           }),
-        ),
-        ...hole.ponds.flatMap((e, i) => [
-          path(closedPath(layout.ponds[i]), {
-            fill: INK.waterFill,
-            stroke: INK.waterStroke,
-            'stroke-width': 0.4,
-          }),
-          ...pondRipples(e, layout.green),
+          // 개울도 물이다 — 같은 처분을 띠 한가운데에 적는다. 띠를 따라 가로로
+          // 눕는 글이라 폭은 띠 길이가 아니라 넉넉히 잡는다.
+          ...penaltyMark(
+            streamLabelSpot(hole.streams[i].points),
+            PENALTY.water,
+            40,
+            INK.waterInk,
+          ),
         ]),
+        ...hole.ponds.flatMap((e, i) => {
+          const spot = waterLabelSpot(e, layout.green);
+          return [
+            path(closedPath(layout.ponds[i]), {
+              fill: INK.waterFill,
+              stroke: INK.waterStroke,
+              'stroke-width': 0.4,
+            }),
+            ...pondRipples(e, layout.green, spot),
+            // 물에 빠지면 어떻게 되는지를 물 위에 적는다(IDE-032).
+            ...(spot === null
+              ? []
+              : penaltyMark(spot, PENALTY.water, e.rxMm * 1.7, INK.waterInk)),
+          ];
+        }),
 
         // 그린 — 물 위에 온다(6번 홀은 섬 그린이다). 칼라를 먼저 깔아
         // 그린이 러프 한가운데 떠 있지 않게 한다.
@@ -531,10 +643,35 @@ export function renderHole(hole: HoleSpec): string {
             'stroke-width': 0.4,
           }),
           ...bunkerGrains(e, hole.number * 7919 + i * 131 + 3),
+          // 모래에 빠지면 1벌타 — 그 자리에서 계속 친다(IDE-032).
+          ...penaltyMark(
+            pt(e.xMm, e.yMm),
+            PENALTY.bunker,
+            e.rxMm * 1.7,
+            INK.bunkerInk,
+          ),
         ]),
 
         // 숲.
         ...layout.trees.flatMap(tree),
+
+        // O.B. 처분은 **나무 뒤에** 적는다 — 러프 바로 위에 두었더니 나중에
+        // 심은 나무가 글자를 덮었다. 왼쪽에만 처분까지 적고 오른쪽은 이름만
+        // 둔다: 같은 문장을 두 번 적으면 판이 수다스러워진다(IDE-032).
+        text(
+          `${PENALTY.ob.mark} · ${PENALTY.ob.note}`,
+          COURSE_AREA.xMm + 4,
+          COURSE_AREA.yMm + COURSE_AREA.heightMm - 4.5,
+          TYPE.markerFontMm,
+          { fill: INK.obStroke, 'text-anchor': 'start' },
+        ),
+        text(
+          'O.B.',
+          COURSE_AREA.xMm + COURSE_AREA.widthMm - 9,
+          COURSE_AREA.yMm + COURSE_AREA.heightMm - 4.5,
+          TYPE.markerFontMm,
+          { fill: INK.obStroke, 'text-anchor': 'middle' },
+        ),
 
         // 티잉 그라운드.
         path(closedPath(layout.tee.corners), {

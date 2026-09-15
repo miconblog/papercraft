@@ -42,3 +42,32 @@ export const termsLine = (par: number): string =>
   termsForPar(par)
     .map((term) => `${term.strokes}타 ${term.label}`)
     .join(' · ');
+
+/**
+ * 땅에 붙는 벌타 표시 (IDE-032)
+ *
+ * 사용자가 한 라운드 쳐 보고 청했다(2026-09-15) — "땅에 따라서 벌타와 이전자리로
+ * 되돌아가는 표시가 땅모양에 같이 표기되면 설명서를 왔다갔다 하지 않아도 될것
+ * 같거든."
+ *
+ * 그래서 **처분을 땅 위에 적는다.** 모래에 `+1타`, 물에 `+1타 / 앞자리에서 다시`,
+ * O.B. 선에 `+1타 · 친 자리에서 다시`다. 규칙문과 판이 **같은 표를 읽으므로**
+ * 한쪽만 고쳐 종이와 설명이 어긋나는 일이 없다.
+ *
+ * 말이 짧은 것은 자리가 좁아서이기도 하지만, 치는 도중에 읽는 글이라서다 —
+ * 한 번에 눈에 들어오지 않으면 결국 설명서를 편다.
+ */
+export const PENALTY = {
+  bunker: { mark: '+1타', note: null },
+  water: { mark: '+1타', note: '앞자리에서 다시' },
+  ob: { mark: 'O.B. +1타', note: '친 자리에서 다시' },
+} as const;
+
+/** 규칙문이 쓰는 한 줄. 판의 표시와 같은 처분을 말한다. */
+export const penaltyLine = (
+  where: string,
+  penalty: { mark: string; note: string | null },
+): string =>
+  penalty.note === null
+    ? `${where} — ${penalty.mark}`
+    : `${where} — ${penalty.mark}, ${penalty.note}`;

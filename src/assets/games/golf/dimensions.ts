@@ -120,7 +120,12 @@ export const COURSE = {
   cupRadiusMm: 8,
   /** 홀 원 안의 검은 점. 멀리서도 홀이 어디인지 보인다. */
   cupDotRadiusMm: 2.4,
-  /** 깃대 — 홀에서 위로 뻗는 선과 삼각 깃발. 그림일 뿐 부속과는 다른 것이다. */
+  /**
+   * 깃대 — 홀에서 위로 뻗는 선과 삼각 깃발.
+   *
+   * **판에 그린 표식이다.** 세워 만드는 종이 깃대는 뺐지만(2026-09-15 사용자
+   * 요청) 이 그림은 남는다 — 멀리서 홀이 어디인지 알리는 일은 그림이 한다.
+   */
   flagPoleHeightMm: 16,
   flagWidthMm: 9,
   flagHeightMm: 6,
@@ -148,6 +153,23 @@ export const COURSE = {
   scatterSpacingMm: 19,
   /** 페어웨이·그린에서 이만큼 안쪽에는 나무를 심지 않는다. */
   treeClearanceMm: 6,
+
+  /**
+   * 땅 위에 적는 처분의 글자 크기 (IDE-032).
+   *
+   * 치는 도중에 읽는 글이라 판 위에서 가장 작은 글자보다 크다. 배율 100%에서
+   * 2.3mm는 아이가 읽는 하한에 가깝지만, 아랫줄은 "무엇을 하라"가 아니라
+   * "어디서 다시"라 한 번 읽고 나면 안 봐도 된다.
+   */
+  penaltyFontMm: 3,
+  penaltyNoteFontMm: 2.3,
+  /**
+   * 물결이 글자를 피해 가는 여유.
+   *
+   * 두 줄짜리 글의 **아랫줄까지** 덮어야 한다 — 3.5mm였을 때 "앞자리에서 다시"가
+   * 물결에 걸려 흐렸다.
+   */
+  penaltyClearMm: 6,
   /**
    * 그린을 두르는 칼라(프린지)의 폭. 페어웨이 색으로 그린보다 먼저 깔린다.
    *
@@ -184,6 +206,14 @@ export const INK = {
   treeStroke: '#3f7c43',
   /** OB 경계. */
   obStroke: '#9aa3ad',
+  /**
+   * 처분 글자의 색 — 땅 색보다 진하다.
+   *
+   * 모래와 물의 테두리 색을 그대로 쓰면 제 바탕 위에서 묻힌다. 흑백으로 뽑아도
+   * 글자가 바탕보다 어두워야 읽힌다.
+   */
+  bunkerInk: '#8a6a28',
+  waterInk: '#2f6ba5',
 } as const;
 
 /** 코스 좌표는 짝으로 적는다 — 열여덟 홀을 객체로 적으면 파일이 두 배가 된다. */
@@ -910,6 +940,35 @@ export const sumRowCenterY = (index: number): number =>
 
 /** 이름이 앉는 칸의 가로 중심 — 왼쪽 끝의 번호를 비켜 오른쪽으로 치우친다. */
 export const NAME_NUMBER_INSET_MM = 7;
+
+/**
+ * 공 — **작은 한 장**이다.
+ *
+ * 처음에는 깃대 두 벌이 함께 있었다. 사용자가 한 라운드 쳐 보고 뺐다
+ * (2026-09-15) — "깃대는 필요 없을것 같아". 홀이 어디인지는 판에 그려진 깃발
+ * 그림으로 충분했고, 세워 둔 종이 깃대는 공에 밀려 넘어지기만 했다.
+ *
+ * 남은 것은 지름 12mm 원판 열여섯이다. 두꺼운 종이에 뽑아 오리면 연필로
+ * 튕겼을 때 미끄러지고, 홀 원(반지름 8mm)에 걸쳐 멈추면 홀아웃이다. 넷이 쳐도
+ * 잃어버릴 몫이 남아야 해서 사람 수의 네 배를 넣었다.
+ */
+export const BALL_SHEET = {
+  widthMm: 100,
+  heightMm: 100,
+  cutInsetMm: 4,
+
+  titleXMm: 12,
+  titleYMm: 13,
+  titleFontMm: 4.6,
+  noteFontMm: 2.8,
+
+  ballRadiusMm: 6,
+  ballGapMm: 4,
+  ballOriginXMm: 20,
+  ballOriginYMm: 34,
+  ballColumns: 4,
+  ballRows: 4,
+} as const;
 
 /**
  * 깃대와 공 — **A5 가로 한 장**이다.

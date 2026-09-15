@@ -33,7 +33,7 @@ import {
   CUSTOM_HOLE,
   CUSTOM_HOLE_DEFAULTS,
   INK,
-  FLAG_SHEET,
+  BALL_SHEET,
   HOLES,
   NAME_NUMBER_INSET_MM,
   PANEL,
@@ -53,7 +53,7 @@ import {
 /** 홀 판 열여덟 장을 만들기 화면에서 한 묶음으로 보이게 하는 이름. */
 const HOLE_SERIES = '홀 판';
 const SCORE_CARD_PART_ID = 'score-card';
-const FLAG_PART_ID = 'flag-and-ball';
+const BALL_PART_ID = 'balls';
 
 /** 홀마다 성격이 하나씩 다르다 — 소개 페이지의 구성 목록이 이 줄을 읽는다. */
 function holeDescription(hole: HoleSpec): string {
@@ -349,22 +349,24 @@ export default defineGame({
       artwork: artworkPath(SCORE_CARD_PART_ID),
     },
     {
-      id: FLAG_PART_ID,
-      kind: 'buildable',
-      title: '깃대와 공',
+      id: BALL_PART_ID,
+      kind: 'cutout',
+      title: '공',
       description:
-        '오려 접어 세우는 깃대 두 벌과 공 열두 개. 깃대는 꼭대기 한 줄을 ' +
-        '산접기로 접고 양 끝 탭을 바깥으로 꺾으면 A자로 선다 — 풀도 칼도 쓰지 ' +
-        '않는다. 홀 뒤에 세운다. 공은 지름 12mm 원판이라 홀 원(지름 16mm)에 ' +
-        '닿아 멈추면 들어간 것이다. 잃어버리기 쉬워 기본 두 벌이다.',
-      widthMm: FLAG_SHEET.widthMm,
-      heightMm: FLAG_SHEET.heightMm,
+        '오려 쓰는 공 열여섯 개. 지름 12mm라 홀 원(지름 16mm)에 닿아 멈추면 ' +
+        '들어간 것이다. 두꺼운 종이에 뽑으면 연필로 튕겼을 때 더 잘 미끄러진다. ' +
+        '잃어버리기 쉬워 기본 두 벌이다. ' +
+        '깃대는 두지 않는다 — 홀이 어디인지는 판에 그린 깃발이 알린다.',
+      widthMm: BALL_SHEET.widthMm,
+      heightMm: BALL_SHEET.heightMm,
+      // 정사각 시트다. 규격은 `widthMm >= heightMm`를 가로로 읽으므로
+      // 정사각은 landscape다(윷놀이 말판과 같다).
       orientation: 'landscape',
       minScale: 0.8,
       maxScale: 2,
       defaultCopies: 2,
-      marks: ['cut', 'fold-mountain', 'fold-valley'],
-      artwork: artworkPath(FLAG_PART_ID),
+      marks: ['cut'],
+      artwork: artworkPath(BALL_PART_ID),
     },
   ],
 
