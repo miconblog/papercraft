@@ -85,10 +85,11 @@ describe('EditorClient (IDE-006 수용 기준)', () => {
     expect(screen.queryByLabelText('홈 팀 색')).toBeNull();
     expect(screen.queryByLabelText('원정 팀 색')).toBeNull();
     expect(screen.queryAllByLabelText(/대형$/)).toHaveLength(0);
-    // 되돌리기·출력하기는 옵션이 아니라 늘 쓸 수 있어야 한다.
+    // 되돌리기는 **고칠 값이 있는 파트에서만** 낸다(2026-09-16 사용자 요청) —
+    // 골대 전개도에는 손댈 것이 없으니 되돌릴 것도 없다. 출력하기는 늘 있다.
     expect(
-      screen.getByRole('button', { name: '기본값으로 되돌리기' }),
-    ).toBeInTheDocument();
+      screen.queryByRole('button', { name: '기본값으로 되돌리기' }),
+    ).toBeNull();
     expect(
       screen.getByRole('button', { name: '출력하기' }),
     ).toBeInTheDocument();

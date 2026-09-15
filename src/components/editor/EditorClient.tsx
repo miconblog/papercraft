@@ -299,13 +299,20 @@ function EditorForm({
           {hasUngroupedSlots && (
             <CustomizationForm {...formProps} groupIds={[]} />
           )}
-          <button
-            type="button"
-            onClick={handleReset}
-            className="rounded-full border border-border px-3 py-1 text-xs font-medium outline-none transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
-          >
-            기본값으로 되돌리기
-          </button>
+          {/* 되돌리기는 **고칠 값이 있는 파트에서만** 낸다(2026-09-16 사용자
+              요청). 골프의 미리 그린 홀 판이나 윷놀이 말판처럼 판에서 손댈
+              것이 하나도 없는 자리에서는 되돌릴 것도 없는데 단추만 떠 있었다.
+              누르면 여전히 **커스터마이즈 전체**가 기본값으로 돌아간다 — 값이
+              있는 파트로 옮겨 누르면 되므로 기능이 줄지는 않는다. */}
+          {partSlots.length > 0 && (
+            <button
+              type="button"
+              onClick={handleReset}
+              className="rounded-full border border-border px-3 py-1 text-xs font-medium outline-none transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
+            >
+              기본값으로 되돌리기
+            </button>
+          )}
           {/* 인쇄는 여기서 모달로 연다 — 페이지를 옮기지 않는다(2026-09-06 사용자
               요청). 지금 화면의 값을 그대로 넘겨 "보이는 그대로 뽑힌다". */}
           <PrintDialog game={game} customization={customization} />

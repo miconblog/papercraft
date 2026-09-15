@@ -57,6 +57,29 @@ describe('골프 — 홀 열여덟 장을 셀렉트로 고른다', () => {
     expect(previewBox().style.aspectRatio).toBe('210 / 297');
   });
 
+  it('되돌리기는 고칠 값이 있는 파트에서만 나온다 (IDE-032)', async () => {
+    const user = userEvent.setup();
+    render(<EditorClient game={game} />);
+
+    // 미리 그린 홀 판에는 손댈 것이 없다 — 되돌릴 것도 없다.
+    expect(
+      screen.queryByRole('button', { name: '기본값으로 되돌리기' }),
+    ).toBeNull();
+    // 출력하기는 어느 판에서든 쓸 수 있어야 한다.
+    expect(screen.getByRole('button', { name: /출력/ })).toBeInTheDocument();
+
+    await user.click(screen.getByLabelText('홀 판 고르기'));
+    await user.click(await screen.findByRole('option', { name: '나만의 홀' }));
+    expect(
+      screen.getByRole('button', { name: '기본값으로 되돌리기' }),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '기록표' }));
+    expect(
+      screen.getByRole('button', { name: '기본값으로 되돌리기' }),
+    ).toBeInTheDocument();
+  });
+
   it('홀 판에는 고칠 값이 없고, 기록표로 가면 이름 칸이 나온다', async () => {
     const user = userEvent.setup();
     render(<EditorClient game={game} />);
