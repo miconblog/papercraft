@@ -14,7 +14,7 @@
  *    생겼다(`lib/schema/parts.ts`). 1번 홀이 보드인 것은 카탈로그 썸네일과
  *    소개 페이지가 가리킬 대표 판이 하나는 있어야 하기 때문이다.
  * 2. **판이 열여덟 장인데 그림은 함수 하나에서 나온다.** `renderHole`이
- *    `HOLES`의 홀을 받아 그린다. 판마다 손으로 그렸다면 머리띠 위치 하나를
+ *    `HOLES`의 홀을 받아 그린다. 판마다 손으로 그렸다면 카드 하나의 치수를
  *    고치는 데 열여덟 파일을 고쳐야 한다.
  * 3. **혼자도 넷도 친다**(`players: 1~4`). 상대를 이기는 놀이가 아니라 자기
  *    타수를 줄이는 놀이라, 인원이 늘어도 규칙이 바뀌지 않는다.
@@ -26,16 +26,20 @@
  */
 import { defineGame } from '@/lib/schema';
 import { RULES } from './rules';
+import { CUSTOM_SLOT } from './artwork/dynamic';
 import {
   BOARD,
   COURSE_PAR,
+  CUSTOM_HOLE,
+  CUSTOM_HOLE_DEFAULTS,
+  INK,
   FLAG_SHEET,
   HOLES,
   NAME_NUMBER_INSET_MM,
+  PANEL,
   PLAYER_COUNT,
   PLAYER_LABELS,
   SCORE_CARD,
-  TYPE,
   artworkPath,
   holePartId,
   playerRowCenterY,
@@ -46,6 +50,8 @@ import {
   type HoleSpec,
 } from './dimensions';
 
+/** 홀 판 열여덟 장을 만들기 화면에서 한 묶음으로 보이게 하는 이름. */
+const HOLE_SERIES = '홀 판';
 const SCORE_CARD_PART_ID = 'score-card';
 const FLAG_PART_ID = 'flag-and-ball';
 
@@ -59,7 +65,7 @@ function holeDescription(hole: HoleSpec): string {
   else if (hole.bunkers.length > 0) hazards.push('그린 둘레에 벙커가 있다');
   return (
     `파 ${hole.par} · ${hole.yards}야드. 아래 티에서 위 그린의 홀까지 공을 튕겨 간다. ` +
-    `점선 밖은 O.B.다.${hazards.length > 0 ? ` ${hazards.join('. ')}.` : ''} ` +
+    `종이 전체가 코스이고 점선 밖은 O.B.다.${hazards.length > 0 ? ` ${hazards.join('. ')}.` : ''} ` +
     '오리거나 접지 않는다.'
   );
 }
@@ -67,12 +73,15 @@ function holeDescription(hole: HoleSpec): string {
 /**
  * 홀 판 열여덟 장. **첫 장만 보드**이고 나머지는 낱장(`sheet`)이다.
  *
- * 배율 하한 0.8은 바닥 한 줄(3.2mm)이 정한다 — 그 아래로 내려가면 "3타 버디"가
- * 읽히지 않는다. ⚠︎ 실물 출력으로 재확인이 필요하다.
+ * 배율 하한 0.8은 홀 정보 카드의 타수 줄(3mm)이 정한다 — 그 아래로 내려가면
+ * "3타 버디"가 읽히지 않는다. ⚠︎ 실물 출력으로 재확인이 필요하다.
  */
 const holeParts = HOLES.map((hole, index) => ({
   id: holePartId(hole.number),
   kind: (index === 0 ? 'board' : 'sheet') as 'board' | 'sheet',
+  // 열여덟 장이 만들기 화면에서 셀렉트 하나로 접힌다(2026-09-15 사용자 요청).
+  // 인쇄는 그대로 파트마다 한 줄이라 한 번에 다 뽑을 수 있다.
+  series: HOLE_SERIES,
   title: `${hole.number}번 홀 · ${hole.name} (파 ${hole.par})`,
   description: holeDescription(hole),
   widthMm: BOARD.widthMm,
@@ -83,16 +92,21 @@ const holeParts = HOLES.map((hole, index) => ({
   artwork: artworkPath(holePartId(hole.number)),
 }));
 
-/** 코스 이름이 홀 판마다 한 번씩, 기록표에 한 번 앉는다. */
+/**
+ * 코스 이름이 홀 판마다 한 번씩, 기록표에 한 번 앉는다.
+ *
+ * 홀 판에서는 **카드 안**이다(2026-09-15). 카드가 홀마다 다른 자리에 앉으므로
+ * 좌표도 홀마다 다르다 — `hole.panel`을 읽어 그 안의 같은 자리를 가리킨다.
+ */
 const courseNamePlacements = [
   ...HOLES.map((hole) => ({
     partId: holePartId(hole.number),
     mode: 'text' as const,
-    xMm: TYPE.courseNameXMm,
-    yMm: TYPE.courseNameYMm,
-    align: 'start' as const,
-    fontSizeMm: TYPE.courseNameFontMm,
-    maxWidthMm: TYPE.courseNameMaxWidthMm,
+    xMm: hole.panel[0] + PANEL.widthMm / 2,
+    yMm: hole.panel[1] + PANEL.courseNameYMm,
+    align: 'center' as const,
+    fontSizeMm: PANEL.courseNameFontMm,
+    maxWidthMm: PANEL.courseNameMaxWidthMm,
   })),
   {
     partId: SCORE_CARD_PART_ID,
@@ -165,6 +179,114 @@ const playerSlots = Array.from({ length: PLAYER_COUNT }, (_, i) => ({
   ],
 }));
 
+/**
+ * 나만의 홀의 슬롯 — **판 위에서 끄는 점 넷**과 **칸에 적는 값 넷** (IDE-031).
+ *
+ * 점 슬롯(`points`)이 이 게임에서 처음 쓰인다. 길·벙커·연못·카드 자리가 모두
+ * 판 위의 손잡이이고, 사용자가 끌면 그 값에서 판이 다시 그려진다. 상자는
+ * 슬롯마다 다르다 — 길은 페어웨이 반폭만큼 안쪽, 카드는 카드 크기만큼 안쪽이다.
+ */
+const customSlots = [
+  {
+    id: CUSTOM_SLOT.number,
+    kind: 'number' as const,
+    label: '홀 번호',
+    help: '카드에 크게 찍힌다. 만든 홀로 그 번호의 홀을 바꿔 쳐도 된다.',
+    min: 1,
+    max: 18,
+    integer: true,
+    default: CUSTOM_HOLE_DEFAULTS.number,
+    placements: [{ partId: CUSTOM_HOLE.partId, mode: 'control' as const }],
+  },
+  {
+    id: CUSTOM_SLOT.name,
+    kind: 'text' as const,
+    label: '홀 이름',
+    maxLength: 8,
+    default: CUSTOM_HOLE_DEFAULTS.name,
+    placeholder: '나만의 홀',
+    placements: [{ partId: CUSTOM_HOLE.partId, mode: 'control' as const }],
+  },
+  {
+    id: CUSTOM_SLOT.par,
+    kind: 'number' as const,
+    label: '파',
+    help: '카드의 타수 이름이 이 값에서 나온다 — 파 4면 3타가 버디다.',
+    min: 3,
+    max: 5,
+    integer: true,
+    default: CUSTOM_HOLE_DEFAULTS.par,
+    presets: [
+      { value: 3, label: '파 3', help: '한 번에 그린까지 가는 짧은 홀' },
+      { value: 4, label: '파 4', help: '가장 흔한 길이' },
+      { value: 5, label: '파 5', help: '두 번 쳐야 그린이 보이는 긴 홀' },
+    ],
+    placements: [{ partId: CUSTOM_HOLE.partId, mode: 'control' as const }],
+  },
+  {
+    id: CUSTOM_SLOT.width,
+    kind: 'number' as const,
+    label: '페어웨이 폭(mm)',
+    help: '좁을수록 어렵다. 거리는 길 길이에서 저절로 나온다.',
+    min: CUSTOM_HOLE.widthRangeMm.min,
+    max: CUSTOM_HOLE.widthRangeMm.max,
+    integer: true,
+    default: CUSTOM_HOLE_DEFAULTS.fairwayWidthMm,
+    presets: [
+      { value: 38, label: '좁게' },
+      { value: 48, label: '보통' },
+      { value: 58, label: '넓게' },
+    ],
+    placements: [{ partId: CUSTOM_HOLE.partId, mode: 'control' as const }],
+  },
+  {
+    id: CUSTOM_SLOT.path,
+    kind: 'points' as const,
+    label: '길 — 티에서 그린까지',
+    help: '첫 점이 티, 마지막 점이 그린이다. 가운데 점을 늘리면 굽은 홀이 된다.',
+    box: { partId: CUSTOM_HOLE.partId, ...CUSTOM_HOLE.pathBox },
+    min: 2,
+    max: 5,
+    handle: { color: INK.fairwayStroke, radiusMm: 4, noun: '길목' },
+    default: [...CUSTOM_HOLE_DEFAULTS.path],
+    placements: [{ partId: CUSTOM_HOLE.partId, mode: 'control' as const }],
+  },
+  {
+    id: CUSTOM_SLOT.bunkers,
+    kind: 'points' as const,
+    label: '벙커',
+    box: { partId: CUSTOM_HOLE.partId, ...CUSTOM_HOLE.hazardBox },
+    min: 0,
+    max: 6,
+    handle: { color: INK.bunkerStroke, radiusMm: 3.5, noun: '벙커' },
+    default: [...CUSTOM_HOLE_DEFAULTS.bunkers],
+    placements: [{ partId: CUSTOM_HOLE.partId, mode: 'control' as const }],
+  },
+  {
+    id: CUSTOM_SLOT.ponds,
+    kind: 'points' as const,
+    label: '연못',
+    box: { partId: CUSTOM_HOLE.partId, ...CUSTOM_HOLE.hazardBox },
+    min: 0,
+    max: 3,
+    handle: { color: INK.waterStroke, radiusMm: 3.5, noun: '연못' },
+    default: [...CUSTOM_HOLE_DEFAULTS.ponds],
+    placements: [{ partId: CUSTOM_HOLE.partId, mode: 'control' as const }],
+  },
+  {
+    id: CUSTOM_SLOT.card,
+    kind: 'points' as const,
+    label: '홀 정보 카드 자리',
+    help: '카드의 왼쪽 위 모서리다. 코스를 가리지 않는 빈 자리로 끈다.',
+    box: { partId: CUSTOM_HOLE.partId, ...CUSTOM_HOLE.cardBox },
+    min: 1,
+    max: 1,
+    handle: { color: '#6b7280', radiusMm: 3.5, noun: '카드' },
+    default: [...CUSTOM_HOLE_DEFAULTS.card],
+    placements: [{ partId: CUSTOM_HOLE.partId, mode: 'control' as const }],
+  },
+];
+
 export default defineGame({
   schemaVersion: 1,
   id: 'golf',
@@ -177,7 +299,8 @@ export default defineGame({
     '더해 전반(OUT)과 후반(IN)을 내고, 둘을 더해 총타수를 낸다. 거기서 코스 ' +
     `파 ${COURSE_PAR}를 빼면 오늘의 성적이다 — 숫자를 쓰고 더하고 빼는 일이 ` +
     '놀이 안에 들어 있다. 파·버디·이글 같은 점수의 이름은 실제 골프와 같고, ' +
-    '홀 판 바닥에 이 홀에서 몇 타가 무엇인지 적혀 있다. 혼자 쳐도 되고 넷이 ' +
+    '홀 판마다 얹힌 카드에 이 홀에서 몇 타가 무엇인지 적혀 있다. 혼자 쳐도 되고 ' +
+    '넷이 ' +
     '함께 쳐도 된다.',
   players: { min: 1, max: 4 },
   supplies: ['연필', '가위', '두꺼운 종이(공을 오릴 것)'],
@@ -189,6 +312,26 @@ export default defineGame({
 
   parts: [
     ...holeParts,
+    {
+      id: CUSTOM_HOLE.partId,
+      kind: 'sheet',
+      // 홀 판과 같은 묶음이다 — 만들기 화면의 홀 셀렉트 맨 끝에 붙는다.
+      series: HOLE_SERIES,
+      title: '나만의 홀',
+      description:
+        '판 위에서 직접 짓는 홀 한 장. 티와 그린을 잇는 길목, 벙커, 연못, 홀 ' +
+        '정보 카드 자리를 손잡이로 끌어 옮기면 그 값으로 판이 다시 그려진다. ' +
+        '거리는 길 길이에서 저절로 나온다. 값을 바꿔 여러 번 뽑으면 서로 다른 ' +
+        '홀이 여러 장 된다. 오리거나 접지 않는다.',
+      widthMm: BOARD.widthMm,
+      heightMm: BOARD.heightMm,
+      orientation: 'portrait',
+      minScale: 0.8,
+      maxScale: 3,
+      artwork: artworkPath(CUSTOM_HOLE.partId),
+      // 크기는 고정이고 그림만 값에서 나온다 — 점 잇기 판과 같은 쓰임이다.
+      dynamic: {},
+    },
     {
       id: SCORE_CARD_PART_ID,
       kind: 'sheet',
@@ -237,6 +380,7 @@ export default defineGame({
       placements: courseNamePlacements,
     },
     ...playerSlots,
+    ...customSlots,
   ],
 });
 

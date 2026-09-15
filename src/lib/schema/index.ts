@@ -6,6 +6,7 @@
 export * from './units';
 export * from './marks';
 export * from './parts';
+export * from './points';
 export * from './slots';
 export * from './styles';
 export * from './presets';

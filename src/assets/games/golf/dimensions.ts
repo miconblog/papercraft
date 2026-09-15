@@ -24,58 +24,94 @@ export const BOARD = { widthMm: 210, heightMm: 297 } as const;
 /**
  * 코스가 그려지는 영역 — 이 사각형 **밖은 전부 OB**다.
  *
- * 위는 머리띠(홀 번호·파·거리) 아래, 아래는 바닥 한 줄 위다. 경계선이 곧 OB
- * 선이라 아이가 "여기를 넘으면 벌타"를 눈으로 안다.
+ * **종이 전체가 골프장이다**(2026-09-15 사용자 요청 — "A4 용지를 최대한 활용해서
+ * 골프장을 만들고 싶거든"). 처음에는 위에 머리띠(홀 번호·파·거리)를, 아래에
+ * 안내 한 줄을 두고 그 사이를 코스로 썼는데, 그 띠 둘이 세로 50mm를 먹었다.
+ * 지금은 판 가장자리에서 6mm만 남기고 전부 코스이고, 홀 정보는 코스 안의 빈
+ * 자리에 카드로 얹힌다(`PANEL` · 홀마다 `panel` 좌표).
+ *
+ * 남긴 6mm는 O.B. 선이 종이 끝에 닿지 않게 하는 여백이다 — 선이 재단선처럼
+ * 보이면 아이가 오려야 하는 줄 안다.
  */
 export const COURSE_AREA = {
-  xMm: 10,
-  yMm: 46,
-  widthMm: 190,
-  heightMm: 240,
+  xMm: 6,
+  yMm: 6,
+  widthMm: 198,
+  heightMm: 285,
 } as const;
 
 /**
  * 티의 y — **열여덟 홀이 모두 같다.**
  *
  * 홀마다 다르게 두었더니 판을 넘길 때 공 놓는 자리가 위아래로 튀었다. 같은
- * 자리면 아이가 판만 갈아 놓고 바로 친다. 이 값이 코스 영역 아래 끝에서
- * 페어웨이 반폭만큼 떨어져 있어야 페어웨이 끝이 O.B. 선을 넘지 않는다.
+ * 자리면 아이가 판만 갈아 놓고 바로 친다. 이 값이 코스 영역 아래 끝(291)에서
+ * 페어웨이 반폭(가장 넓은 홀이 27)만큼 떨어져 있어야 페어웨이 끝의 둥근 캡이
+ * O.B. 선을 넘지 않는다.
  */
-export const TEE_Y_MM = 258;
+export const TEE_Y_MM = 262;
 
-/** 홀 판 위 글자 조판. */
+/**
+ * 코스 위에 직접 찍히는 글자 — 티 표시와 O.B.뿐이다.
+ *
+ * 홀 번호·이름·파·거리·타수 이름은 모두 홀 정보 카드(`PANEL`)로 옮겨 갔다
+ * (2026-09-15). 판 위아래의 띠를 없애고 종이 전체를 골프장으로 쓰기 위해서다.
+ */
 export const TYPE = {
-  /** 왼쪽 위 큰 홀 번호. */
-  holeNumberXMm: 16,
-  holeNumberYMm: 20,
-  holeNumberFontMm: 15,
-  /** 홀 번호 아래 "번 홀". */
-  holeUnitYMm: 31,
-  holeUnitFontMm: 4,
-  /** 홀 이름 — 번호 오른쪽. */
-  holeNameXMm: 34,
-  holeNameYMm: 17,
-  holeNameFontMm: 7,
-  holeNameMaxWidthMm: 96,
-  /** 코스 이름 슬롯이 앉는 자리. 홀 이름 아래 작게. */
-  courseNameXMm: 34,
-  courseNameYMm: 27,
-  courseNameFontMm: 3.6,
-  courseNameMaxWidthMm: 96,
-  /** 오른쪽 위 파·거리 상자. */
-  statBoxXMm: 138,
-  statBoxYMm: 8,
-  statBoxWidthMm: 56,
-  statBoxHeightMm: 28,
-  statLabelFontMm: 3.2,
-  statValueFontMm: 8,
-  /** 머리띠 아래 가로줄. */
-  headerRuleYMm: 40,
-  /** 바닥 한 줄 — 이번 홀에서 적을 것을 알려 준다. */
-  footerYMm: 290,
-  footerFontMm: 3.2,
-  /** 코스 위 작은 표식 글자(티·그린·OB·물). */
   markerFontMm: 3,
+} as const;
+
+/**
+ * 홀 정보 카드 — **코스 안 빈 자리에 얹히는 종이 한 장**이다.
+ *
+ * 옛 판은 위에 머리띠(홀 번호·이름·파·거리), 아래에 안내 한 줄을 두고 그 사이만
+ * 코스로 썼다. 그 띠 둘이 세로 50mm를 먹었고, 사용자가 그것을 코스 안으로
+ * 들이라고 했다(2026-09-15) — "골프장 밖에 표현하는 모든것들을 골프장 안에
+ * 있는 빈 공간으로 이동".
+ *
+ * 그래서 크기가 **작고 정사각에 가깝다**. 길쭉하면 들어갈 빈자리가 홀마다
+ * 없어진다. 타수 이름을 두 열로 접은 것도 같은 이유다 — 한 줄로 늘어놓으면
+ * 파5에서 157mm라 어느 홀에도 들어가지 않는다.
+ *
+ * 앉는 자리는 홀마다 데이터로 적는다(`HoleSpec.panel`). 그림을 보고 정하는
+ * 값이고, 코스 요소와 겹치지 않는지는 테스트가 본다.
+ */
+export const PANEL = {
+  widthMm: 52,
+  heightMm: 52,
+  /** 모서리 둥글기. 코스 위에 얹힌 종이처럼 보이게 한다. */
+  cornerMm: 2.5,
+  /** 코스 요소에서 이만큼은 떨어져 앉는다. */
+  clearanceMm: 4,
+
+  /** 큰 홀 번호 — 열여덟 장을 넘길 때 이 숫자만 보고 고른다. */
+  numberXMm: 10,
+  numberYMm: 14,
+  numberFontMm: 12,
+  unitYMm: 21.5,
+  unitFontMm: 2.6,
+
+  nameXMm: 19,
+  nameYMm: 11,
+  nameFontMm: 4.6,
+  nameMaxWidthMm: 29,
+  statYMm: 18.5,
+  statFontMm: 3.2,
+
+  ruleTopYMm: 24,
+  ruleBottomYMm: 45,
+  ruleInsetMm: 4,
+
+  /** 타수 이름 — 두 열 세 행. */
+  termColumnsXMm: [6, 28] as const,
+  termRowsYMm: [29.5, 35.5, 41.5] as const,
+  termFontMm: 3,
+
+  /** 코스 이름 슬롯이 앉는 자리와 그 밑줄. */
+  courseNameYMm: 49,
+  courseNameFontMm: 3.2,
+  courseNameMaxWidthMm: 40,
+  courseRuleYMm: 51,
+  courseRuleInsetMm: 8,
 } as const;
 
 /** 코스 요소의 크기와 농도. */
@@ -99,6 +135,17 @@ export const COURSE = {
   treeRadiusJitterMm: 1.4,
   /** 나무끼리 이만큼은 떨어진다. */
   treeSpacingMm: 7.5,
+  /**
+   * 숲 밖에 흩는 나무 — **남는 러프를 메우는 몫**이다.
+   *
+   * 종이 전체가 코스가 되면서(2026-09-15) 페어웨이 반대편이 넓게 비었다. 숲
+   * 상자를 홀마다 더 적을 수도 있었지만, 빈 자리는 코스 모양에서 나오는
+   * 것이라 데이터로 따라 적으면 홀을 고칠 때마다 함께 고쳐야 한다. 그래서
+   * **코스 영역 전체에 성기게 흩는다** — 간격이 숲의 두 배 반이라 덤불이
+   * 아니라 드문드문 선 나무로 보인다.
+   */
+  scatterCount: 14,
+  scatterSpacingMm: 19,
   /** 페어웨이·그린에서 이만큼 안쪽에는 나무를 심지 않는다. */
   treeClearanceMm: 6,
   /**
@@ -195,6 +242,14 @@ export interface HoleSpec {
   readonly ponds: readonly EllipseSpec[];
   readonly streams: readonly StreamSpec[];
   readonly forests: readonly ForestSpec[];
+  /**
+   * 홀 정보 카드의 좌상단. 코스 안의 **빈 자리**를 가리킨다.
+   *
+   * 홀마다 비는 곳이 다르다 — 곧은 홀은 옆이, 굽은 홀은 굽이 안쪽이, 파3는
+   * 그린 위가 빈다. 그래서 자리를 계산하지 않고 홀마다 적는다. 코스 요소와
+   * 겹치지 않는지는 테스트가 본다.
+   */
+  readonly panel: Xy;
 }
 
 const NO_PONDS: readonly EllipseSpec[] = [];
@@ -217,20 +272,23 @@ export const HOLES: readonly HoleSpec[] = [
     yards: 380,
     spine: [
       [105, TEE_Y_MM],
-      [103, 205],
-      [95, 150],
-      [86, 105],
+      [102.9, 195.8],
+      [94.6, 127],
+      [85.2, 70.8],
     ],
-    fairwayWidthMm: 50,
+    fairwayWidthMm: 54,
     green: { rxMm: 28, ryMm: 24 },
-    cup: [0, -4],
+    cup: [0, -5],
     bunkers: [
-      { xMm: 58, yMm: 122, rxMm: 12, ryMm: 7, rotDeg: -25 },
-      { xMm: 114, yMm: 96, rxMm: 11, ryMm: 7, rotDeg: 20 },
+      { xMm: 56, yMm: 92, rxMm: 12, ryMm: 7, rotDeg: -25 },
+      { xMm: 114.4, yMm: 59.5, rxMm: 11, ryMm: 7, rotDeg: 20 },
     ],
     ponds: NO_PONDS,
     streams: NO_STREAMS,
-    forests: [{ xMm: 146, yMm: 132, widthMm: 50, heightMm: 96, count: 14 }],
+    forests: [
+      { xMm: 147.7, yMm: 104.5, widthMm: 52.1, heightMm: 120, count: 14 },
+    ],
+    panel: [141, 9],
   },
   {
     number: 2,
@@ -238,23 +296,26 @@ export const HOLES: readonly HoleSpec[] = [
     name: '긴 오르막',
     yards: 510,
     spine: [
-      [70, TEE_Y_MM],
-      [78, 215],
-      [108, 170],
-      [140, 125],
-      [150, 88],
+      [68.5, TEE_Y_MM],
+      [76.9, 208.3],
+      [108.1, 152],
+      [141.5, 95.8],
+      [151.9, 49.5],
     ],
-    fairwayWidthMm: 48,
+    fairwayWidthMm: 52,
     green: { rxMm: 26, ryMm: 22 },
-    cup: [4, -3],
+    cup: [4.2, -3.7],
     bunkers: [
-      { xMm: 120, yMm: 152, rxMm: 12, ryMm: 7, rotDeg: 35 },
-      { xMm: 176, yMm: 110, rxMm: 10, ryMm: 7, rotDeg: -30 },
-      { xMm: 126, yMm: 94, rxMm: 11, ryMm: 6, rotDeg: 10 },
+      { xMm: 120.6, yMm: 129.5, rxMm: 12, ryMm: 7, rotDeg: 35 },
+      { xMm: 179, yMm: 77, rxMm: 10, ryMm: 7, rotDeg: -30 },
+      { xMm: 126.9, yMm: 57, rxMm: 11, ryMm: 6, rotDeg: 10 },
     ],
     ponds: NO_PONDS,
     streams: NO_STREAMS,
-    forests: [{ xMm: 14, yMm: 120, widthMm: 42, heightMm: 96, count: 15 }],
+    forests: [
+      { xMm: 10.2, yMm: 89.5, widthMm: 43.8, heightMm: 120, count: 15 },
+    ],
+    panel: [9, 9],
   },
   {
     number: 3,
@@ -263,22 +324,23 @@ export const HOLES: readonly HoleSpec[] = [
     yards: 150,
     spine: [
       [105, TEE_Y_MM],
-      [105, 214],
-      [105, 174],
+      [105, 207],
+      [105, 157],
     ],
-    fairwayWidthMm: 40,
+    fairwayWidthMm: 44,
     green: { rxMm: 28, ryMm: 23 },
-    cup: [0, -5],
+    cup: [0, -6.2],
     bunkers: [
-      { xMm: 72, yMm: 166, rxMm: 10, ryMm: 6, rotDeg: -15 },
-      { xMm: 138, yMm: 166, rxMm: 10, ryMm: 6, rotDeg: 15 },
+      { xMm: 70.6, yMm: 147, rxMm: 10, ryMm: 6, rotDeg: -15 },
+      { xMm: 139.4, yMm: 147, rxMm: 10, ryMm: 6, rotDeg: 15 },
     ],
-    ponds: [{ xMm: 105, yMm: 222, rxMm: 40, ryMm: 15 }],
+    ponds: [{ xMm: 105, yMm: 217, rxMm: 40, ryMm: 15 }],
     streams: NO_STREAMS,
     forests: [
-      { xMm: 14, yMm: 60, widthMm: 78, heightMm: 78, count: 15 },
-      { xMm: 120, yMm: 60, widthMm: 76, heightMm: 78, count: 15 },
+      { xMm: 10.2, yMm: 14.5, widthMm: 81.3, heightMm: 97.5, count: 15 },
+      { xMm: 120.6, yMm: 14.5, widthMm: 79.2, heightMm: 97.5, count: 15 },
     ],
+    panel: [9, 9],
   },
   {
     number: 4,
@@ -286,21 +348,24 @@ export const HOLES: readonly HoleSpec[] = [
     name: '굽은 길',
     yards: 365,
     spine: [
-      [70, TEE_Y_MM],
-      [74, 210],
-      [100, 168],
-      [138, 132],
+      [68.5, TEE_Y_MM],
+      [72.7, 202],
+      [99.8, 149.5],
+      [139.4, 104.5],
     ],
-    fairwayWidthMm: 48,
+    fairwayWidthMm: 52,
     green: { rxMm: 27, ryMm: 23 },
-    cup: [3, -4],
+    cup: [3.1, -5],
     bunkers: [
-      { xMm: 100, yMm: 198, rxMm: 11, ryMm: 7, rotDeg: 10 },
-      { xMm: 166, yMm: 152, rxMm: 10, ryMm: 6, rotDeg: -40 },
+      { xMm: 99.8, yMm: 187, rxMm: 11, ryMm: 7, rotDeg: 10 },
+      { xMm: 168.6, yMm: 129.5, rxMm: 10, ryMm: 6, rotDeg: -40 },
     ],
     ponds: NO_PONDS,
     streams: NO_STREAMS,
-    forests: [{ xMm: 14, yMm: 108, widthMm: 44, heightMm: 96, count: 15 }],
+    forests: [
+      { xMm: 10.2, yMm: 74.5, widthMm: 45.9, heightMm: 120, count: 15 },
+    ],
+    panel: [9, 9],
   },
   {
     number: 5,
@@ -308,23 +373,24 @@ export const HOLES: readonly HoleSpec[] = [
     name: '모래 언덕',
     yards: 400,
     spine: [
-      [140, TEE_Y_MM],
-      [136, 206],
-      [110, 160],
-      [72, 118],
+      [141.5, TEE_Y_MM],
+      [137.3, 197],
+      [110.2, 139.5],
+      [70.6, 87],
     ],
-    fairwayWidthMm: 48,
+    fairwayWidthMm: 52,
     green: { rxMm: 26, ryMm: 22 },
-    cup: [-3, -4],
+    cup: [-3.1, -5],
     bunkers: [
-      { xMm: 120, yMm: 192, rxMm: 12, ryMm: 7, rotDeg: -10 },
-      { xMm: 96, yMm: 140, rxMm: 11, ryMm: 6, rotDeg: -35 },
-      { xMm: 42, yMm: 142, rxMm: 10, ryMm: 6, rotDeg: 30 },
-      { xMm: 100, yMm: 108, rxMm: 9, ryMm: 6, rotDeg: 0 },
+      { xMm: 120.6, yMm: 179.5, rxMm: 12, ryMm: 7, rotDeg: -10 },
+      { xMm: 95.6, yMm: 114.5, rxMm: 11, ryMm: 6, rotDeg: -35 },
+      { xMm: 39.3, yMm: 117, rxMm: 10, ryMm: 6, rotDeg: 30 },
+      { xMm: 99.8, yMm: 74.5, rxMm: 9, ryMm: 6, rotDeg: 0 },
     ],
     ponds: NO_PONDS,
     streams: NO_STREAMS,
-    forests: [{ xMm: 152, yMm: 96, widthMm: 44, heightMm: 84, count: 14 }],
+    forests: [{ xMm: 154, yMm: 59.5, widthMm: 45.9, heightMm: 105, count: 14 }],
+    panel: [93, 9],
   },
   {
     number: 6,
@@ -333,19 +399,20 @@ export const HOLES: readonly HoleSpec[] = [
     yards: 135,
     spine: [
       [105, TEE_Y_MM],
-      [105, 214],
-      [105, 180],
+      [105, 207],
+      [105, 164.5],
     ],
-    fairwayWidthMm: 38,
+    fairwayWidthMm: 42,
     green: { rxMm: 24, ryMm: 21 },
-    cup: [0, -3],
+    cup: [0, -3.7],
     bunkers: [],
-    ponds: [{ xMm: 105, yMm: 180, rxMm: 46, ryMm: 38 }],
+    ponds: [{ xMm: 105, yMm: 164.5, rxMm: 46, ryMm: 38 }],
     streams: NO_STREAMS,
     forests: [
-      { xMm: 14, yMm: 58, widthMm: 56, heightMm: 78, count: 14 },
-      { xMm: 142, yMm: 58, widthMm: 54, heightMm: 78, count: 14 },
+      { xMm: 10.2, yMm: 12, widthMm: 58.4, heightMm: 97.5, count: 14 },
+      { xMm: 143.6, yMm: 12, widthMm: 56.3, heightMm: 97.5, count: 14 },
     ],
+    panel: [9, 9],
   },
   {
     number: 7,
@@ -353,23 +420,26 @@ export const HOLES: readonly HoleSpec[] = [
     name: '세 번 굽이',
     yards: 525,
     spine: [
-      [60, TEE_Y_MM],
-      [68, 222],
-      [102, 190],
-      [142, 158],
-      [150, 110],
+      [58.1, TEE_Y_MM],
+      [66.4, 217],
+      [101.9, 177],
+      [143.6, 137],
+      [151.9, 77],
     ],
-    fairwayWidthMm: 46,
+    fairwayWidthMm: 50,
     green: { rxMm: 26, ryMm: 22 },
-    cup: [2, -5],
+    cup: [2.1, -6.2],
     bunkers: [
-      { xMm: 92, yMm: 214, rxMm: 11, ryMm: 6, rotDeg: 25 },
-      { xMm: 130, yMm: 180, rxMm: 10, ryMm: 6, rotDeg: 30 },
-      { xMm: 178, yMm: 140, rxMm: 9, ryMm: 6, rotDeg: -20 },
+      { xMm: 91.5, yMm: 207, rxMm: 11, ryMm: 6, rotDeg: 25 },
+      { xMm: 131.1, yMm: 164.5, rxMm: 10, ryMm: 6, rotDeg: 30 },
+      { xMm: 181.1, yMm: 114.5, rxMm: 9, ryMm: 6, rotDeg: -20 },
     ],
     ponds: NO_PONDS,
     streams: NO_STREAMS,
-    forests: [{ xMm: 14, yMm: 92, widthMm: 46, heightMm: 112, count: 18 }],
+    forests: [
+      { xMm: 10.2, yMm: 54.5, widthMm: 47.9, heightMm: 140, count: 18 },
+    ],
+    panel: [9, 9],
   },
   {
     number: 8,
@@ -378,25 +448,26 @@ export const HOLES: readonly HoleSpec[] = [
     yards: 340,
     spine: [
       [105, TEE_Y_MM],
-      [104, 204],
-      [100, 152],
-      [96, 108],
+      [104, 194.5],
+      [99.8, 129.5],
+      [95.6, 74.5],
     ],
-    fairwayWidthMm: 38,
+    fairwayWidthMm: 42,
     green: { rxMm: 25, ryMm: 21 },
-    cup: [0, -4],
+    cup: [0, -5],
     bunkers: [
-      { xMm: 70, yMm: 162, rxMm: 9, ryMm: 6, rotDeg: -10 },
-      { xMm: 130, yMm: 162, rxMm: 9, ryMm: 6, rotDeg: 10 },
-      { xMm: 66, yMm: 98, rxMm: 9, ryMm: 6, rotDeg: 0 },
-      { xMm: 126, yMm: 98, rxMm: 9, ryMm: 6, rotDeg: 0 },
+      { xMm: 68.5, yMm: 142, rxMm: 9, ryMm: 6, rotDeg: -10 },
+      { xMm: 131.1, yMm: 142, rxMm: 9, ryMm: 6, rotDeg: 10 },
+      { xMm: 64.4, yMm: 62, rxMm: 9, ryMm: 6, rotDeg: 0 },
+      { xMm: 126.9, yMm: 62, rxMm: 9, ryMm: 6, rotDeg: 0 },
     ],
     ponds: NO_PONDS,
     streams: NO_STREAMS,
     forests: [
-      { xMm: 14, yMm: 74, widthMm: 36, heightMm: 120, count: 15 },
-      { xMm: 160, yMm: 74, widthMm: 36, heightMm: 120, count: 15 },
+      { xMm: 10.2, yMm: 32, widthMm: 37.5, heightMm: 150, count: 15 },
+      { xMm: 162.3, yMm: 32, widthMm: 37.5, heightMm: 150, count: 15 },
     ],
+    panel: [145, 9],
   },
   {
     number: 9,
@@ -404,18 +475,21 @@ export const HOLES: readonly HoleSpec[] = [
     name: '집으로',
     yards: 395,
     spine: [
-      [140, TEE_Y_MM],
-      [134, 208],
-      [112, 158],
-      [92, 112],
+      [141.5, TEE_Y_MM],
+      [135.2, 199.5],
+      [112.3, 137],
+      [91.5, 79.5],
     ],
-    fairwayWidthMm: 48,
+    fairwayWidthMm: 52,
     green: { rxMm: 27, ryMm: 22 },
-    cup: [2, -4],
-    bunkers: [{ xMm: 152, yMm: 152, rxMm: 10, ryMm: 6, rotDeg: -30 }],
-    ponds: [{ xMm: 92, yMm: 148, rxMm: 32, ryMm: 12 }],
+    cup: [2.1, -5],
+    bunkers: [{ xMm: 154, yMm: 129.5, rxMm: 10, ryMm: 6, rotDeg: -30 }],
+    ponds: [{ xMm: 91.5, yMm: 124.5, rxMm: 32, ryMm: 12 }],
     streams: NO_STREAMS,
-    forests: [{ xMm: 152, yMm: 84, widthMm: 44, heightMm: 78, count: 12 }],
+    forests: [
+      { xMm: 154, yMm: 44.5, widthMm: 45.9, heightMm: 97.5, count: 12 },
+    ],
+    panel: [9, 9],
   },
   {
     number: 10,
@@ -424,20 +498,23 @@ export const HOLES: readonly HoleSpec[] = [
     yards: 375,
     spine: [
       [105, TEE_Y_MM],
-      [108, 206],
-      [122, 156],
-      [130, 108],
+      [108.1, 197],
+      [122.7, 134.5],
+      [131.1, 74.5],
     ],
-    fairwayWidthMm: 50,
+    fairwayWidthMm: 54,
     green: { rxMm: 27, ryMm: 23 },
-    cup: [-2, -4],
+    cup: [-2.1, -5],
     bunkers: [
-      { xMm: 90, yMm: 182, rxMm: 11, ryMm: 7, rotDeg: -20 },
-      { xMm: 164, yMm: 126, rxMm: 10, ryMm: 6, rotDeg: 25 },
+      { xMm: 89.4, yMm: 167, rxMm: 11, ryMm: 7, rotDeg: -20 },
+      { xMm: 166.5, yMm: 97, rxMm: 10, ryMm: 6, rotDeg: 25 },
     ],
     ponds: NO_PONDS,
     streams: NO_STREAMS,
-    forests: [{ xMm: 14, yMm: 84, widthMm: 46, heightMm: 108, count: 17 }],
+    forests: [
+      { xMm: 10.2, yMm: 44.5, widthMm: 47.9, heightMm: 135, count: 17 },
+    ],
+    panel: [9, 9],
   },
   {
     number: 11,
@@ -446,22 +523,23 @@ export const HOLES: readonly HoleSpec[] = [
     yards: 160,
     spine: [
       [105, TEE_Y_MM],
-      [102, 210],
-      [98, 168],
+      [101.9, 202],
+      [97.7, 149.5],
     ],
-    fairwayWidthMm: 40,
+    fairwayWidthMm: 44,
     green: { rxMm: 26, ryMm: 22 },
-    cup: [0, -4],
+    cup: [0, -5],
     bunkers: [
-      { xMm: 62, yMm: 158, rxMm: 10, ryMm: 6, rotDeg: -20 },
-      { xMm: 134, yMm: 184, rxMm: 9, ryMm: 6, rotDeg: 20 },
+      { xMm: 60.2, yMm: 137, rxMm: 10, ryMm: 6, rotDeg: -20 },
+      { xMm: 135.2, yMm: 169.5, rxMm: 9, ryMm: 6, rotDeg: 20 },
     ],
     ponds: NO_PONDS,
     streams: NO_STREAMS,
     forests: [
-      { xMm: 134, yMm: 58, widthMm: 62, heightMm: 92, count: 18 },
-      { xMm: 14, yMm: 58, widthMm: 46, heightMm: 70, count: 12 },
+      { xMm: 135.2, yMm: 12, widthMm: 64.6, heightMm: 115, count: 18 },
+      { xMm: 10.2, yMm: 12, widthMm: 47.9, heightMm: 87.5, count: 12 },
     ],
+    panel: [9, 9],
   },
   {
     number: 12,
@@ -469,18 +547,18 @@ export const HOLES: readonly HoleSpec[] = [
     name: '큰 강',
     yards: 540,
     spine: [
-      [72, TEE_Y_MM],
-      [82, 220],
-      [116, 180],
-      [146, 140],
-      [152, 96],
+      [70.6, TEE_Y_MM],
+      [81, 214.5],
+      [116.5, 164.5],
+      [147.7, 114.5],
+      [154, 59.5],
     ],
-    fairwayWidthMm: 46,
+    fairwayWidthMm: 50,
     green: { rxMm: 24, ryMm: 20 },
-    cup: [2, -4],
+    cup: [2.1, -5],
     bunkers: [
-      { xMm: 124, yMm: 158, rxMm: 10, ryMm: 6, rotDeg: 30 },
-      { xMm: 178, yMm: 122, rxMm: 9, ryMm: 6, rotDeg: -25 },
+      { xMm: 124.8, yMm: 137, rxMm: 10, ryMm: 6, rotDeg: 30 },
+      { xMm: 181.1, yMm: 92, rxMm: 9, ryMm: 6, rotDeg: -25 },
     ],
     ponds: NO_PONDS,
     streams: [
@@ -488,16 +566,19 @@ export const HOLES: readonly HoleSpec[] = [
         // 양 끝은 O.B. 선에서 몇 mm 안쪽에서 끝난다 — 띠를 부풀리면 끝이
         // 법선 방향으로 밀려, 선 위에 딱 맞추면 코스 밖으로 새어 나간다.
         points: [
-          [14, 207],
-          [58, 198],
-          [110, 210],
-          [160, 196],
-          [196, 202],
+          [10.2, 198.3],
+          [56, 187],
+          [110.2, 202],
+          [162.3, 184.5],
+          [199.8, 192],
         ],
         widthMm: 15,
       },
     ],
-    forests: [{ xMm: 14, yMm: 80, widthMm: 44, heightMm: 84, count: 14 }],
+    forests: [
+      { xMm: 10.2, yMm: 39.5, widthMm: 45.9, heightMm: 105, count: 14 },
+    ],
+    panel: [9, 9],
   },
   {
     number: 13,
@@ -505,22 +586,23 @@ export const HOLES: readonly HoleSpec[] = [
     name: '언덕 너머',
     yards: 410,
     spine: [
-      [140, TEE_Y_MM],
-      [132, 204],
-      [104, 156],
-      [78, 110],
+      [141.5, TEE_Y_MM],
+      [133.1, 194.5],
+      [104, 134.5],
+      [76.9, 77],
     ],
-    fairwayWidthMm: 48,
+    fairwayWidthMm: 52,
     green: { rxMm: 26, ryMm: 22 },
-    cup: [-2, -4],
+    cup: [-2.1, -5],
     bunkers: [
-      { xMm: 114, yMm: 194, rxMm: 11, ryMm: 7, rotDeg: -15 },
-      { xMm: 44, yMm: 140, rxMm: 10, ryMm: 6, rotDeg: 35 },
-      { xMm: 110, yMm: 98, rxMm: 9, ryMm: 6, rotDeg: 5 },
+      { xMm: 114.4, yMm: 182, rxMm: 11, ryMm: 7, rotDeg: -15 },
+      { xMm: 41.4, yMm: 114.5, rxMm: 10, ryMm: 6, rotDeg: 35 },
+      { xMm: 110.2, yMm: 62, rxMm: 9, ryMm: 6, rotDeg: 5 },
     ],
     ponds: NO_PONDS,
     streams: NO_STREAMS,
-    forests: [{ xMm: 152, yMm: 84, widthMm: 44, heightMm: 88, count: 14 }],
+    forests: [{ xMm: 154, yMm: 44.5, widthMm: 45.9, heightMm: 110, count: 14 }],
+    panel: [127, 9],
   },
   {
     number: 14,
@@ -529,21 +611,22 @@ export const HOLES: readonly HoleSpec[] = [
     yards: 355,
     spine: [
       [105, TEE_Y_MM],
-      [108, 204],
-      [104, 152],
-      [100, 110],
+      [108.1, 194.5],
+      [104, 129.5],
+      [99.8, 77],
     ],
-    fairwayWidthMm: 50,
+    fairwayWidthMm: 54,
     green: { rxMm: 28, ryMm: 23 },
-    cup: [3, -4],
+    cup: [3.1, -5],
     bunkers: [
-      { xMm: 72, yMm: 222, rxMm: 9, ryMm: 6, rotDeg: 0 },
-      { xMm: 140, yMm: 182, rxMm: 10, ryMm: 6, rotDeg: 15 },
-      { xMm: 62, yMm: 132, rxMm: 10, ryMm: 6, rotDeg: -25 },
+      { xMm: 70.6, yMm: 217, rxMm: 9, ryMm: 6, rotDeg: 0 },
+      { xMm: 141.5, yMm: 167, rxMm: 10, ryMm: 6, rotDeg: 15 },
+      { xMm: 60.2, yMm: 104.5, rxMm: 10, ryMm: 6, rotDeg: -25 },
     ],
     ponds: NO_PONDS,
     streams: NO_STREAMS,
-    forests: [{ xMm: 152, yMm: 92, widthMm: 44, heightMm: 96, count: 14 }],
+    forests: [{ xMm: 154, yMm: 54.5, widthMm: 45.9, heightMm: 120, count: 14 }],
+    panel: [9, 9],
   },
   {
     number: 15,
@@ -552,23 +635,24 @@ export const HOLES: readonly HoleSpec[] = [
     yards: 145,
     spine: [
       [105, TEE_Y_MM],
-      [108, 214],
-      [110, 176],
+      [108.1, 207],
+      [110.2, 159.5],
     ],
-    fairwayWidthMm: 38,
+    fairwayWidthMm: 42,
     green: { rxMm: 25, ryMm: 21 },
-    cup: [0, -4],
+    cup: [0, -5],
     bunkers: [
-      { xMm: 78, yMm: 172, rxMm: 10, ryMm: 6, rotDeg: -15 },
-      { xMm: 142, yMm: 168, rxMm: 9, ryMm: 6, rotDeg: 20 },
-      { xMm: 110, yMm: 146, rxMm: 10, ryMm: 6, rotDeg: 0 },
+      { xMm: 76.9, yMm: 154.5, rxMm: 10, ryMm: 6, rotDeg: -15 },
+      { xMm: 143.6, yMm: 149.5, rxMm: 9, ryMm: 6, rotDeg: 20 },
+      { xMm: 110.2, yMm: 122, rxMm: 10, ryMm: 6, rotDeg: 0 },
     ],
     ponds: NO_PONDS,
     streams: NO_STREAMS,
     forests: [
-      { xMm: 14, yMm: 58, widthMm: 52, heightMm: 96, count: 15 },
-      { xMm: 146, yMm: 58, widthMm: 50, heightMm: 96, count: 15 },
+      { xMm: 10.2, yMm: 12, widthMm: 54.2, heightMm: 120, count: 15 },
+      { xMm: 147.7, yMm: 12, widthMm: 52.1, heightMm: 120, count: 15 },
     ],
+    panel: [9, 9],
   },
   {
     number: 16,
@@ -576,22 +660,25 @@ export const HOLES: readonly HoleSpec[] = [
     name: '모래밭 셋',
     yards: 390,
     spine: [
-      [70, TEE_Y_MM],
-      [76, 206],
-      [104, 158],
-      [136, 114],
+      [68.5, TEE_Y_MM],
+      [74.8, 197],
+      [104, 137],
+      [137.3, 82],
     ],
-    fairwayWidthMm: 48,
+    fairwayWidthMm: 52,
     green: { rxMm: 26, ryMm: 22 },
-    cup: [2, -4],
+    cup: [2.1, -5],
     bunkers: [
-      { xMm: 94, yMm: 192, rxMm: 12, ryMm: 7, rotDeg: 20 },
-      { xMm: 122, yMm: 144, rxMm: 10, ryMm: 6, rotDeg: 30 },
-      { xMm: 168, yMm: 128, rxMm: 9, ryMm: 6, rotDeg: -30 },
+      { xMm: 93.5, yMm: 179.5, rxMm: 12, ryMm: 7, rotDeg: 20 },
+      { xMm: 122.7, yMm: 119.5, rxMm: 10, ryMm: 6, rotDeg: 30 },
+      { xMm: 170.7, yMm: 99.5, rxMm: 9, ryMm: 6, rotDeg: -30 },
     ],
     ponds: NO_PONDS,
     streams: NO_STREAMS,
-    forests: [{ xMm: 14, yMm: 100, widthMm: 40, heightMm: 92, count: 14 }],
+    forests: [
+      { xMm: 10.2, yMm: 64.5, widthMm: 41.7, heightMm: 115, count: 14 },
+    ],
+    panel: [9, 9],
   },
   {
     number: 17,
@@ -600,21 +687,22 @@ export const HOLES: readonly HoleSpec[] = [
     yards: 505,
     spine: [
       [105, TEE_Y_MM],
-      [100, 220],
-      [78, 180],
-      [82, 136],
-      [108, 96],
+      [99.8, 214.5],
+      [76.9, 164.5],
+      [81, 109.5],
+      [108.1, 59.5],
     ],
-    fairwayWidthMm: 46,
+    fairwayWidthMm: 50,
     green: { rxMm: 26, ryMm: 22 },
-    cup: [0, -4],
+    cup: [0, -5],
     bunkers: [
-      { xMm: 52, yMm: 202, rxMm: 10, ryMm: 6, rotDeg: -30 },
-      { xMm: 58, yMm: 124, rxMm: 9, ryMm: 6, rotDeg: 20 },
+      { xMm: 49.8, yMm: 192, rxMm: 10, ryMm: 6, rotDeg: -30 },
+      { xMm: 56, yMm: 94.5, rxMm: 9, ryMm: 6, rotDeg: 20 },
     ],
-    ponds: [{ xMm: 152, yMm: 152, rxMm: 26, ryMm: 20 }],
+    ponds: [{ xMm: 154, yMm: 129.5, rxMm: 26, ryMm: 20 }],
     streams: NO_STREAMS,
-    forests: [{ xMm: 150, yMm: 66, widthMm: 46, heightMm: 48, count: 9 }],
+    forests: [{ xMm: 151.9, yMm: 22, widthMm: 47.9, heightMm: 60, count: 9 }],
+    panel: [9, 9],
   },
   {
     number: 18,
@@ -622,21 +710,24 @@ export const HOLES: readonly HoleSpec[] = [
     name: '챔피언',
     yards: 420,
     spine: [
-      [70, TEE_Y_MM],
-      [78, 208],
-      [106, 160],
-      [128, 112],
+      [68.5, TEE_Y_MM],
+      [76.9, 199.5],
+      [106, 139.5],
+      [129, 79.5],
     ],
-    fairwayWidthMm: 48,
+    fairwayWidthMm: 52,
     green: { rxMm: 27, ryMm: 23 },
-    cup: [-2, -5],
+    cup: [-2.1, -6.2],
     bunkers: [
-      { xMm: 162, yMm: 138, rxMm: 10, ryMm: 6, rotDeg: -25 },
-      { xMm: 106, yMm: 88, rxMm: 10, ryMm: 6, rotDeg: 0 },
+      { xMm: 164.4, yMm: 112, rxMm: 10, ryMm: 6, rotDeg: -25 },
+      { xMm: 106, yMm: 49.5, rxMm: 10, ryMm: 6, rotDeg: 0 },
     ],
-    ponds: [{ xMm: 96, yMm: 142, rxMm: 25, ryMm: 13 }],
+    ponds: [{ xMm: 95.6, yMm: 117, rxMm: 25, ryMm: 13 }],
     streams: NO_STREAMS,
-    forests: [{ xMm: 14, yMm: 96, widthMm: 42, heightMm: 92, count: 14 }],
+    forests: [
+      { xMm: 10.2, yMm: 59.5, widthMm: 43.8, heightMm: 115, count: 14 },
+    ],
+    panel: [9, 9],
   },
 ] as const;
 
@@ -869,3 +960,75 @@ export const FLAG_SHEET = {
   ballColumns: 4,
   ballRows: 3,
 } as const;
+
+/**
+ * 나만의 홀 — **판 위에서 끌어 짓는 홀** (IDE-031)
+ *
+ * 사용자가 청했다(2026-09-15) — "커스텀으로 홀을 직접 구성할수있게 해줘."
+ * 미리 그려 둔 열여덟 홀 옆에 빈 홀 한 장을 두고, 티·그린·굽이·벙커·연못·
+ * 카드 자리를 손잡이로 끌어 제 홀을 만든다.
+ *
+ * 값이 사람 손에서 나오므로 **상자가 규칙을 대신한다.** 티를 종이 아래 끝까지
+ * 끌면 페어웨이의 둥근 끝이 O.B. 선을 넘고, 그린을 위 끝까지 끌면 그린이
+ * 잘린다. 그래서 점마다 앉을 수 있는 상자를 달리 두었다 — 중심선은 좁고
+ * (페어웨이 반폭만큼 안쪽), 해저드는 넓고, 카드는 제 크기만큼 안쪽이다.
+ */
+export const CUSTOM_HOLE = {
+  partId: 'custom-hole',
+
+  /**
+   * 중심선(티·굽이·그린 중심)이 앉는 상자.
+   *
+   * 가장 넓은 페어웨이(60mm)의 반폭 30mm를 코스 영역 사방에서 뺀 자리다 —
+   * 어느 점을 어디로 끌어도 페어웨이가 O.B. 선을 넘지 않는다.
+   */
+  pathBox: { xMm: 36, yMm: 38, widthMm: 138, heightMm: 223 },
+  /** 벙커·연못이 앉는 상자. 코스 안쪽 14mm — 나머지는 렌더러가 마저 붙든다. */
+  hazardBox: { xMm: 20, yMm: 20, widthMm: 170, heightMm: 257 },
+  /** 홀 정보 카드의 **좌상단**이 앉는 상자. 카드 크기만큼 안쪽에서 끝난다. */
+  cardBox: {
+    xMm: COURSE_AREA.xMm,
+    yMm: COURSE_AREA.yMm,
+    widthMm: COURSE_AREA.widthMm - PANEL.widthMm,
+    heightMm: COURSE_AREA.heightMm - PANEL.heightMm,
+  },
+
+  /** 그린과 홀은 크기를 고르게 하지 않는다 — 고를 것이 많으면 짓기가 일이 된다. */
+  green: { rxMm: 26, ryMm: 22 },
+  cup: [0, -4] as Xy,
+
+  /** 페어웨이 폭의 범위. 가장 넓은 값이 중심선 상자를 정한다. */
+  widthRangeMm: { min: 34, max: 60 },
+
+  /**
+   * 판 위 1mm가 몇 야드인가.
+   *
+   * 열여덟 홀에서 잰 어림이다 — 파4가 판 위 155mm에 380야드쯤이었다. 커스텀
+   * 홀은 거리를 사람이 적지 않고 **중심선 길이에서 낸다.** 길을 늘리면 거리가
+   * 따라 늘어야 두 값이 어긋나지 않는다.
+   */
+  yardsPerMm: 2.45,
+} as const;
+
+/** 나만의 홀의 첫 화면 — 곧게 뻗은 파4 하나. 빈 판을 내밀지 않는다. */
+export const CUSTOM_HOLE_DEFAULTS = {
+  number: 1,
+  name: '나만의 홀',
+  par: 4,
+  fairwayWidthMm: 48,
+  /**
+   * 티 · 굽이 · 그린 중심.
+   *
+   * 티가 열여덟 홀(262)보다 2mm 높다 — 중심선 상자의 아래 끝이 261이기
+   * 때문이다. 페어웨이를 가장 넓게(60mm) 벌려도 둥근 끝이 O.B. 선을 넘지
+   * 않는 자리가 거기까지다.
+   */
+  path: [105, 260, 100, 186, 96, 104] as number[],
+  bunkers: [64, 128, 132, 92] as number[],
+  ponds: [] as number[],
+  card: [9, 9] as number[],
+} as const;
+
+/** 중심선 길이(mm) → 거리(야드). 10야드 단위로 끊는다. */
+export const yardsForLength = (lengthMm: number): number =>
+  Math.max(10, Math.round((lengthMm * CUSTOM_HOLE.yardsPerMm) / 10) * 10);

@@ -15,6 +15,7 @@ import {
   COURSE_AREA,
   HOLES,
   INK,
+  PANEL,
   TYPE,
   cupPoint,
   greenCenter,
@@ -23,7 +24,7 @@ import {
   type HoleSpec,
   type Xy,
 } from '../dimensions.ts';
-import { termsLine } from '../scoring.ts';
+import { termsForPar } from '../scoring.ts';
 import {
   ART_LAYER_ID,
   INK_COLOR,
@@ -42,15 +43,18 @@ import {
   closedPath,
   ellipsePoints,
   ellipseRadiusAt,
+  grow,
   inEllipse,
   openPath,
   plantForest,
   pointInPolygon,
+  rectContains,
   pt,
   ribbon,
   smoothSpine,
   trimEnd,
   type Pt,
+  type Rect,
   type Tree,
 } from './geometry.ts';
 
@@ -173,9 +177,20 @@ export function layoutHole(hole: HoleSpec): HoleLayout {
     ribbon(smoothSpine(s.points, 10), s.widthMm, false),
   );
 
-  /** 나무가 앉으면 안 되는 자리. 코스에서 놀이가 일어나는 면 전부다. */
+  const panelRect: Rect = {
+    xMm: hole.panel[0],
+    yMm: hole.panel[1],
+    widthMm: PANEL.widthMm,
+    heightMm: PANEL.heightMm,
+  };
+
+  /**
+   * 나무가 앉으면 안 되는 자리. 코스에서 놀이가 일어나는 면 전부와 **홀 정보
+   * 카드**다 — 카드는 코스 위에 얹히므로 그 밑에 나무를 심으면 가려진다.
+   */
   const blocked = (p: Pt, r: number): boolean => {
     const pad = COURSE.treeClearanceMm + r;
+    if (rectContains(grow(panelRect, r + 1), p)) return true;
     if (
       p.x - r < COURSE_AREA.xMm + 1 ||
       p.x + r > COURSE_AREA.xMm + COURSE_AREA.widthMm - 1 ||
@@ -201,24 +216,45 @@ export function layoutHole(hole: HoleSpec): HoleLayout {
   };
 
   const trees: Tree[] = [];
-  for (const [i, forest] of hole.forests.entries()) {
+  const plant = (
+    box: { xMm: number; yMm: number; widthMm: number; heightMm: number },
+    count: number,
+    seed: number,
+    spacingMm: number,
+  ) =>
     trees.push(
       ...plantForest(
         {
-          box: forest,
-          count: forest.count,
-          // 씨앗은 홀 번호와 숲 차례에서만 나온다 — 돌릴 때마다 같은 숲이어야
+          box,
+          count,
+          // 씨앗은 홀 번호와 차례에서만 나온다 — 돌릴 때마다 같은 숲이어야
           // 커밋된 SVG와 생성기가 어긋나지 않는다.
-          seed: hole.number * 1009 + i * 37 + 7,
+          seed,
           radiusMm: COURSE.treeRadiusMm,
           jitterMm: COURSE.treeRadiusJitterMm,
-          spacingMm: COURSE.treeSpacingMm,
+          spacingMm,
           blocked,
         },
         trees,
       ),
     );
+
+  for (const [i, forest] of hole.forests.entries()) {
+    plant(
+      forest,
+      forest.count,
+      hole.number * 1009 + i * 37 + 7,
+      COURSE.treeSpacingMm,
+    );
   }
+
+  // 남는 러프를 메우는 몫. 숲을 다 심은 뒤라 이미 선 나무를 피해 앉는다.
+  plant(
+    COURSE_AREA,
+    COURSE.scatterCount,
+    hole.number * 7717 + 31,
+    COURSE.scatterSpacingMm,
+  );
 
   return {
     hole,
@@ -334,51 +370,85 @@ function cupAndFlag(cup: Pt): string[] {
   ];
 }
 
-const statBox = (hole: HoleSpec): string[] => {
-  const {
-    statBoxXMm: x,
-    statBoxYMm: y,
-    statBoxWidthMm: w,
-    statBoxHeightMm: h,
-  } = TYPE;
-  const half = w / 2;
+/**
+ * 홀 정보 카드 — 코스 안 빈 자리에 얹히는 종이 한 장.
+ *
+ * 옛 판은 이 내용을 위아래 띠에 두었다. 사용자가 그것을 코스 안으로 들이라고
+ * 했고(2026-09-15), 그래서 종이 전체가 골프장이 됐다. 앉는 자리는 홀마다
+ * 데이터가 말한다(`hole.panel`).
+ */
+function infoPanel(hole: HoleSpec): string[] {
+  const [px, py] = hole.panel;
+  const at = (dx: number, dy: number) => [px + dx, py + dy] as const;
+  const terms = termsForPar(hole.par);
+
+  const [numberX, numberY] = at(PANEL.numberXMm, PANEL.numberYMm);
+  const [nameX, nameY] = at(PANEL.nameXMm, PANEL.nameYMm);
+
   return [
-    rect(x, y, w, h, {
-      fill: 'none',
+    rect(px, py, PANEL.widthMm, PANEL.heightMm, {
+      fill: '#ffffff',
       stroke: RULE_COLOR,
-      'stroke-width': 0.3,
-      rx: 2,
+      'stroke-width': 0.4,
+      rx: PANEL.cornerMm,
     }),
-    line(x + half, y + 4, x + half, y + h - 4, {
-      stroke: RULE_COLOR,
-      'stroke-width': 0.3,
-    }),
-    text('파', x + half / 2, y + 7, TYPE.statLabelFontMm, {
-      fill: RULE_COLOR,
-      'text-anchor': 'middle',
-    }),
-    text(String(hole.par), x + half / 2, y + 18, TYPE.statValueFontMm, {
-      fill: INK_COLOR,
+
+    text(String(hole.number), numberX, numberY, PANEL.numberFontMm, {
       'text-anchor': 'middle',
       'font-weight': 'bold',
     }),
-    text('거리(야드)', x + half + half / 2, y + 7, TYPE.statLabelFontMm, {
+    text('번 홀', numberX, py + PANEL.unitYMm, PANEL.unitFontMm, {
       fill: RULE_COLOR,
       'text-anchor': 'middle',
     }),
+    text(hole.name, nameX, nameY, PANEL.nameFontMm, {
+      'text-anchor': 'start',
+      'font-weight': 'bold',
+    }),
     text(
-      String(hole.yards),
-      x + half + half / 2,
-      y + 18,
-      TYPE.statValueFontMm,
-      {
-        fill: INK_COLOR,
-        'text-anchor': 'middle',
-        'font-weight': 'bold',
-      },
+      `파 ${hole.par} · ${hole.yards}야드`,
+      nameX,
+      py + PANEL.statYMm,
+      PANEL.statFontMm,
+      { fill: RULE_COLOR, 'text-anchor': 'start' },
+    ),
+
+    ...[PANEL.ruleTopYMm, PANEL.ruleBottomYMm].map((dy) =>
+      line(
+        px + PANEL.ruleInsetMm,
+        py + dy,
+        px + PANEL.widthMm - PANEL.ruleInsetMm,
+        py + dy,
+        { stroke: RULE_COLOR, 'stroke-width': 0.25 },
+      ),
+    ),
+
+    // 타수 이름 — 두 열 세 행. 왼쪽 열을 다 채우고 오른쪽으로 넘어간다.
+    // '파'만 굵다: 그 줄이 기준이고, 나머지는 거기서 몇 타 떨어졌는지다.
+    ...terms.map((term, i) =>
+      text(
+        `${term.strokes}타 ${term.label}`,
+        px + PANEL.termColumnsXMm[Math.floor(i / PANEL.termRowsYMm.length)],
+        py + PANEL.termRowsYMm[i % PANEL.termRowsYMm.length],
+        PANEL.termFontMm,
+        {
+          'text-anchor': 'start',
+          'font-weight': term.label === '파' ? 'bold' : undefined,
+          fill: term.label === '파' ? INK_COLOR : RULE_COLOR,
+        },
+      ),
+    ),
+
+    // 코스 이름 슬롯의 밑줄. 값이 비어 있어도 아이가 손으로 쓸 수 있다.
+    line(
+      px + PANEL.courseRuleInsetMm,
+      py + PANEL.courseRuleYMm,
+      px + PANEL.widthMm - PANEL.courseRuleInsetMm,
+      py + PANEL.courseRuleYMm,
+      { stroke: RULE_COLOR, 'stroke-width': 0.25 },
     ),
   ];
-};
+}
 
 export function renderHole(hole: HoleSpec): string {
   const layout = layoutHole(hole);
@@ -389,49 +459,6 @@ export function renderHole(hole: HoleSpec): string {
     title: `골프 게임판 · ${hole.number}번 홀 (파 ${hole.par})`,
     children: [
       group({ id: ART_LAYER_ID, fill: INK_COLOR, stroke: 'none' }, [
-        // 머리띠 — 홀 번호·이름·파·거리.
-        text(
-          String(hole.number),
-          TYPE.holeNumberXMm,
-          TYPE.holeNumberYMm,
-          TYPE.holeNumberFontMm,
-          {
-            'text-anchor': 'middle',
-            'font-weight': 'bold',
-          },
-        ),
-        text(
-          '번 홀',
-          TYPE.holeNumberXMm,
-          TYPE.holeUnitYMm,
-          TYPE.holeUnitFontMm,
-          {
-            fill: RULE_COLOR,
-            'text-anchor': 'middle',
-          },
-        ),
-        text(
-          hole.name,
-          TYPE.holeNameXMm,
-          TYPE.holeNameYMm,
-          TYPE.holeNameFontMm,
-          {
-            'text-anchor': 'start',
-            'font-weight': 'bold',
-          },
-        ),
-        ...statBox(hole),
-        line(
-          TYPE.holeNumberXMm - 6,
-          TYPE.headerRuleYMm,
-          BOARD.widthMm - 10,
-          TYPE.headerRuleYMm,
-          {
-            stroke: RULE_COLOR,
-            'stroke-width': 0.4,
-          },
-        ),
-
         // 러프 — 코스 영역 전체를 덮는 바닥이다. 그 경계선이 곧 OB 선이라,
         // 이 선 밖으로 나간 공은 1벌타다.
         rect(
@@ -446,22 +473,17 @@ export function renderHole(hole: HoleSpec): string {
             'stroke-dasharray': '3 2',
           },
         ),
-        text(
-          'O.B.',
-          COURSE_AREA.xMm + 7,
-          COURSE_AREA.yMm + 4.5,
-          TYPE.markerFontMm,
-          {
-            fill: INK.obStroke,
-            'text-anchor': 'middle',
-          },
-        ),
-        text(
-          'O.B.',
-          COURSE_AREA.xMm + COURSE_AREA.widthMm - 7,
-          COURSE_AREA.yMm + COURSE_AREA.heightMm - 4.5,
-          TYPE.markerFontMm,
-          { fill: INK.obStroke, 'text-anchor': 'middle' },
+        // O.B. 표시는 아래 두 모서리에 둔다 — 위쪽은 홀 정보 카드가 앉는
+        // 자리이고, 페어웨이의 티 쪽 끝은 가운데라 모서리가 비어 있다.
+        ...[COURSE_AREA.xMm + 9, COURSE_AREA.xMm + COURSE_AREA.widthMm - 9].map(
+          (x) =>
+            text(
+              'O.B.',
+              x,
+              COURSE_AREA.yMm + COURSE_AREA.heightMm - 4.5,
+              TYPE.markerFontMm,
+              { fill: INK.obStroke, 'text-anchor': 'middle' },
+            ),
         ),
 
         // 페어웨이.
@@ -542,14 +564,9 @@ export function renderHole(hole: HoleSpec): string {
         // 홀과 깃대.
         ...cupAndFlag(layout.cup),
 
-        // 바닥 한 줄 — 이 홀에서 몇 타가 무엇인지.
-        text(
-          `파 ${hole.par} · ${termsLine(hole.par)}`,
-          BOARD.widthMm / 2,
-          TYPE.footerYMm,
-          TYPE.footerFontMm,
-          { fill: RULE_COLOR, 'text-anchor': 'middle' },
-        ),
+        // 홀 정보 카드 — 코스 위에 얹힌다. 코스 요소와 겹치지 않는 자리에
+        // 앉으므로 그림을 가리지 않는다.
+        ...infoPanel(hole),
       ]),
 
       // 코스 이름 슬롯이 앉을 자리. 아트워크는 값을 그리지 않는다.

@@ -183,6 +183,44 @@ const round = (v: number): string => {
   return Object.is(r, -0) ? '0' : String(r);
 };
 
+export interface Rect {
+  readonly xMm: number;
+  readonly yMm: number;
+  readonly widthMm: number;
+  readonly heightMm: number;
+}
+
+export const rectContains = (r: Rect, p: Pt): boolean =>
+  p.x >= r.xMm &&
+  p.x <= r.xMm + r.widthMm &&
+  p.y >= r.yMm &&
+  p.y <= r.yMm + r.heightMm;
+
+export const rectCorners = (r: Rect): Pt[] => [
+  pt(r.xMm, r.yMm),
+  pt(r.xMm + r.widthMm, r.yMm),
+  pt(r.xMm + r.widthMm, r.yMm + r.heightMm),
+  pt(r.xMm, r.yMm + r.heightMm),
+];
+
+export const grow = (r: Rect, byMm: number): Rect => ({
+  xMm: r.xMm - byMm,
+  yMm: r.yMm - byMm,
+  widthMm: r.widthMm + byMm * 2,
+  heightMm: r.heightMm + byMm * 2,
+});
+
+/**
+ * 사각형과 다각형이 겹치는가. 홀 정보 카드가 앉을 빈자리를 고를 때 쓴다.
+ *
+ * 다각형 점이 사각형 안이거나 사각형 꼭짓점이 다각형 안이면 겹친 것이다.
+ * 변만 스치는 경우는 놓칠 수 있지만, 여기 들어오는 다각형은 촘촘히 샘플링된
+ * 것이라(페어웨이·타원 모두 1mm 안팎 간격) 실제로 새는 자리가 없다.
+ */
+export const rectOverlapsPolygon = (r: Rect, polygon: readonly Pt[]): boolean =>
+  polygon.some((p) => rectContains(r, p)) ||
+  rectCorners(r).some((c) => pointInPolygon(polygon, c));
+
 /** 점이 다각형 안인가 (짝수-홀수 규칙). */
 export function pointInPolygon(polygon: readonly Pt[], p: Pt): boolean {
   let inside = false;

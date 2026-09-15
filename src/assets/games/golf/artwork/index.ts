@@ -11,12 +11,17 @@
 import { HOLE_ARTWORK } from './hole.ts';
 import { renderScoreCard } from './score-card.ts';
 import { renderFlagAndBall } from './flag-and-ball.ts';
+import { renderCustomHoleDefault } from './dynamic.ts';
 
 export { artworkPath } from '../dimensions.ts';
 export { layoutHole, renderHole } from './hole.ts';
+export { customHoleSpec, renderGolfArtwork } from './dynamic.ts';
 
 export const ARTWORK: Readonly<Record<string, () => string>> = {
   ...HOLE_ARTWORK,
+  // 나만의 홀은 값에서 그때 그리지만(IDE-031) 기본값으로 그린 한 벌은 커밋한다 —
+  // 소개 페이지와 인쇄 미리보기가 값이 오기 전에 그것을 쓴다.
+  'custom-hole': renderCustomHoleDefault,
   'score-card': renderScoreCard,
   'flag-and-ball': renderFlagAndBall,
 };

@@ -13,27 +13,45 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { getGame } from '@/lib/games/registry';
-import { findPart, isBoardLike, slotsOfPart } from '@/lib/schema';
+import { renderDynamicArtwork } from '@/lib/games/dynamic-artwork';
+import { composeExport } from '@/lib/print/compose';
+import { defaultExportOptions } from '@/lib/print/options';
+import {
+  defaultCustomization,
+  findPart,
+  isBoardLike,
+  slotsOfPart,
+  type SlotValue,
+} from '@/lib/schema';
 import { ARTWORK } from '../artwork';
 import { layoutHole } from '../artwork/hole';
+import { cardFitsBoard, customHoleSpec, CUSTOM_SLOT } from '../artwork/dynamic';
 import { ballCenters } from '../artwork/flag-and-ball';
 import {
   clearanceFromPolygon,
+  grow,
   pointInPolygon,
   polylineLength,
+  rectContains,
+  rectCorners,
+  rectOverlapsPolygon,
   ribbon,
   smoothSpine,
   trimEnd,
   type Pt,
+  type Rect,
 } from '../artwork/geometry';
 import {
   COURSE,
   COURSE_AREA,
   COURSE_PAR,
+  CUSTOM_HOLE,
+  CUSTOM_HOLE_DEFAULTS,
   FLAG_SHEET,
   HOLES,
   IN_HOLES,
   OUT_HOLES,
+  PANEL,
   PLAYER_COUNT,
   SCORE_CARD,
   SCORE_TABLE_HEIGHT_MM,
@@ -48,7 +66,7 @@ import {
   type HoleSpec,
 } from '../dimensions';
 import { RULES } from '../rules';
-import { termsForPar, termsLine } from '../scoring';
+import { termsForPar } from '../scoring';
 import { estimateTextWidthMm } from '../../../shared/svg';
 
 const game = getGame('golf')!;
@@ -67,13 +85,27 @@ describe('도안 구조', () => {
     expect(game.parts.filter((p) => p.kind === 'board')).toHaveLength(1);
     // 보드는 1번 홀이다 — 썸네일과 소개 페이지가 가리킬 대표 판이다.
     expect(game.parts[0].id).toBe(holePartId(1));
+    // 홀 2~18 · 나만의 홀 · 기록표.
     expect(game.parts.filter((p) => p.kind === 'sheet')).toHaveLength(
-      HOLES.length - 1 + 1,
+      HOLES.length - 1 + 2,
     );
     expect(game.parts.filter((p) => p.kind === 'buildable')).toHaveLength(1);
     expect(game.parts.filter((p) => isBoardLike(p.kind))).toHaveLength(
-      HOLES.length + 1,
+      HOLES.length + 2,
     );
+  });
+
+  it('홀 판 열여덟 장이 한 묶음이다 — 만들기 화면에서 셀렉트로 접힌다', () => {
+    const grouped = game.parts.filter((p) => p.series !== undefined);
+    // 열여덟 홀에 '나만의 홀'이 하나 더 붙는다(IDE-031).
+    expect(grouped).toHaveLength(HOLES.length + 1);
+    expect(grouped[grouped.length - 1].id).toBe(CUSTOM_HOLE.partId);
+    expect(new Set(grouped.map((p) => p.series)).size).toBe(1);
+    // 기록표와 부속은 묶이지 않는다 — 단추 하나씩으로 남는다.
+    expect(partOf('score-card').series).toBeUndefined();
+    expect(partOf('flag-and-ball').series).toBeUndefined();
+    // 접히는 것은 화면뿐이다. 인쇄는 파트마다 한 줄이라 한 번에 다 뽑는다.
+    expect(game.parts).toHaveLength(HOLES.length + 3);
   });
 
   it('홀 판은 낱장이라 오림선도 접는선도 없다', () => {
@@ -104,8 +136,11 @@ describe('도안 구조', () => {
   });
 
   it('홀 판은 배율 100%에서 A4 세로 한 장이다', () => {
-    for (const hole of HOLES) {
-      const part = partOf(holePartId(hole.number));
+    for (const id of [
+      ...HOLES.map((hole) => holePartId(hole.number)),
+      CUSTOM_HOLE.partId,
+    ]) {
+      const part = partOf(id);
       expect([part.widthMm, part.heightMm]).toEqual([210, 297]);
       expect(part.orientation).toBe('portrait');
     }
@@ -291,14 +326,88 @@ describe('홀 판 배치', () => {
     }
   });
 
-  it('바닥 한 줄이 판 폭 안에 들어간다', () => {
-    for (const par of [3, 4, 5]) {
-      const line = `파 ${par} · ${termsLine(par)}`;
-      expect(
-        estimateTextWidthMm(line, 3.2),
-        `파 ${par}의 바닥 줄이 판을 넘친다`,
-      ).toBeLessThan(BOARD.widthMm - 12);
+  it('홀 정보 카드가 코스 안에 있고 코스 요소를 덮지 않는다', () => {
+    for (const layout of layouts) {
+      const label = `${layout.hole.number}번 홀`;
+      const panel: Rect = {
+        xMm: layout.hole.panel[0],
+        yMm: layout.hole.panel[1],
+        widthMm: PANEL.widthMm,
+        heightMm: PANEL.heightMm,
+      };
+      for (const corner of rectCorners(panel)) {
+        expect(
+          inCourse(corner),
+          `${label}의 카드가 O.B. 선 밖으로 나간다`,
+        ).toBe(true);
+      }
+      // 코스 요소에서 정해 둔 만큼 떨어져 앉는다 — 붙어 있으면 카드가 그림을
+      // 자르는 것처럼 보인다.
+      const padded = grow(panel, PANEL.clearanceMm);
+      const groups: [string, Pt[]][] = [
+        ['페어웨이', layout.fairway],
+        ['그린', layout.collar],
+        ['티', layout.tee.corners],
+        ...layout.bunkers.map((b, i): [string, Pt[]] => [`벙커${i}`, b]),
+        ...layout.ponds.map((b, i): [string, Pt[]] => [`연못${i}`, b]),
+        ...layout.streams.map((b, i): [string, Pt[]] => [`개울${i}`, b]),
+      ];
+      for (const [name, polygon] of groups) {
+        expect(
+          rectOverlapsPolygon(padded, polygon),
+          `${label}의 카드가 ${name}과 겹친다`,
+        ).toBe(false);
+      }
     }
+  });
+
+  it('나무가 카드 밑에 깔리지 않는다', () => {
+    for (const layout of layouts) {
+      const panel: Rect = {
+        xMm: layout.hole.panel[0],
+        yMm: layout.hole.panel[1],
+        widthMm: PANEL.widthMm,
+        heightMm: PANEL.heightMm,
+      };
+      for (const tree of layout.trees) {
+        expect(
+          rectContains(grow(panel, tree.r), { x: tree.x, y: tree.y }),
+          `${layout.hole.number}번 홀의 나무가 카드에 가린다`,
+        ).toBe(false);
+      }
+    }
+  });
+
+  it('카드 안의 글자가 카드 폭을 넘지 않는다', () => {
+    const column = PANEL.termColumnsXMm[1] - PANEL.termColumnsXMm[0];
+    for (const hole of HOLES) {
+      for (const term of termsForPar(hole.par)) {
+        expect(
+          estimateTextWidthMm(
+            `${term.strokes}타 ${term.label}`,
+            PANEL.termFontMm,
+          ),
+          `파 ${hole.par}의 '${term.label}' 줄이 열을 넘친다`,
+        ).toBeLessThan(column - 1);
+      }
+      expect(
+        estimateTextWidthMm(hole.name, PANEL.nameFontMm),
+        `${hole.number}번 홀의 이름이 카드를 넘친다`,
+      ).toBeLessThanOrEqual(PANEL.nameMaxWidthMm);
+    }
+    // 타수 이름은 많아야 여섯 — 두 열 세 행에 들어간다.
+    for (const par of [3, 4, 5]) {
+      expect(termsForPar(par).length).toBeLessThanOrEqual(
+        PANEL.termColumnsXMm.length * PANEL.termRowsYMm.length,
+      );
+    }
+  });
+
+  it('종이를 거의 다 쓴다 — 코스 영역이 A4에서 가장자리만 남긴다', () => {
+    expect(COURSE_AREA.xMm).toBeLessThanOrEqual(8);
+    expect(COURSE_AREA.yMm).toBeLessThanOrEqual(8);
+    expect(COURSE_AREA.widthMm / BOARD.widthMm).toBeGreaterThan(0.92);
+    expect(COURSE_AREA.heightMm / BOARD.heightMm).toBeGreaterThan(0.92);
   });
 });
 
@@ -320,6 +429,139 @@ describe('점수의 이름', () => {
     for (const par of [3, 4, 5]) {
       expect(termsForPar(par).every((t) => t.strokes >= 1)).toBe(true);
     }
+  });
+});
+
+describe('나만의 홀 (IDE-031)', () => {
+  const spec = (values: Record<string, SlotValue>) => customHoleSpec(values);
+
+  it('판 위에서 끄는 점이 넷이고 모두 control 배치다', () => {
+    const points = game.slots.filter((s) => s.kind === 'points');
+    expect(points.map((s) => s.id).sort()).toEqual(
+      [
+        CUSTOM_SLOT.path,
+        CUSTOM_SLOT.bunkers,
+        CUSTOM_SLOT.ponds,
+        CUSTOM_SLOT.card,
+      ].sort(),
+    );
+    for (const slot of points) {
+      expect(slot.placements).toHaveLength(1);
+      expect(slot.placements[0]).toMatchObject({
+        partId: CUSTOM_HOLE.partId,
+        mode: 'control',
+      });
+      expect(slot.box.partId).toBe(CUSTOM_HOLE.partId);
+    }
+  });
+
+  it('길의 첫 점이 티, 마지막 점이 그린이다', () => {
+    const hole = spec({ [CUSTOM_SLOT.path]: [50, 200, 120, 80] });
+    expect(hole.spine[0]).toEqual([50, 200]);
+    expect(greenCenter(hole)).toEqual([120, 80]);
+  });
+
+  it('거리는 길 길이에서 나온다 — 길을 늘리면 야드가 는다', () => {
+    const short = spec({ [CUSTOM_SLOT.path]: [105, 250, 105, 150] });
+    const long = spec({ [CUSTOM_SLOT.path]: [105, 250, 105, 60] });
+    expect(long.yards).toBeGreaterThan(short.yards);
+    expect(short.yards % 10).toBe(0);
+  });
+
+  it('값이 비어도 판 하나는 나온다 — 그리다 마는 것보다 기본 홀이 낫다', () => {
+    const hole = spec({});
+    expect(hole.spine.length).toBeGreaterThanOrEqual(2);
+    expect(hole.par).toBe(CUSTOM_HOLE_DEFAULTS.par);
+    expect(hole.name).toBe(CUSTOM_HOLE_DEFAULTS.name);
+  });
+
+  it('해저드를 판 끝까지 끌어도 코스 안에 남는다', () => {
+    const hole = spec({
+      [CUSTOM_SLOT.bunkers]: [0, 0],
+      [CUSTOM_SLOT.ponds]: [400, 400],
+    });
+    for (const e of [...hole.bunkers, ...hole.ponds]) {
+      expect(e.xMm - e.rxMm).toBeGreaterThanOrEqual(COURSE_AREA.xMm);
+      expect(e.xMm + e.rxMm).toBeLessThanOrEqual(
+        COURSE_AREA.xMm + COURSE_AREA.widthMm,
+      );
+      expect(e.yMm - e.ryMm).toBeGreaterThanOrEqual(COURSE_AREA.yMm);
+      expect(e.yMm + e.ryMm).toBeLessThanOrEqual(
+        COURSE_AREA.yMm + COURSE_AREA.heightMm,
+      );
+    }
+  });
+
+  it('카드는 어디로 끌어도 판 안에 들어간다', () => {
+    for (const corner of [
+      [-50, -50],
+      [500, 500],
+      [9, 9],
+    ]) {
+      expect(cardFitsBoard(spec({ [CUSTOM_SLOT.card]: corner }).panel)).toBe(
+        true,
+      );
+    }
+  });
+
+  it('페어웨이 폭은 고를 수 있는 범위를 넘지 않는다', () => {
+    expect(spec({ [CUSTOM_SLOT.width]: 999 }).fairwayWidthMm).toBe(
+      CUSTOM_HOLE.widthRangeMm.max,
+    );
+    expect(spec({ [CUSTOM_SLOT.width]: 1 }).fairwayWidthMm).toBe(
+      CUSTOM_HOLE.widthRangeMm.min,
+    );
+  });
+
+  it('가장 넓은 페어웨이로도 길이 O.B. 선을 넘지 않는다', () => {
+    // 길 상자의 네 모서리에 점을 놓고 가장 넓게 벌려도 코스 안이어야 한다.
+    const box = CUSTOM_HOLE.pathBox;
+    const hole = spec({
+      [CUSTOM_SLOT.path]: [
+        box.xMm,
+        box.yMm + box.heightMm,
+        box.xMm + box.widthMm,
+        box.yMm,
+      ],
+      [CUSTOM_SLOT.width]: CUSTOM_HOLE.widthRangeMm.max,
+    });
+    for (const p of layoutHole(hole).fairway) {
+      expect(inCourse(p)).toBe(true);
+    }
+  });
+
+  it('끌어 만든 홀이 PDF 경로에서도 그려진다', () => {
+    // 동적 파트는 미리보기와 내보내기가 **같은 렌더러**를 쓴다. 등록을 빠뜨리면
+    // 화면에는 나오고 PDF에서만 터지므로 여기서 함께 본다.
+    const customization = {
+      ...defaultCustomization(game),
+      values: {
+        ...defaultCustomization(game).values,
+        [CUSTOM_SLOT.path]: [80, 250, 140, 150, 70, 70],
+        [CUSTOM_SLOT.ponds]: [120, 200],
+      },
+    };
+    const doc = composeExport({
+      game,
+      customization,
+      options: {
+        ...defaultExportOptions(game),
+        parts: [{ partId: CUSTOM_HOLE.partId, scale: 1, copies: 1 }],
+      },
+      loadArtwork: (ref) =>
+        readFileSync(join(process.cwd(), 'public', ref), 'utf8'),
+      renderArtwork: (part, c) => renderDynamicArtwork(game, part, c),
+    });
+    expect(doc.pages).toHaveLength(1);
+    // 러프·페어웨이·그린·연못·카드·나무가 들어 있다 — 빈 판이 아니다.
+    expect(doc.pages[0].items.length).toBeGreaterThan(30);
+  });
+
+  it('기본값으로 그린 정적 파일이 커밋돼 있다 — 값이 오기 전에도 판을 보여 준다', () => {
+    expect(partOf(CUSTOM_HOLE.partId).artwork).toBe(
+      `/games/golf/${CUSTOM_HOLE.partId}.svg`,
+    );
+    expect(partOf(CUSTOM_HOLE.partId).dynamic).toEqual({});
   });
 });
 
@@ -363,6 +605,27 @@ describe('기록표', () => {
     for (const hole of HOLES) {
       expect(
         slot.placements.some((p) => p.partId === holePartId(hole.number)),
+      ).toBe(true);
+    }
+  });
+
+  it('코스 이름이 홀마다 제 카드 안에 앉는다', () => {
+    const slot = game.slots.find((s) => s.id === 'course-name')!;
+    for (const hole of HOLES) {
+      const placement = slot.placements.find(
+        (p) => p.partId === holePartId(hole.number),
+      )!;
+      expect(placement.mode).toBe('text');
+      if (placement.mode !== 'text') return;
+      const panel: Rect = {
+        xMm: hole.panel[0],
+        yMm: hole.panel[1],
+        widthMm: PANEL.widthMm,
+        heightMm: PANEL.heightMm,
+      };
+      expect(
+        rectContains(panel, { x: placement.xMm, y: placement.yMm }),
+        `${hole.number}번 홀의 코스 이름이 카드 밖에 찍힌다`,
       ).toBe(true);
     }
   });

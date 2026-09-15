@@ -118,6 +118,22 @@ export const gameDefinition = z
       );
     }
 
+    // 파트 묶음(series)은 둘 이상일 때만 뜻이 있다 — 만들기 화면이 셀렉트로
+    // 접는 장치인데, 혼자면 접을 것이 없고 단추가 셀렉트로 바뀌기만 한다.
+    const seriesCount = new Map<string, number>();
+    for (const p of g.parts) {
+      if (p.series)
+        seriesCount.set(p.series, (seriesCount.get(p.series) ?? 0) + 1);
+    }
+    for (const [i, p] of g.parts.entries()) {
+      if (p.series && seriesCount.get(p.series) === 1) {
+        push(
+          ['parts', i, 'series'],
+          `파트 묶음 '${p.series}'에 파트가 하나뿐이다 — 묶음은 둘 이상일 때만 뜻이 있다`,
+        );
+      }
+    }
+
     // 정적 자산은 자기 게임 폴더 아래에만 둔다.
     const checkAsset = (path: (string | number)[], ref: string | undefined) => {
       if (ref && !ref.startsWith(`/games/${g.id}/`)) {
@@ -339,6 +355,45 @@ export const gameDefinition = z
             }
           }
         }
+      }
+    }
+
+    // 점 슬롯의 상자 — 판 위에서 끄는 손잡이가 그 안에서만 움직인다(IDE-031).
+    for (const [i, s2] of g.slots.entries()) {
+      if (s2.kind !== 'points') continue;
+      const boxPart = partById.get(s2.box.partId);
+      if (!boxPart) {
+        push(
+          ['slots', i, 'box', 'partId'],
+          `없는 파트를 가리킨다: ${s2.box.partId}`,
+        );
+        continue;
+      }
+      if (
+        !s2.placements.some(
+          (pl) => pl.mode === 'control' && pl.partId === boxPart.id,
+        )
+      ) {
+        push(
+          ['slots', i, 'box', 'partId'],
+          `슬롯이 파트 '${boxPart.id}'에 control 배치를 갖지 않는다 — 값의 좌표계가 될 수 없다`,
+        );
+      }
+      if (
+        !rectContainsRect(
+          {
+            xMm: 0,
+            yMm: 0,
+            widthMm: boxPart.widthMm,
+            heightMm: boxPart.heightMm,
+          },
+          s2.box,
+        )
+      ) {
+        push(
+          ['slots', i, 'box'],
+          `상자가 파트 '${boxPart.id}'(${boxPart.widthMm}×${boxPart.heightMm}mm) 밖으로 나간다`,
+        );
       }
     }
 
