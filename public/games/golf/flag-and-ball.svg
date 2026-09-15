@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 자동 생성 파일. 고치려면 src/assets/games/soccer/artwork/ 를 고치고 `npm run artwork` 를 돌린다. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="148mm" viewBox="0 0 210 148" font-family="Noto Sans KR">
+<title>골프 게임판 · 깃대와 공</title>
+<g id="pc-cut" fill="none" stroke="#000000" stroke-width="0.25" stroke-linecap="butt">
+<path d="M24 23 L39 23 L39 64 L56 69.5 L39 75 L39 85 L56 90.5 L39 96 L39 137 L24 137 Z" />
+<path d="M76 23 L91 23 L91 64 L108 69.5 L91 75 L91 85 L108 90.5 L91 96 L91 137 L76 137 Z" />
+<circle cx="132" cy="46" r="6" />
+<circle cx="148" cy="46" r="6" />
+<circle cx="164" cy="46" r="6" />
+<circle cx="180" cy="46" r="6" />
+<circle cx="132" cy="62" r="6" />
+<circle cx="148" cy="62" r="6" />
+<circle cx="164" cy="62" r="6" />
+<circle cx="180" cy="62" r="6" />
+<circle cx="132" cy="78" r="6" />
+<circle cx="148" cy="78" r="6" />
+<circle cx="164" cy="78" r="6" />
+<circle cx="180" cy="78" r="6" />
+</g>
+<g id="pc-fold-mountain" fill="none" stroke="#000000" stroke-width="0.2" stroke-dasharray="4 1.2 0.6 1.2" stroke-linecap="butt">
+<line x1="24" y1="80" x2="39" y2="80" />
+<line x1="76" y1="80" x2="91" y2="80" />
+</g>
+<g id="pc-fold-valley" fill="none" stroke="#000000" stroke-width="0.2" stroke-dasharray="3 1.5" stroke-linecap="butt">
+<line x1="24" y1="34" x2="39" y2="34" />
+<line x1="24" y1="126" x2="39" y2="126" />
+<line x1="76" y1="34" x2="91" y2="34" />
+<line x1="76" y1="126" x2="91" y2="126" />
+</g>
+<g id="pc-art" fill="#1a1a1a" stroke="none">
+<text x="12" y="12" font-size="4.6" dominant-baseline="central" text-anchor="start" font-weight="bold">깃대와 공</text>
+<text x="12" y="18" font-size="2.8" dominant-baseline="central" fill="#6b7280" text-anchor="start">깃대는 꼭대기 한 줄을 산접기로 접고 양 끝 탭을 바깥으로 꺾어 세운다. 홀 뒤에 놓는다.</text>
+<path d="M38.8 64.7 L54.6 69.5 L38.8 74.3 Z" fill="#1a1a1a" stroke="none" />
+<path d="M38.8 85.7 L54.6 90.5 L38.8 95.3 Z" fill="#1a1a1a" stroke="none" />
+<line x1="36.5" y1="37" x2="36.5" y2="64" stroke="#1a1a1a" stroke-width="0.6" />
+<line x1="36.5" y1="96" x2="36.5" y2="123" stroke="#1a1a1a" stroke-width="0.6" />
+<path d="M90.8 64.7 L106.6 69.5 L90.8 74.3 Z" fill="#1a1a1a" stroke="none" />
+<path d="M90.8 85.7 L106.6 90.5 L90.8 95.3 Z" fill="#1a1a1a" stroke="none" />
+<line x1="88.5" y1="37" x2="88.5" y2="64" stroke="#1a1a1a" stroke-width="0.6" />
+<line x1="88.5" y1="96" x2="88.5" y2="123" stroke="#1a1a1a" stroke-width="0.6" />
+<line x1="162" y1="96" x2="149" y2="128" stroke="#1a1a1a" stroke-width="0.5" />
+<line x1="162" y1="96" x2="175" y2="128" stroke="#1a1a1a" stroke-width="0.5" />
+<line x1="149" y1="128" x2="140" y2="128" stroke="#1a1a1a" stroke-width="0.5" />
+<line x1="175" y1="128" x2="184" y2="128" stroke="#1a1a1a" stroke-width="0.5" />
+<path d="M162 96 L174 100 L162 104 Z" fill="#1a1a1a" stroke="none" />
+<line x1="136" y1="128" x2="188" y2="128" stroke="#6b7280" stroke-width="0.3" stroke-dasharray="2 1.5" />
+<text x="162" y="134" font-size="2.8" dominant-baseline="central" fill="#6b7280" text-anchor="middle">다 접으면 이런 모양</text>
+<circle cx="132" cy="46" r="4.8" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<circle cx="132" cy="46" r="0.8" fill="#6b7280" stroke="none" />
+<circle cx="148" cy="46" r="4.8" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<circle cx="148" cy="46" r="0.8" fill="#6b7280" stroke="none" />
+<circle cx="164" cy="46" r="4.8" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<circle cx="164" cy="46" r="0.8" fill="#6b7280" stroke="none" />
+<circle cx="180" cy="46" r="4.8" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<circle cx="180" cy="46" r="0.8" fill="#6b7280" stroke="none" />
+<circle cx="132" cy="62" r="4.8" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<circle cx="132" cy="62" r="0.8" fill="#6b7280" stroke="none" />
+<circle cx="148" cy="62" r="4.8" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<circle cx="148" cy="62" r="0.8" fill="#6b7280" stroke="none" />
+<circle cx="164" cy="62" r="4.8" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<circle cx="164" cy="62" r="0.8" fill="#6b7280" stroke="none" />
+<circle cx="180" cy="62" r="4.8" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<circle cx="180" cy="62" r="0.8" fill="#6b7280" stroke="none" />
+<circle cx="132" cy="78" r="4.8" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<circle cx="132" cy="78" r="0.8" fill="#6b7280" stroke="none" />
+<circle cx="148" cy="78" r="4.8" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<circle cx="148" cy="78" r="0.8" fill="#6b7280" stroke="none" />
+<circle cx="164" cy="78" r="4.8" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<circle cx="164" cy="78" r="0.8" fill="#6b7280" stroke="none" />
+<circle cx="180" cy="78" r="4.8" fill="none" stroke="#6b7280" stroke-width="0.3" />
+<circle cx="180" cy="78" r="0.8" fill="#6b7280" stroke="none" />
+<text x="156" y="35" font-size="3.2" dominant-baseline="central" fill="#6b7280" text-anchor="middle">공 12개</text>
+</g>
+<g id="pc-slot" />
+</svg>

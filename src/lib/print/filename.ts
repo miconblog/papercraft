@@ -15,7 +15,7 @@
  * 생기는데, 얻는 것은 파일 목록의 읽기 쉬움 하나뿐이다. 한글 제목은 PDF 메타데이터에
  * 남는다.
  */
-import type { GameDefinition } from '@/lib/schema';
+import { isBoardLike, type GameDefinition } from '@/lib/schema';
 import type { PartSelection } from './options';
 
 /** 고른 파트를 줄여 부르는 이름. */
@@ -68,9 +68,9 @@ export function groupLabelFor(
   selections: readonly PartSelection[],
 ): GroupLabel {
   const chosen = new Set(selections.map((s) => s.partId));
-  const boards = game.parts.filter((p) => p.kind === 'board').map((p) => p.id);
+  const boards = game.parts.filter((p) => isBoardLike(p.kind)).map((p) => p.id);
   const accessories = game.parts
-    .filter((p) => p.kind !== 'board')
+    .filter((p) => !isBoardLike(p.kind))
     .map((p) => p.id);
   const has = (ids: string[]) =>
     ids.length > 0 && ids.every((id) => chosen.has(id));

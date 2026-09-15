@@ -12,6 +12,7 @@ import {
 } from '@/lib/schema';
 import baseball from '@/assets/games/baseball';
 import dotToDot from '@/assets/games/dot-to-dot';
+import golf from '@/assets/games/golf';
 import soccer from '@/assets/games/soccer';
 import worldTour from '@/assets/games/world-tour';
 import yutNori from '@/assets/games/yut-nori';
@@ -22,6 +23,7 @@ const definitions: GameDefinitionInput[] = [
   worldTour,
   yutNori,
   dotToDot,
+  golf,
 ];
 
 function registerAll(inputs: GameDefinitionInput[]): readonly GameDefinition[] {

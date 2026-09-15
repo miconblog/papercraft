@@ -25,6 +25,8 @@ export function formatPlayers(players: GameDefinition['players']): string {
 
 export const PART_KIND_LABEL: Record<Part['kind'], string> = {
   board: '게임판',
+  // 보드와 같은 낱장이되 보드가 아닌 것 — 골프의 2~18번 홀과 기록표가 그렇다.
+  sheet: '낱장 게임판',
   cutout: '오려 쓰는 부속',
   buildable: '접어 세우는 조립물',
 };

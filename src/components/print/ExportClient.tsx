@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   defaultCustomization,
+  isBoardLike,
   resolveParts,
   type GameCustomization,
   type GameDefinition,
@@ -134,7 +135,9 @@ export function ExportClient({
         .filter(
           (p) =>
             kind === 'all' ||
-            (kind === 'board' ? p.kind === 'board' : p.kind !== 'board'),
+            // 가위가 드는가로 나눈다 — 골프의 홀 열여덟 장(`sheet`)은 보드와
+            // 같이 '게임판만'에 든다(IDE-030).
+            (kind === 'board' ? isBoardLike(p.kind) : !isBoardLike(p.kind)),
         )
         .map(defaultSelection),
     );

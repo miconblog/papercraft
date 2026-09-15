@@ -20,14 +20,15 @@
 가리키면 검증에서 걸린다.
 
 도안 SVG는 **코드로 만드는 것을 권한다.** 슬롯 좌표와 그림이 같은 치수 상수를
-읽어야 어긋나지 않는다. 네 게임이 다 그렇게 되어 있다 —
+읽어야 어긋나지 않는다. 지금 있는 게임이 다 그렇게 되어 있다 —
 `src/assets/games/<게임 id>/dimensions.ts`에 치수를 모으고 `artwork/`가 SVG를
 지으며 `npm run artwork [게임 id]`가 `public/`에 쓴다. 자세한 것은
 [docs/soccer-artwork.md](soccer-artwork.md) 1절,
 [docs/baseball-artwork.md](baseball-artwork.md) 1절,
 [docs/world-tour-artwork.md](world-tour-artwork.md) 1절,
 [docs/yut-nori-artwork.md](yut-nori-artwork.md) 1절,
-[docs/dot-to-dot-artwork.md](dot-to-dot-artwork.md) 1절.
+[docs/dot-to-dot-artwork.md](dot-to-dot-artwork.md) 1절,
+[docs/golf-artwork.md](golf-artwork.md) 1절.
 
 ### 도안이 실행 시점에 생성되는 게임
 
@@ -101,14 +102,25 @@
 
 ## 파트
 
-게임은 종이 한 장이 아니다. **보드 1개 + 부속 N개**로 나뉘고, 사용자는 파트를
-따로, 서로 다른 배율로 뽑는다.
+게임은 종이 한 장이 아니다. **보드 1개 + 낱장 N개 + 부속 N개**로 나뉘고,
+사용자는 파트를 따로, 서로 다른 배율로 뽑는다.
 
-| `kind`      | 뜻                 | 필요한 표시                   |
-| ----------- | ------------------ | ----------------------------- |
-| `board`     | 핵심 게임판        | 없다 (오리지도 접지도 않는다) |
-| `cutout`    | 오려 쓰는 부속     | `cut`                         |
-| `buildable` | 접어 세우는 조립물 | `cut` + 접는선 하나 이상      |
+| `kind`      | 뜻                       | 필요한 표시                   |
+| ----------- | ------------------------ | ----------------------------- |
+| `board`     | 핵심 게임판 (정확히 1개) | 없다 (오리지도 접지도 않는다) |
+| `sheet`     | 보드가 아닌 낱장         | 없다 (오리지도 접지도 않는다) |
+| `cutout`    | 오려 쓰는 부속           | `cut`                         |
+| `buildable` | 접어 세우는 조립물       | `cut` + 접는선 하나 이상      |
+
+**`sheet`는 판이 여러 장인 게임을 위한 것이다**(`IDE-030`). 골프는 홀 하나가 A4
+한 장이고 열여덟 장이 다 인쇄돼야 한 라운드가 된다 — 보드는 정확히 1개라 나머지
+열일곱을 담을 종류가 없었고, `cutout`으로 두면 오릴 데가 없는 판에 오림선을
+그려야 했다. 대표 판 하나(카탈로그 썸네일·소개 페이지가 가리키는 것)만 `board`로
+두고 나머지를 `sheet`로 둔다.
+
+쓰는 쪽에서 갈리는 것은 **가위가 드는가**다(`isBoardLike`) — 인쇄 화면의
+'게임판만 · 부속만' 단추와 PDF 파일 이름이 그 선으로 나뉜다. `board`·`sheet`가
+한편이고 `cutout`·`buildable`이 다른 편이다.
 
 - `orientation`은 치수와 일치해야 한다. 가로(`landscape`)로 선언하면
   `widthMm >= heightMm`여야 한다. 축구 게임판의 보드는 297×210mm 가로다.

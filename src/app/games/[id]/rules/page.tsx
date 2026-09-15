@@ -68,7 +68,7 @@ export default async function GameRulesPage({ params }: Props) {
   if (!game) notFound();
 
   const board = boardOf(game);
-  const accessories = game.parts.filter((p) => p.kind !== 'board');
+  const accessories = game.parts.filter((p) => p.id !== board.id);
   const sections = groupRuleSections(game.rules);
 
   return (

@@ -11,11 +11,24 @@ import { mmLength, rectMm, slug } from './units';
 
 /**
  * - `board` — 핵심 게임판. 게임마다 정확히 1개다. 오리거나 접지 않는다.
+ * - `sheet` — 보드와 같은 낱장인데 **보드가 아닌 것**. 오리지도 접지도 않는다.
  * - `cutout` — 오려서 쓰는 부속(점수 기록칸, 게임 방법, 공 마커).
  * - `buildable` — 오리고 접어서 세우는 조립물(골대·주사위 전개도).
+ *
+ * `sheet`는 골프(IDE-030)가 데려왔다. 골프는 **판이 열여덟 장**이다 — 홀 하나가
+ * A4 한 장이고, 열여덟 장이 다 나와야 한 라운드가 된다. 보드는 정확히 1개라
+ * 나머지 열일곱을 담을 종류가 없었고, `cutout`으로 두면 오릴 데가 없는 판에
+ * 오림선을 그려야 했다. 그래서 "보드처럼 그냥 쓰는 낱장"을 종류로 세웠다.
+ *
+ * 쓰는 쪽에서 갈리는 것은 **가위가 드는가**다(`isBoardLike`) — 인쇄 화면의
+ * '게임판만 · 부속만'과 PDF 파일 이름이 그 선으로 나뉜다.
  */
-export const partKind = z.enum(['board', 'cutout', 'buildable']);
+export const partKind = z.enum(['board', 'sheet', 'cutout', 'buildable']);
 export type PartKind = z.infer<typeof partKind>;
+
+/** 그대로 쓰는 낱장인가(보드·시트). 거짓이면 가위가 드는 부속이다. */
+export const isBoardLike = (kind: PartKind): boolean =>
+  kind === 'board' || kind === 'sheet';
 
 export const orientation = z.enum(['portrait', 'landscape']);
 export type Orientation = z.infer<typeof orientation>;
@@ -263,12 +276,12 @@ export const part = z
 
     // 보드는 오리지도 접지도 않는다. 타일 재단선은 인쇄 규격(IDE-002)이 용지 위에
     // 그리는 것이라 도안 표시가 아니다.
-    if (p.kind === 'board' && p.marks.length > 0) {
+    if (isBoardLike(p.kind) && p.marks.length > 0) {
       ctx.issues.push({
         code: 'custom',
         input: p,
         path: ['marks'],
-        message: '보드 파트에는 오림선·접는선·풀칠면을 두지 않는다',
+        message: `${p.kind === 'board' ? '보드' : '낱장'} 파트에는 오림선·접는선·풀칠면을 두지 않는다`,
       });
     }
     if (p.kind === 'cutout' && !p.marks.includes('cut')) {
