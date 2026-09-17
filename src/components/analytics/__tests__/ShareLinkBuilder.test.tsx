@@ -43,7 +43,13 @@ describe('ShareLinkBuilder', () => {
     const user = setup();
     await user.click(screen.getByLabelText('채널'));
 
-    for (const name of ['페이스북', '인스타그램', '링크드인', '직접 입력']) {
+    for (const name of [
+      '페이스북',
+      '인스타그램',
+      '링크드인',
+      '네이버 카페',
+      '직접 입력',
+    ]) {
       expect(
         await screen.findByRole('option', { name }),
         name,

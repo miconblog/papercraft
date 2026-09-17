@@ -20,9 +20,12 @@ export type SharePreset = {
 /**
  * 기본 채널.
  *
- * `medium` 이 전부 `social` 인 것은 우연이 아니다 — 채널 분류가
- * `medium.startsWith('social')` 을 먼저 보므로(`channel.ts`), 이 셋은 표에서
- * **소셜** 한 칸에 모이고 `source` 로 갈린다.
+ * 전부 표에서 **소셜** 한 칸에 모이고 `source` 로 갈린다 — 채널 분류가
+ * `medium` 을 먼저 보고 `social` · `community` 를 소셜로 읽는다(`channel.ts`).
+ *
+ * 네이버 카페만 `medium` 이 `community` 다. 이 프리셋이 생기기 전에 손으로 만들어
+ * 뿌린 링크가 그 값이었다(2026-09-17 원본). 여기서 `social` 로 바꾸면 같은
+ * 카페가 표에서 두 줄로 쪼개진다.
  */
 export const SHARE_PRESETS: readonly SharePreset[] = [
   { id: 'facebook', label: '페이스북', source: 'facebook', medium: 'social' },
@@ -33,6 +36,12 @@ export const SHARE_PRESETS: readonly SharePreset[] = [
     medium: 'social',
   },
   { id: 'linkedin', label: '링크드인', source: 'linkedin', medium: 'social' },
+  {
+    id: 'naver-cafe',
+    label: '네이버 카페',
+    source: 'naver_cafe',
+    medium: 'community',
+  },
 ];
 
 export type ShareInput = {

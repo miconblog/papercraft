@@ -12,10 +12,11 @@ import { createClient } from '@supabase/supabase-js';
 import {
   ANALYTICS_SCHEMA,
   analyticsConfig,
-  type AnalyticsConfig,
+  supabaseConnection,
+  type SupabaseConnection,
 } from './config';
 
-const create = (config: AnalyticsConfig) =>
+const create = (config: SupabaseConnection) =>
   createClient(config.url, config.serviceRoleKey, {
     db: { schema: ANALYTICS_SCHEMA },
     // 서버끼리 쓰는 연결이다. 세션을 들고 있을 이유도 새로 고칠 이유도 없다.
@@ -40,4 +41,25 @@ export function analyticsClient(): AnalyticsSupabase | null {
 
   cached = create(config);
   return cached;
+}
+
+let reportCached: AnalyticsSupabase | null = null;
+
+/**
+ * 대시보드가 읽는 클라이언트. **`ANALYTICS_ENABLED` 를 보지 않는다.**
+ *
+ * 그 스위치는 "방문을 세지 않는다"는 뜻이다(`supabaseConnection` 참고). 로컬에서
+ * 개발하며 둘러본 것이 운영 숫자에 섞이지 않게 끄는 것인데, 거기에 조회까지
+ * 묶여 있으면 **쌓인 통계를 보려고 수집을 켜야** 한다. 보는 순간 섞인다.
+ *
+ * 방문자 해시 salt 도 필요 없다 — 읽기만 한다.
+ */
+export function reportClient(): AnalyticsSupabase | null {
+  if (reportCached) return reportCached;
+
+  const config = supabaseConnection();
+  if (!config) return null;
+
+  reportCached = create(config);
+  return reportCached;
 }

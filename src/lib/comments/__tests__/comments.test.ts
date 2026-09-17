@@ -16,6 +16,8 @@ import {
   createComment,
   deleteComment,
   isApproved,
+  PENDING_COUNT_CAP,
+  pendingCommentCount,
   recentCommentCount,
   setCommentApproved,
   toComment,
@@ -176,6 +178,34 @@ describe('allComments (관리자)', () => {
     // 대기·공개를 가르는 것은 화면의 일이다. 여기서는 둘 다 온다.
     expect(comments.filter(isApproved)).toHaveLength(1);
     expect(urlOf(fetchMock)).toContain('order=created_at.desc');
+  });
+});
+
+describe('pendingCommentCount (메뉴의 대기 숫자)', () => {
+  it('승인 안 된 것만, 본문 없이, 한도 하나 위까지만 묻는다', async () => {
+    enableSupabase();
+    const fetchMock = rows([{ id: 'a' }, { id: 'b' }, { id: 'c' }]);
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(pendingCommentCount()).resolves.toBe(3);
+    const url = urlOf(fetchMock);
+    expect(url).toContain('select=id');
+    expect(url).toContain('approved_at=is.null');
+    expect(url).toContain(`limit=${PENDING_COUNT_CAP + 1}`);
+    // 방금 승인한 것이 숫자에서 바로 빠져야 한다.
+    expect(initOf(fetchMock).cache).toBe('no-store');
+  });
+
+  it('못 읽으면 0 이다 — 숫자 하나 때문에 관리자 화면이 서지 않으면 안 된다', async () => {
+    enableSupabase();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('boom', { status: 500 })),
+    );
+    await expect(pendingCommentCount()).resolves.toBe(0);
+
+    vi.unstubAllEnvs();
+    await expect(pendingCommentCount()).resolves.toBe(0);
   });
 });
 

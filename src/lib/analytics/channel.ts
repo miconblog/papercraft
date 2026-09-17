@@ -12,6 +12,10 @@ export type Utm = {
   source: string | null;
   medium: string | null;
   campaign: string | null;
+  /** 같은 캠페인 안에서 어느 글·버튼인지. 분류에는 안 쓴다. */
+  content: string | null;
+  /** 검색 광고의 키워드. 분류에는 안 쓴다. */
+  term: string | null;
 };
 
 /** 호스트 이름에 이 조각이 들어 있으면 검색이다. */
@@ -49,6 +53,84 @@ const SOCIAL_HOSTS = [
   'tistory.',
 ];
 
+/**
+ * 호스트 목록으로는 못 잡는 utm_source 이름들.
+ *
+ * `naver_cafe` 는 `cafe.naver.` 를 품지 않고 `naver.` 는 품는다 — 그대로 두면
+ * 카페에 올린 글로 온 방문이 **검색**으로 잡힌다(2026-09-17 실제로 그랬다).
+ */
+const SOCIAL_SOURCES = /cafe|blog|community/;
+
+/** utm_medium 이 이렇게 시작하면 소셜이다. 카페·블로그·메신저도 여기 모은다. */
+const SOCIAL_MEDIUM = /^(social|sns|sm$|community|cafe|blog|messenger)/;
+
+/**
+ * 인앱 브라우저 표식.
+ *
+ * 카카오톡·인스타그램 안에서 링크를 누르면 **referrer 가 비어서 온다.** utm 이
+ * 없으면 그 방문은 직접 방문과 구별되지 않는데, 한국에서 링크가 도는 길의
+ * 대부분이 거기다. UA 에 앱 이름이 박혀 있으니 그것으로 건진다.
+ *
+ * 순서가 중요하다 — 스레드는 인스타그램 표식을 함께 달고 올 수 있다.
+ */
+const IN_APPS: [RegExp, string][] = [
+  [/KAKAOTALK/i, 'kakaotalk'],
+  [/Barcelona/, 'threads'],
+  [/Instagram/, 'instagram'],
+  [/FBAN|FBAV|FB_IAB|FBIOS/, 'facebook'],
+  [/\bLine\//, 'line'],
+  [/BAND\//, 'band'],
+  [/NAVER\(inapp|NAVER\//, 'naver'],
+  [/DaumApps/, 'daum'],
+];
+
+/**
+ * 앱 안에서 열렸다는 것만으로 소셜이라 부를 수 있는 앱.
+ *
+ * 네이버·다음 앱은 빠진다 — 그 안에서는 검색 결과를 눌렀는지 카페 글을
+ * 눌렀는지 UA 로 알 수 없다. 표에는 앱 이름으로 남아 따로 읽힌다.
+ */
+const SOCIAL_APPS = new Set([
+  'kakaotalk',
+  'threads',
+  'instagram',
+  'facebook',
+  'line',
+  'band',
+]);
+
+export const IN_APP_LABEL: Record<string, string> = {
+  kakaotalk: '카카오톡',
+  threads: '스레드',
+  instagram: '인스타그램',
+  facebook: '페이스북',
+  line: '라인',
+  band: '밴드',
+  naver: '네이버',
+  daum: '다음',
+};
+
+/** UA 에서 인앱 브라우저의 앱 이름을 꺼낸다. 일반 브라우저면 `null`. */
+export function inAppOf(userAgent: string | null | undefined): string | null {
+  if (!userAgent) return null;
+  return IN_APPS.find(([pattern]) => pattern.test(userAgent))?.[1] ?? null;
+}
+
+/**
+ * 집계 표의 `source` 칸을 사람이 읽는 이름으로.
+ *
+ * 그 칸은 `utm_source` → referrer 호스트 → `app:<앱>` 순서로 채워진다
+ * (`rollup_daily`). 셋 다 없으면 빈 문자열이다.
+ */
+export function sourceLabel(source: string): string {
+  if (!source) return '(알 수 없음)';
+  if (source.startsWith('app:')) {
+    const app = source.slice(4);
+    return `${IN_APP_LABEL[app] ?? app} 앱`;
+  }
+  return source;
+}
+
 const matches = (host: string, needles: string[]): boolean =>
   needles.some((needle) => host.includes(needle));
 
@@ -66,6 +148,8 @@ export function readUtm(params: URLSearchParams): Utm {
     source: get('utm_source'),
     medium: get('utm_medium'),
     campaign: get('utm_campaign'),
+    content: get('utm_content'),
+    term: get('utm_term'),
   };
 }
 
@@ -90,18 +174,20 @@ export function referrerHost(
  * 채널 판정.
  *
  * @param selfHost 우리 도메인. 사이트 안에서 넘어온 것은 유입이 아니라 `direct` 다.
+ * @param inApp `inAppOf` 가 찾은 앱. referrer 도 utm 도 없을 때만 본다.
  */
 export function classifyChannel(
-  utm: Utm,
+  utm: Pick<Utm, 'source' | 'medium'>,
   host: string | null,
   selfHost: string | null,
+  inApp: string | null = null,
 ): Channel {
   // utm 이 하나라도 있으면 그쪽을 믿는다.
   if (utm.source || utm.medium) {
     const medium = utm.medium ?? '';
     const source = utm.source ?? '';
     if (medium === 'organic' || medium === 'search') return 'organic';
-    if (medium.startsWith('social') || medium === 'sm') return 'social';
+    if (SOCIAL_MEDIUM.test(medium)) return 'social';
     if (medium === 'referral') return 'referral';
     // 광고는 검색·소셜로 접지 않는다. `utm_source=google` 하나만 보고 organic
     // 이라 적으면 돈 주고 산 방문이 자연 유입으로 둔갑한다.
@@ -110,13 +196,15 @@ export function classifyChannel(
     }
     // 소셜을 먼저 본다 — `blog.naver.com` 은 `naver.` 를 품고 있어서 검색을
     // 먼저 보면 블로그 유입이 검색으로 잡힌다.
-    if (matchesSource(source, SOCIAL_HOSTS)) return 'social';
+    if (SOCIAL_SOURCES.test(source) || matchesSource(source, SOCIAL_HOSTS)) {
+      return 'social';
+    }
     if (matchesSource(source, SEARCH_HOSTS)) return 'organic';
     // 뉴스레터·QR·오프라인 인쇄물처럼 위 넷 중 어디도 아닌 것들이 여기 모인다.
     return 'campaign';
   }
 
-  if (!host) return 'direct';
+  if (!host) return inApp && SOCIAL_APPS.has(inApp) ? 'social' : 'direct';
   if (selfHost && host === selfHost.toLowerCase()) return 'direct';
   // 여기서도 소셜이 먼저다(위와 같은 이유).
   if (matches(host, SOCIAL_HOSTS)) return 'social';

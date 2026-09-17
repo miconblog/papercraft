@@ -27,6 +27,12 @@ cp .env.example .env.local   # 값은 .env.example 의 설명대로 채운다
 
 없거나 비어 있으면 **수집이 조용히 꺼진다.** 로컬과 CI 는 키 없이 돌아야 한다.
 
+`ANALYTICS_ENABLED=0` 은 **세는 것만** 끈다. 대시보드는 `SUPABASE_URL` ·
+`SUPABASE_SERVICE_ROLE_KEY` 만 있으면 읽는다(`reportClient`) — 로컬에서 수집을 끈
+채로 운영에 쌓인 통계를 볼 수 있고, 그래야 보려고 켰다가 로컬 둘러보기가 섞이는
+일이 없다. 화면을 열면 최근 사흘을 다시 집계(`rollup_daily`)하는데, 원본에서
+다시 접는 것뿐이라 어디서 열어도 결과가 같다.
+
 ### 2. 대시보드에서 스키마를 노출한다 ⚠️ 이것을 빼면 아무것도 안 쌓인다
 
 > Supabase 대시보드 → **Settings → API → Exposed schemas** → `daddys_craft` 추가
@@ -98,6 +104,8 @@ daddys_craft.run_daily_maintenance()` 로 언제든 손으로 돌릴 수 있다.
 | `referrer_host` — 호스트만                   | referrer 전체 URL(검색어까지)      |
 | `path` — 물음표 앞까지                       | 쿼리 문자열                        |
 | `utm_source` · `utm_medium` · `utm_campaign` | 쿠키(하나도 심지 않는다)           |
+| `utm_content` · `utm_term`                   |                                    |
+| `in_app` — 인앱 브라우저의 앱 이름 하나      |                                    |
 | `lang` — 언어 코드 하나(`ko` · `de`)         | 지역과 언어 목록(`de-AT,en;q=0.8`) |
 | `bot_score` · `bot_reason` — 봇 신호와 근거  | 판정에 쓴 헤더 원본                |
 
@@ -127,6 +135,63 @@ daddys_craft.run_daily_maintenance()` 로 언제든 손으로 돌릴 수 있다.
 수집은 **응답을 절대 붙잡지 않는다.** Supabase 가 죽어 있어도, 키가 없어도,
 스키마가 노출돼 있지 않아도 페이지와 PDF 는 그대로 나가고 서버 로그에 경고만
 남는다.
+
+## 어디서 왔나 — 채널과 출처
+
+이슈: `issues/IDE-033-traffic-source-attribution.md`
+
+### 채널 판정 (`channel.ts`)
+
+| 순서 | 무엇을 보나                          | 예                                                       |
+| ---- | ------------------------------------ | -------------------------------------------------------- |
+| 1    | `utm_medium`                         | `social` · `community` · `cafe` · `blog` → 소셜          |
+| 2    | 광고 `utm_medium`                    | `cpc` · `paid` · `display` → 캠페인(검색·소셜로 안 접음) |
+| 3    | `utm_source`                         | `naver_cafe` · `*blog*` → 소셜, `google` → 검색          |
+| 4    | referrer 호스트                      | `m.facebook.com` → 소셜, `www.google.com` → 검색         |
+| 5    | 인앱 브라우저(referrer 가 없을 때만) | 카카오톡·인스타그램·페이스북·스레드·라인·밴드 → 소셜     |
+
+**소셜을 검색보다 먼저 본다.** `blog.naver.com` · `naver_cafe` 는 `naver` 를 품고
+있어서 검색을 먼저 보면 블로그·카페 유입이 검색으로 잡힌다(2026-09-17 실제로
+`naver_cafe` 다섯 줄이 그랬다).
+
+네이버·다음 **앱**은 소셜로 치지 않는다 — 그 안에서는 검색 결과를 눌렀는지 카페
+글을 눌렀는지 UA 로 알 수 없다. 대신 소스 표에 `네이버 앱` 으로 따로 남는다.
+
+### 세션이 출처를 물려준다
+
+utm 은 **첫 화면 주소에만** 붙어 있다. 사이트 안에서 옮겨 가면 주소에서 사라지고
+referrer 도 비므로, 그대로 두면 페이스북으로 들어와 일곱 화면을 본 세션이 "소셜 1 +
+직접 6"이 된다.
+
+그래서 `record_event` 가 **utm 도 외부 referrer 도 없는 줄에는 같은 세션의 직전 줄
+출처를 복사한다**(`attribution_inherited = true`). 세션 도중 다른 utm·외부 referrer
+로 다시 들어오면 그때부터는 그쪽이다 — last non-direct click 규칙이다.
+
+| 한 세션 안에서                                  | 기록되는 출처              |
+| ----------------------------------------------- | -------------------------- |
+| `/?utm_source=facebook` → `/games/soccer` → PDF | 셋 다 `facebook`           |
+| … → 구글 검색 결과로 `/games/golf` → `/`        | 뒤의 둘은 `www.google.com` |
+| 카카오톡 인앱, referrer 없음 → 다른 화면        | 둘 다 `카카오톡 앱`        |
+
+PDF 다운로드도 물려받는다. 그래서 소스 표의 PDF 칸이 **"어디서 온 사람이 도안을
+받았나"** 다.
+
+앱이 아니라 SQL 에서 하는 이유는 `IDE-025` 와 같다 — 세션을 찾는 자리가 이미 거기고,
+앱이 하려면 왕복이 하나 더 든다.
+
+### 소스 표 (`daily_source`)
+
+`source` 칸은 `utm_source` → referrer 호스트 → `app:<앱>` 순서로 채운다. 화면에서
+`app:kakaotalk` 은 `카카오톡 앱` 으로 보인다(`sourceLabel`). `utm_content` ·
+`utm_term` 은 원본에만 있고 집계 키에는 안 넣었다 — 줄 수가 캠페인마다 곱으로 는다.
+
+```sql
+-- 한 캠페인 안에서 어느 글·버튼이 데려왔나 (SQL Editor)
+select utm_source, utm_campaign, utm_content, count(distinct session_id) sessions
+from daddys_craft.events
+where day >= current_date - 30 and bot_score < 2
+group by 1, 2, 3 order by sessions desc;
+```
 
 ## 관리자 자신은 세지 않는다 — 두 겹
 
@@ -226,7 +291,8 @@ select daddys_craft.rollup_daily(current_date - 30, current_date, 3::smallint);
 
 ## 보기
 
-`/admin/analytics` — 최근 30일 PV/UV 추이, 채널 구성, 게임별 조회·다운로드.
+`/admin/analytics` — 최근 30일 PV/UV 추이, 채널 구성, 소스·매체·캠페인별 세션·PV·PDF,
+게임별 조회·다운로드.
 
 관리자가 한 명뿐이라 `ANALYTICS_ADMIN_PASSWORD` 하나로 잠근다. Supabase Auth 를
 붙이면 사용자 표·세션·비밀번호 재설정까지 딸려 오는데, 쓸 사람이 한 명이면 전부 짐이다.
@@ -241,8 +307,8 @@ select daddys_craft.rollup_daily(current_date - 30, current_date, 3::smallint);
 
 ### 공유 링크 만들기
 
-같은 화면 아래에 utm 링크 빌더가 있다. 페이스북·인스타그램·링크드인이 기본으로
-있고, `직접 입력` 으로 아무 `utm_source`/`utm_medium` 이나 쓸 수 있다.
+같은 화면 아래에 utm 링크 빌더가 있다. 페이스북·인스타그램·링크드인·네이버 카페가
+기본으로 있고, `직접 입력` 으로 아무 `utm_source`/`utm_medium` 이나 쓸 수 있다.
 
 손으로 `?utm_source=…` 를 조립하면 어느 날은 `facebook`, 어느 날은 `fb` 가 되어
 **한 채널이 표에서 둘로 쪼개진다.** 만드는 곳을 하나로 두는 이유다. 값은 소문자로

@@ -8,7 +8,7 @@
  * 대시보드를 볼 이유가 없다. 하루치 재계산이라 비용은 무시할 만하다.
  */
 import 'server-only';
-import { analyticsClient } from './client';
+import { reportClient } from './client';
 import { analyticsDay } from './visitor';
 
 export type DailyTraffic = {
@@ -24,6 +24,25 @@ export type ChannelTotal = {
   pageviews: number;
   visitors: number;
   sessions: number;
+  downloads: number;
+};
+
+/**
+ * 채널 한 칸을 소스·매체·캠페인으로 편 줄.
+ *
+ * 세션 안에서 옮겨 다닌 화면과 받은 PDF 는 **그 세션이 들어온 곳**으로 센다
+ * (`record_event` 가 물려준다). 그래서 이 표의 PDF 가 "어디서 온 사람이 도안을
+ * 받았나"다.
+ */
+export type SourceTotal = {
+  channel: string;
+  /** `utm_source` · referrer 호스트 · `app:<앱>` 중 하나. 없으면 빈 문자열. */
+  source: string;
+  medium: string;
+  campaign: string;
+  pageviews: number;
+  sessions: number;
+  downloads: number;
 };
 
 export type GameTotal = { game_id: string; views: number; downloads: number };
@@ -31,12 +50,19 @@ export type GameTotal = { game_id: string; views: number; downloads: number };
 export type Report = {
   days: DailyTraffic[];
   channels: ChannelTotal[];
+  sources: SourceTotal[];
   games: GameTotal[];
   /** 집계가 비어 있는 것과 수집이 꺼져 있는 것은 다른 이야기다. */
   available: boolean;
 };
 
-const EMPTY: Report = { days: [], channels: [], games: [], available: false };
+const EMPTY: Report = {
+  days: [],
+  channels: [],
+  sources: [],
+  games: [],
+  available: false,
+};
 
 /**
  * `2026-09-07` 에서 며칠 뒤로. 날짜 문자열끼리의 계산이라 시간대가 끼어들 틈이
@@ -71,7 +97,7 @@ function fold<T>(
 const n = (value: unknown): number => Number(value ?? 0);
 
 export async function loadReport(windowDays = 30): Promise<Report> {
-  const supabase = analyticsClient();
+  const supabase = reportClient();
   if (!supabase) return EMPTY;
 
   try {
@@ -84,7 +110,7 @@ export async function loadReport(windowDays = 30): Promise<Report> {
       p_to: today,
     });
 
-    const [traffic, channels, games] = await Promise.all([
+    const [traffic, channels, sources, games] = await Promise.all([
       supabase
         .from('daily_traffic')
         .select('day, pageviews, visitors, sessions, downloads')
@@ -92,7 +118,13 @@ export async function loadReport(windowDays = 30): Promise<Report> {
         .order('day'),
       supabase
         .from('daily_channel')
-        .select('day, channel, pageviews, visitors, sessions')
+        .select('day, channel, pageviews, visitors, sessions, downloads')
+        .gte('day', from),
+      supabase
+        .from('daily_source')
+        .select(
+          'day, channel, source, medium, campaign, pageviews, sessions, downloads',
+        )
         .gte('day', from),
       supabase
         .from('daily_game')
@@ -100,13 +132,9 @@ export async function loadReport(windowDays = 30): Promise<Report> {
         .gte('day', from),
     ]);
 
-    if (traffic.error || channels.error || games.error) {
-      console.warn(
-        '[analytics] 집계 조회 실패:',
-        traffic.error?.message ??
-          channels.error?.message ??
-          games.error?.message,
-      );
+    const failed = [traffic, channels, sources, games].find((q) => q.error);
+    if (failed) {
+      console.warn('[analytics] 집계 조회 실패:', failed.error?.message);
       return EMPTY;
     }
 
@@ -120,16 +148,46 @@ export async function loadReport(windowDays = 30): Promise<Report> {
           into[0] + n(row.pageviews),
           into[1] + n(row.visitors),
           into[2] + n(row.sessions),
+          into[3] + n(row.downloads),
         ],
-        3,
+        4,
       )
-        .map(([channel, [pageviews, visitors, sessions]]) => ({
+        .map(([channel, [pageviews, visitors, sessions, downloads]]) => ({
           channel,
           pageviews,
           visitors,
           sessions,
+          downloads,
         }))
         .sort((a, b) => b.pageviews - a.pageviews),
+      sources: fold(
+        sources.data ?? [],
+        // utm 값은 누구나 링크에 적어 보낼 수 있다 — 어떤 구분자를 골라도 값
+        // 안에 들어올 수 있으니 이어 붙이지 않고 배열째 직렬화한다.
+        (row) =>
+          JSON.stringify([row.channel, row.source, row.medium, row.campaign]),
+        (into, row) => [
+          into[0] + n(row.pageviews),
+          into[1] + n(row.sessions),
+          into[2] + n(row.downloads),
+        ],
+        3,
+      )
+        .map(([key, [pageviews, sessions, downloads]]) => {
+          const [channel, source, medium, campaign] = JSON.parse(
+            key,
+          ) as string[];
+          return {
+            channel,
+            source,
+            medium,
+            campaign,
+            pageviews,
+            sessions,
+            downloads,
+          };
+        })
+        .sort((a, b) => b.sessions - a.sessions || b.pageviews - a.pageviews),
       games: fold(
         games.data ?? [],
         (row) => String(row.game_id),

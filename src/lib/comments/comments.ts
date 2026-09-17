@@ -67,6 +67,28 @@ export const commentsTag = (kind: CommentKind, targetId: string): string =>
 
 export { RENDER_REVALIDATE_S };
 
+/** 메뉴의 대기 숫자가 세는 한도. 넘으면 화면이 `99+` 로 적는다. */
+export const PENDING_COUNT_CAP = 99;
+
+/**
+ * 검토를 기다리는 댓글 수 — 관리자 메뉴의 숫자다.
+ *
+ * `select=id` 로 **본문을 받지 않는다**(`recentCommentCount` 와 같은 이유). 한도
+ * 하나 위까지만 받는다 — 메뉴가 알아야 하는 것은 "몇 개"가 아니라 "99 를
+ * 넘었나"까지다. 정확한 수는 댓글 화면이 센다.
+ *
+ * 못 읽으면 `0` 이다. 메뉴 숫자 하나 때문에 관리자 화면이 서지 않으면 안 된다.
+ */
+export async function pendingCommentCount(): Promise<number> {
+  const rows = await restRead({
+    table: TABLE,
+    query: `?select=id&approved_at=is.null&limit=${PENDING_COUNT_CAP + 1}`,
+    init: { cache: 'no-store' },
+    label: LABEL,
+  });
+  return rows?.length ?? 0;
+}
+
 // ── 도배 제한 ───────────────────────────────────────────────────────
 
 /** 개수를 세는 창. 이 시간 안에 쓴 것만 센다. */
