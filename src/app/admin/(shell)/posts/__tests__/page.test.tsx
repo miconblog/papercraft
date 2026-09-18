@@ -345,6 +345,47 @@ describe('SNS 로 내보내기', () => {
     expect(body.textContent).toContain('내려 둔 글입니다');
   });
 
+  it('링크드인 앱 키가 없으면 링크드인 카드에 안내만 선다 (IDE-037)', async () => {
+    loggedIn();
+    withPost({ ...base, publish_at: '2020-01-01T00:00:00+09:00' });
+
+    const body = await draw(editor('id-1'));
+    expect(body.textContent).toContain('LINKEDIN_CLIENT_ID');
+    expect(body.textContent).not.toContain('링크드인에 바로 올리기');
+  });
+
+  it('링크드인이 연결돼 있으면 계정과 바로 올리기 단추가 선다 (IDE-037)', async () => {
+    loggedIn();
+    vi.stubEnv('LINKEDIN_CLIENT_ID', 'cid');
+    vi.stubEnv('LINKEDIN_CLIENT_SECRET', 'secret');
+    vi.stubEnv('SUPABASE_URL', 'https://example.supabase.co');
+    vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'service-role-key');
+    const row = { ...base, publish_at: '2020-01-01T00:00:00+09:00' };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) =>
+        String(url).includes('social_accounts')
+          ? Response.json([
+              {
+                access_token: 'tok',
+                expires_at: '2999-01-01T00:00:00Z',
+                member_urn: 'urn:li:person:me',
+                member_name: '손병대',
+              },
+            ])
+          : String(url).includes('social_posts')
+            ? Response.json([])
+            : Response.json([row]),
+      ),
+    );
+
+    const body = await draw(editor('id-1'));
+    expect(body.textContent).toContain('손병대 계정으로 연결됨');
+    expect(body.textContent).toContain('링크드인에 바로 올리기');
+    // 토큰은 화면으로 나가지 않는다.
+    expect(body.innerHTML).not.toContain('tok"');
+  });
+
   it('새 글에는 칸 자체가 없다', async () => {
     loggedIn();
     const body = await draw(editor('new'));

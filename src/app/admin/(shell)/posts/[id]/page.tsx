@@ -12,8 +12,10 @@ import { UnsavedGuard } from '@/components/blog/UnsavedGuard';
 import { EMPTY_DOC } from '@/lib/blog/doc';
 import { isPublished, postById, type Post } from '@/lib/blog/posts';
 import { postSummary } from '@/lib/blog/summary';
-import { instantToKstLocal } from '@/lib/kst';
+import { formatKstDate, instantToKstLocal } from '@/lib/kst';
 import { siteUrl } from '@/lib/site';
+import { linkedinPostsOf, linkedinStatus } from '@/lib/share/linkedinServer';
+import type { LinkedInPanelData } from '@/components/blog/LinkedInPublish';
 import {
   clearCoverImage,
   publishNow,
@@ -22,6 +24,7 @@ import {
   setCoverImage,
   uploadPhoto,
 } from '../actions';
+import { disconnectLinkedIn, postToLinkedIn } from '../linkedinActions';
 
 export const metadata: Metadata = {
   title: '글 쓰기',
@@ -279,7 +282,15 @@ export default async function AdminPostEditorPage({
         version={error ? null : `${post.updatedAt}:${saved ?? ''}`}
       />
 
-      {!isNew && <ExportSection post={post} />}
+      {!isNew && (
+        <ExportSection
+          post={post}
+          // 링크드인 상태는 **열린 글에서만** 읽는다 — 닫힌 글에는 칸이 없다.
+          linkedin={
+            isPublished(post) ? await linkedinPanel(post.id) : undefined
+          }
+        />
+      )}
     </div>
   );
 }
@@ -293,7 +304,13 @@ export default async function AdminPostEditorPage({
  * 문구는 **마지막으로 저장한 글**로 만든다 — 편집기에서 고치는 중인 제목은
  * 아직 이 서버에 없다.
  */
-function ExportSection({ post }: { post: Post }) {
+function ExportSection({
+  post,
+  linkedin,
+}: {
+  post: Post;
+  linkedin?: LinkedInPanelData;
+}) {
   const closed = post.hidden
     ? '내려 둔 글입니다. 다시 올린 뒤에 내보낼 수 있습니다.'
     : post.publishAt === null
@@ -325,8 +342,34 @@ function ExportSection({ post }: { post: Post }) {
           title={post.title}
           summary={postSummary(post)}
           coverUrl={post.coverUrl}
+          linkedin={linkedin}
         />
       )}
     </section>
   );
+}
+
+/**
+ * 링크드인 카드의 "바로 올리기"에 줄 것 (IDE-037). 토큰은 싣지 않는다 — 이름과
+ * 만료일, 올린 기록만 간다. 날짜는 여기서 KST 로 적는다.
+ */
+async function linkedinPanel(postId: string): Promise<LinkedInPanelData> {
+  const status = await linkedinStatus();
+  const posted =
+    status.kind === 'connected' || status.kind === 'expired'
+      ? await linkedinPostsOf(postId)
+      : [];
+  return {
+    postId,
+    backPath: `/admin/posts/${postId}`,
+    status,
+    expiresLabel:
+      status.kind === 'connected' ? formatKstDate(status.expiresAt) : null,
+    posted: posted.map((one) => ({
+      url: one.url,
+      label: formatKstDate(one.postedAt),
+    })),
+    publish: postToLinkedIn,
+    disconnect: disconnectLinkedIn,
+  };
 }

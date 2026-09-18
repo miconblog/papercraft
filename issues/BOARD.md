@@ -14,7 +14,7 @@
 | `todo`    | 0    |
 | `doing`   | 0    |
 | `blocked` | 4    |
-| `review`  | 14   |
+| `review`  | 15   |
 | `done`    | 18   |
 
 **지금 할 것** — [IDE-007](IDE-007-print-and-pdf-export.md)(인쇄·PDF 내보내기)은
@@ -406,6 +406,13 @@ PostgREST 로 읽는 길까지 확인). 남은 것은 **카카오 키·도메인
 새로고침으로 떠나면 쓰던 글이 날아갔다. 폼이 보낼 값을 처음 값과 견줘 바뀌었으면
 묻는다. 저장이 실패하면 기준을 새로 찍지 않아 보호가 풀리지 않는다. 앱 안 뒤로
 가기는 잡지 않았다(이유는 결정 기록). 남은 것은 실제 브라우저 확인이다.
+
+[IDE-037](IDE-037-linkedin-auto-post.md)(링크드인에 바로 올리기)이 `review`다.
+`IDE-034` 의 B(API 자동 게시) 첫 단추 — 넷 중 유일하게 앱 심사 없이 열린다. 편집
+화면의 링크드인 카드에서 연결하고, 고친 문구 그대로 대표 사진을 썸네일로 실어
+올린다. 마이그레이션 `013` 은 **운영 DB 에 아직 적용하지 않았다**(사용자 확인
+대기). 남은 것은 개발자 앱 등록 · 키 · `013` 적용 · 실제로 한 편 올려 보기다.
+사람 손이 필요한 확인은 [docs/manual-checks.md](../docs/manual-checks.md)에 모았다.
 ---
 
 ## M0 — 기반 (001–003)
@@ -463,6 +470,7 @@ PostgREST 로 읽는 길까지 확인). 남은 것은 **카카오 키·도메인
 | [IDE-034](IDE-034-devlog-sns-export.md)          | 공방 일지 글을 SNS 로 내보내기                                | frontend | P2   | 2d   | `review` |
 | [IDE-035](IDE-035-download-funnel.md)            | PDF 다운로드 퍼널 — 편집 시작 · 출력 창 · 내보내기 실패       | backend  | P1   | 1d   | `review` |
 | [IDE-036](IDE-036-editor-unsaved-guard.md)       | 저장 안 한 글을 두고 떠나기 전에 묻기                         | frontend | P2   | 0.5d | `review` |
+| [IDE-037](IDE-037-linkedin-auto-post.md)         | 링크드인에 바로 올리기 — SNS 자동 게시 첫 단추                | backend  | P2   | 1.5d | `review` |
 
 ---
 

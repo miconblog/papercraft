@@ -30,16 +30,19 @@ import {
   type ExportInput,
   type ExportTarget,
 } from '@/lib/share/exportTargets';
+import { LinkedInPublish, type LinkedInPanelData } from './LinkedInPublish';
 
 export type SnsExportProps = ExportInput & {
   /** 대표 사진의 절대 주소. 없으면 인스타그램 칸이 막힌다. */
   coverUrl: string | null;
+  /** 링크드인 카드의 "바로 올리기"(IDE-037). 없으면 꾸러미만 선다. */
+  linkedin?: LinkedInPanelData;
 };
 
 const BUTTON =
   'inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm transition-colors outline-none hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current disabled:opacity-50 disabled:hover:bg-transparent';
 
-export function SnsExport({ coverUrl, ...input }: SnsExportProps) {
+export function SnsExport({ coverUrl, linkedin, ...input }: SnsExportProps) {
   return (
     <div className="mt-4 grid gap-4">
       {EXPORT_TARGETS.map((target) => (
@@ -48,6 +51,7 @@ export function SnsExport({ coverUrl, ...input }: SnsExportProps) {
           target={target}
           input={input}
           coverUrl={coverUrl}
+          linkedin={target.id === 'linkedin' ? linkedin : undefined}
         />
       ))}
     </div>
@@ -58,6 +62,7 @@ type CardProps = {
   target: ExportTarget;
   input: ExportInput;
   coverUrl: string | null;
+  linkedin?: LinkedInPanelData;
 };
 
 /** 사진 파일 이름의 확장자. 모르는 형식이면 jpg 로 둔다 — 앱들이 가장 잘 받는다. */
@@ -69,7 +74,7 @@ const extensionOf = (type: string): string =>
     'image/avif': 'avif',
   })[type] ?? 'jpg';
 
-function ExportCard({ target, input, coverUrl }: CardProps) {
+function ExportCard({ target, input, coverUrl, linkedin }: CardProps) {
   const [text, setText] = useState(() => composeExport(target, input));
   /** 눌린 뒤 한 줄 알림. `copied` 가 있어야 복사 버튼에 체크가 선다. */
   const [notice, setNotice] = useState<{
@@ -252,6 +257,8 @@ function ExportCard({ target, input, coverUrl }: CardProps) {
       <p aria-live="polite" className="mt-2 text-xs text-muted-foreground">
         {notice?.text}
       </p>
+
+      {linkedin && <LinkedInPublish data={linkedin} text={text} over={over} />}
     </section>
   );
 }
