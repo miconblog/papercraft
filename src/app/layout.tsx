@@ -47,7 +47,10 @@ export const metadata: Metadata = {
     'A4 인쇄',
     '축구 게임판',
   ],
-  alternates: { canonical: '/' },
+  // **대표 주소(canonical)는 여기 두지 않는다.** 레이아웃의 값은 자기 것을 안
+  // 정한 모든 페이지가 물려받아서, `/games/soccer` 까지 "나는 홈과 같은
+  // 페이지"라고 선언하게 된다(2026-09-19 라이브에서 확인) — 검색엔진은 그런
+  // 페이지를 홈의 사본으로 보고 따로 싣지 않는다. 페이지마다 자기 주소를 적는다.
   openGraph: {
     type: 'website',
     locale: 'ko_KR',

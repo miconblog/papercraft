@@ -9,6 +9,7 @@ import { adminPassword } from '@/lib/analytics/config';
 import { ADMIN_COOKIE, isValidSession } from '@/lib/analytics/session';
 import { GAMES } from '@/lib/games';
 import { isOpen, releasesForRequest } from '@/lib/games/release';
+import { deployedSiteUrl } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: '공유 링크',
@@ -21,13 +22,14 @@ export const dynamic = 'force-dynamic';
 /**
  * 공유 링크의 앞부분.
  *
- * `NEXT_PUBLIC_SITE_URL` 을 먼저 본다 — 미리보기 배포에서 어드민을 열고 링크를
- * 만들면 **미리보기 주소를 세상에 뿌리게 된다.** 그 값이 없을 때만 지금 보고
- * 있는 호스트로 떨어진다(로컬에서 쓰라는 뜻이다).
+ * 배포된 사이트 주소를 먼저 본다(`deployedSiteUrl` — 정한 주소, 없으면 운영
+ * 빌드의 운영 도메인). 미리보기 배포에서 어드민을 열고 링크를 만들면 **미리보기
+ * 주소를 세상에 뿌리게 된다.** 개발 서버일 때만 지금 보고 있는 호스트로
+ * 떨어진다(로컬에서 쓰라는 뜻이다).
  */
 async function shareOrigin(): Promise<string> {
-  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (configured) return configured.replace(/\/+$/, '');
+  const deployed = deployedSiteUrl();
+  if (deployed) return deployed;
 
   const incoming = await headers();
   const host = incoming.get('host') ?? 'localhost:3000';

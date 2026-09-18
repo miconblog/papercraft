@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -38,6 +39,9 @@ import { formatPlayers, SUPPORTED_PAPER_SIZE } from '@/lib/games/format';
  * 정적으로 굳는다 — 그러면 오픈 시각이 지나도 목록에 카드가 붙지 않는다.
  */
 export const revalidate = 60;
+
+/** 레이아웃은 대표 주소를 정하지 않는다(`layout.tsx` 참고) — 홈도 스스로 적는다. */
+export const metadata: Metadata = { alternates: { canonical: '/' } };
 
 /** 부모에게 하는 약속. 문구는 사용자가 직접 정했다(2026-09-07). */
 const VALUES = [
