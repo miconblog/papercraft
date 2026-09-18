@@ -11,6 +11,7 @@
     "artwork": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-artwork.mts",
     "fetch:land": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/fetch-natural-earth.mts",
     "fetch:cities": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/fetch-world-cities.mts",
+    "fetch:countries": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/fetch-world-countries.mts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "next typegen && tsc --noEmit",

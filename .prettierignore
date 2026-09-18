@@ -13,3 +13,5 @@ src/lib/utils.ts
 # Natural Earth에서 단순화한 해안선. 고리 하나가 한 줄이라 prettier가 펼치면 열 배가 된다.
 src/assets/games/world-tour/artwork/land.json
 src/assets/games/world-tour/search/world-cities.json
+# 방문 통계 지도의 나라 경계. 나라 하나가 한 줄이다.
+src/assets/shared/world-countries.json

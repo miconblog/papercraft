@@ -1,9 +1,22 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
+import { CountryMap } from '@/components/analytics/CountryMap';
+import { RangeFilter } from '@/components/analytics/RangeFilter';
 import { adminPassword, analyticsConfig } from '@/lib/analytics/config';
+import { countryName } from '@/lib/analytics/countryScale';
+import {
+  bucketsOf,
+  describeRange,
+  parseRange,
+  type Bucket,
+} from '@/lib/analytics/range';
 import { ADMIN_COOKIE, isValidSession } from '@/lib/analytics/session';
-import { daysAgo, loadReport, type DailyTraffic } from '@/lib/analytics/report';
+import {
+  loadReport,
+  type CountryTotal,
+  type DailyTraffic,
+} from '@/lib/analytics/report';
 import { sourceLabel } from '@/lib/analytics/channel';
 import { analyticsDay } from '@/lib/analytics/visitor';
 import { getGame } from '@/lib/games';
@@ -24,39 +37,153 @@ const CHANNEL_LABEL: Record<string, string> = {
   campaign: '캠페인(utm)',
 };
 
-const WINDOW_DAYS = 30;
+/** 이 화면의 주소. 기간 필터가 여기로 돌아온다. */
+const PATH = '/admin/analytics';
+
+/** 나라 표에 먼저 보이는 줄 수. 나머지는 접어 둔다. */
+const COUNTRY_ROWS = 10;
+
+type BucketTotal = Bucket & Omit<DailyTraffic, 'day'>;
 
 /**
- * 하루 한 칸짜리 막대. 라이브러리를 들이지 않는다 — 눈금 하나 없는 추이
- * 그래프를 위해 번들을 늘릴 이유가 없다.
+ * 일자별 줄을 칸(`bucketsOf`)으로 접는다.
  *
  * 이벤트가 없는 날은 집계에 줄이 아예 없다. 그대로 그리면 빈 날이 **접혀**
- * 사흘 만에 온 방문이 매일 온 것처럼 보인다 — 그래서 구간을 0 으로 채운다.
+ * 사흘 만에 온 방문이 매일 온 것처럼 보인다 — 그래서 칸을 먼저 만들고 0 으로
+ * 채운 뒤 더한다.
  */
-function Sparkbars({ days }: { days: DailyTraffic[] }) {
-  const today = analyticsDay();
-  const byDay = new Map(days.map((day) => [day.day, day]));
-  const span = Array.from({ length: WINDOW_DAYS }, (_, index) =>
-    daysAgo(today, WINDOW_DAYS - 1 - index),
-  );
-  const peak = Math.max(1, ...days.map((d) => d.pageviews));
+function foldDays(days: DailyTraffic[], buckets: Bucket[]): BucketTotal[] {
+  return buckets.map((bucket) => {
+    const inside = days.filter(
+      (day) => day.day >= bucket.from && day.day <= bucket.to,
+    );
+    const sum = (pick: (d: DailyTraffic) => number) =>
+      inside.reduce((total, day) => total + Number(pick(day) ?? 0), 0);
+    return {
+      ...bucket,
+      pageviews: sum((d) => d.pageviews),
+      visitors: sum((d) => d.visitors),
+      sessions: sum((d) => d.sessions),
+      downloads: sum((d) => d.downloads),
+    };
+  });
+}
+
+/**
+ * 칸 하나짜리 막대. 라이브러리를 들이지 않는다 — 눈금 하나 없는 추이
+ * 그래프를 위해 번들을 늘릴 이유가 없다.
+ */
+function Sparkbars({ buckets }: { buckets: BucketTotal[] }) {
+  const peak = Math.max(1, ...buckets.map((b) => b.pageviews));
 
   return (
     <ol className="mt-4 flex h-32 items-end gap-px" aria-hidden>
-      {span.map((day) => {
-        const row = byDay.get(day);
-        const pageviews = row?.pageviews ?? 0;
-        return (
-          <li
-            key={day}
-            title={`${day} · 순 PV ${pageviews} · 일간 UV ${row?.visitors ?? 0}`}
-            // 0 인 날도 한 줄은 남긴다 — 아예 비면 그날이 있었는지도 안 보인다.
-            className="min-h-px flex-1 rounded-t-xs bg-primary/70"
-            style={{ height: `${Math.round((pageviews / peak) * 100)}%` }}
-          />
-        );
-      })}
+      {buckets.map((bucket) => (
+        <li
+          key={bucket.from}
+          title={`${bucket.label} · 순 PV ${bucket.pageviews} · 일간 UV ${bucket.visitors}`}
+          // 0 인 칸도 한 줄은 남긴다 — 아예 비면 그 칸이 있었는지도 안 보인다.
+          className="min-h-px flex-1 rounded-t-xs bg-primary/70"
+          style={{
+            height: `${Math.round((bucket.pageviews / peak) * 100)}%`,
+          }}
+        />
+      ))}
     </ol>
+  );
+}
+
+function CountryRow({ row, total }: { row: CountryTotal; total: number }) {
+  return (
+    <tr className="border-b border-border/50">
+      <td className="py-1.5">{countryName(row.country)}</td>
+      <td className="py-1.5 text-right">{row.sessions}</td>
+      <td className="py-1.5 text-right text-muted-foreground">
+        {total ? `${((row.sessions / total) * 100).toFixed(1)}%` : '—'}
+      </td>
+      <td className="py-1.5 text-right">{row.pageviews}</td>
+      <td className="py-1.5 text-right">{row.downloads}</td>
+    </tr>
+  );
+}
+
+/**
+ * 나라 표 — 지도의 숫자를 전부 담는다(지도는 색 구간만 보여 준다).
+ *
+ * 코드를 모르는 줄("알 수 없음")은 순위에서 빼고 맨 아래에 둔다. 로컬 개발
+ * 서버나 플랫폼 밖에서 온 요청이라 "어느 나라"의 답이 아니다.
+ */
+function CountryTable({ countries }: { countries: CountryTotal[] }) {
+  const known = countries.filter((c) => c.country);
+  const unknown = countries.find((c) => !c.country);
+  const total = countries.reduce((sum, c) => sum + c.sessions, 0);
+  const head = known.slice(0, COUNTRY_ROWS);
+  const rest = known.slice(COUNTRY_ROWS);
+
+  const header = (
+    <thead>
+      <tr className="border-b border-border text-left">
+        <th scope="col" className="py-1.5 font-medium">
+          나라
+        </th>
+        <th scope="col" className="py-1.5 text-right font-medium">
+          세션
+        </th>
+        <th scope="col" className="py-1.5 text-right font-medium">
+          비중
+        </th>
+        <th scope="col" className="py-1.5 text-right font-medium">
+          PV
+        </th>
+        <th scope="col" className="py-1.5 text-right font-medium">
+          PDF
+        </th>
+      </tr>
+    </thead>
+  );
+
+  if (countries.length === 0) {
+    return (
+      <p className="mt-3 text-sm text-muted-foreground">
+        이 기간에는 아직 없습니다.
+      </p>
+    );
+  }
+
+  return (
+    <>
+      <table className="mt-4 w-full text-sm">
+        <caption className="sr-only">
+          나라별 세션·비중·페이지뷰·PDF 다운로드
+        </caption>
+        {header}
+        <tbody className="tabular-nums">
+          {head.map((row) => (
+            <CountryRow key={row.country} row={row} total={total} />
+          ))}
+          {unknown && rest.length === 0 && (
+            <CountryRow row={unknown} total={total} />
+          )}
+        </tbody>
+      </table>
+      {rest.length > 0 && (
+        <details className="mt-2 text-sm">
+          <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+            나머지 {rest.length}개 나라{unknown ? '와 알 수 없음' : ''}
+          </summary>
+          <table className="mt-1 w-full">
+            <caption className="sr-only">나머지 나라</caption>
+            {header}
+            <tbody className="tabular-nums">
+              {rest.map((row) => (
+                <CountryRow key={row.country} row={row} total={total} />
+              ))}
+              {unknown && <CountryRow row={unknown} total={total} />}
+            </tbody>
+          </table>
+        </details>
+      )}
+    </>
   );
 }
 
@@ -71,7 +198,9 @@ function Stat({ label, value }: { label: string; value: number }) {
   );
 }
 
-export default async function AnalyticsPage() {
+export default async function AnalyticsPage({
+  searchParams,
+}: PageProps<'/admin/analytics'>) {
   // proxy 가 이미 막았지만 여기서 한 번 더 본다. matcher 를 잘못 건드리거나
   // 경로를 옮기면 그 검사가 **조용히** 사라진다.
   const password = adminPassword();
@@ -80,17 +209,23 @@ export default async function AnalyticsPage() {
     notFound();
   }
 
-  const report = await loadReport(WINDOW_DAYS);
+  const today = analyticsDay();
+  const range = parseRange(await searchParams, today);
+  const report = await loadReport(range);
   const sum = (pick: (d: DailyTraffic) => number) =>
-    report.days.reduce((total, day) => total + pick(day), 0);
+    report.days.reduce((total, day) => total + Number(pick(day) ?? 0), 0);
+  const { unit, buckets } = bucketsOf(range);
+  const trend = foldDays(report.days, buckets);
 
   // 바깥 틀과 메뉴·로그아웃은 `(shell)/layout.tsx` 가 그린다 — 여기는 통계만.
   return (
     <div className="w-full max-w-3xl">
       <h1 className="text-3xl font-bold tracking-tight">방문 통계</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        최근 {WINDOW_DAYS}일 · 자체 수집 · 제3자에게 넘기지 않습니다.
+        {describeRange(range)} · 자체 수집 · 제3자에게 넘기지 않습니다.
       </p>
+
+      <RangeFilter range={range} today={today} action={PATH} />
 
       {/* 이 안내를 빼면 왜 내 방문이 안 잡히는지 나중에 스스로 헷갈린다. */}
       <p className="mt-2 text-sm text-muted-foreground">
@@ -138,51 +273,83 @@ export default async function AnalyticsPage() {
           </p>
 
           <section className="mt-8">
-            <h2 className="text-lg font-semibold">일자별 순 페이지뷰</h2>
-            <Sparkbars days={report.days} />
-            <table className="mt-4 w-full text-sm">
-              <caption className="sr-only">
-                일자별 순 페이지뷰·일간 UV·세션
-              </caption>
-              <thead>
-                <tr className="border-b border-border text-left">
-                  <th scope="col" className="py-1.5 font-medium">
-                    날짜
-                  </th>
-                  <th scope="col" className="py-1.5 text-right font-medium">
-                    PV
-                  </th>
-                  <th scope="col" className="py-1.5 text-right font-medium">
-                    일간 UV
-                  </th>
-                  <th scope="col" className="py-1.5 text-right font-medium">
-                    세션
-                  </th>
-                  <th scope="col" className="py-1.5 text-right font-medium">
-                    PDF
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="tabular-nums">
-                {report.days.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="py-3 text-muted-foreground">
-                      아직 쌓인 이벤트가 없습니다.
-                    </td>
+            <h2 className="text-lg font-semibold">{unit} 순 페이지뷰</h2>
+            <Sparkbars buckets={trend} />
+            {/* 칸이 많아지면(석 달 넘게 하루씩) 표가 화면을 다 먹는다 — 막대와
+                같은 칸으로 묶어 적는다. */}
+            <div className="mt-4 max-h-96 overflow-y-auto">
+              <table className="w-full text-sm">
+                <caption className="sr-only">
+                  {unit} 순 페이지뷰·일간 UV·세션
+                </caption>
+                <thead className="sticky top-0 bg-background">
+                  <tr className="border-b border-border text-left">
+                    <th scope="col" className="py-1.5 font-medium">
+                      {unit === '일자별' ? '날짜' : '기간'}
+                    </th>
+                    <th scope="col" className="py-1.5 text-right font-medium">
+                      PV
+                    </th>
+                    <th scope="col" className="py-1.5 text-right font-medium">
+                      일간 UV
+                    </th>
+                    <th scope="col" className="py-1.5 text-right font-medium">
+                      세션
+                    </th>
+                    <th scope="col" className="py-1.5 text-right font-medium">
+                      PDF
+                    </th>
                   </tr>
-                ) : (
-                  [...report.days].reverse().map((day) => (
-                    <tr key={day.day} className="border-b border-border/50">
-                      <td className="py-1.5">{day.day}</td>
-                      <td className="py-1.5 text-right">{day.pageviews}</td>
-                      <td className="py-1.5 text-right">{day.visitors}</td>
-                      <td className="py-1.5 text-right">{day.sessions}</td>
-                      <td className="py-1.5 text-right">{day.downloads}</td>
+                </thead>
+                <tbody className="tabular-nums">
+                  {report.days.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-3 text-muted-foreground">
+                        이 기간에는 쌓인 이벤트가 없습니다.
+                      </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    [...trend].reverse().map((bucket) => (
+                      <tr
+                        key={bucket.from}
+                        className="border-b border-border/50"
+                      >
+                        <td className="py-1.5">{bucket.label}</td>
+                        <td className="py-1.5 text-right">
+                          {bucket.pageviews}
+                        </td>
+                        <td className="py-1.5 text-right">{bucket.visitors}</td>
+                        <td className="py-1.5 text-right">{bucket.sessions}</td>
+                        <td className="py-1.5 text-right">
+                          {bucket.downloads}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section className="mt-8">
+            <h2 className="text-lg font-semibold">어느 나라에서 왔나</h2>
+            {/* 이 한 줄을 빼면 VPN 으로 들어온 내 방문을 해외 유입으로 읽는다. */}
+            <p className="mt-1 text-xs text-muted-foreground">
+              접속한 IP 로 배포 플랫폼(Vercel)이 알려 준 나라입니다. VPN 이나
+              해외 로밍으로 들어오면 그 나라로 셉니다. 작은 나라는 점으로
+              찍습니다.
+            </p>
+            {report.countries === null ? (
+              <p className="mt-3 rounded-lg border border-border p-3 text-sm text-muted-foreground">
+                나라별 집계를 읽지 못했습니다. DB 에 마이그레이션{' '}
+                <code>011-daily-country.sql</code> 이 적용됐는지 확인하세요.
+              </p>
+            ) : (
+              <>
+                <CountryMap countries={report.countries} />
+                <CountryTable countries={report.countries} />
+              </>
+            )}
           </section>
 
           <section className="mt-8">
