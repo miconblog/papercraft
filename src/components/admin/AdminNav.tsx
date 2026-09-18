@@ -16,6 +16,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   CalendarClockIcon,
+  FilterIcon,
   GaugeIcon,
   Link2Icon,
   MessageSquareIcon,
@@ -25,6 +26,7 @@ import {
 /** 화면을 늘리면 여기 한 줄만 더한다. */
 const ITEMS = [
   { href: '/admin/analytics', label: '방문 통계', icon: GaugeIcon },
+  { href: '/admin/funnel', label: 'PDF 퍼널', icon: FilterIcon },
   { href: '/admin/games', label: '게임 공개', icon: CalendarClockIcon },
   { href: '/admin/posts', label: '공방 일지', icon: PenLineIcon },
   { href: '/admin/comments', label: '댓글', icon: MessageSquareIcon },

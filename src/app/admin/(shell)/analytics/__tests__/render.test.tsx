@@ -45,25 +45,7 @@ const REPORT = {
     { country: 'US', sessions: 5, pageviews: 6, downloads: 0 },
     { country: '', sessions: 5, pageviews: 5, downloads: 0 },
   ],
-  funnel: [],
 };
-
-const funnelRow = (
-  game_id: string,
-  device: string,
-  counts: Record<string, number>,
-) => ({
-  game_id,
-  device,
-  channel: 'direct',
-  sessions: 0,
-  game_views: 0,
-  edits: 0,
-  print_opens: 0,
-  export_fails: 0,
-  downloads: 0,
-  ...counts,
-});
 
 const draw = async (searchParams: Record<string, string>) =>
   render(
@@ -133,58 +115,5 @@ describe('AnalyticsPage — 기간과 나라', () => {
     await draw({});
     expect(screen.queryByRole('img', { name: /나라별/ })).toBeNull();
     expect(screen.getByText(/011-daily-country.sql/)).toBeInTheDocument();
-  });
-
-  it('퍼널을 기기별·게임별로 가른다 (IDE-035)', async () => {
-    loadReport.mockResolvedValue({
-      ...REPORT,
-      funnel: [
-        funnelRow('', 'mobile', {
-          sessions: 20,
-          game_views: 10,
-          print_opens: 2,
-        }),
-        funnelRow('', 'desktop', {
-          sessions: 5,
-          game_views: 4,
-          edits: 2,
-          print_opens: 2,
-          downloads: 1,
-        }),
-        funnelRow('soccer', 'mobile', {
-          sessions: 10,
-          game_views: 10,
-          print_opens: 2,
-        }),
-        funnelRow('soccer', 'desktop', {
-          sessions: 4,
-          game_views: 4,
-          edits: 2,
-          print_opens: 2,
-          downloads: 1,
-          export_fails: 1,
-        }),
-      ],
-    });
-    await draw({});
-
-    const byDevice = screen.getByRole('table', { name: '기기별' });
-    expect(
-      within(byDevice)
-        .getAllByRole('row')
-        .slice(1)
-        .map((row) => row.textContent),
-    ).toEqual(['모바일201050%00%210%00%0', '데스크톱5480%240%240%120%0']);
-
-    const byGame = screen.getByRole('table', { name: '게임별' });
-    const [soccer] = within(byGame).getAllByRole('row').slice(1);
-    // 게임 줄은 사이트 줄과 섞지 않는다 — 게임 화면 14, 막힘 1.
-    expect(soccer.textContent).toMatch(/^축구.*14.*1$/);
-  });
-
-  it('퍼널 표를 못 읽으면 안내를 띄운다', async () => {
-    loadReport.mockResolvedValue({ ...REPORT, funnel: null });
-    await draw({});
-    expect(screen.getByText(/012-download-funnel.sql/)).toBeInTheDocument();
   });
 });

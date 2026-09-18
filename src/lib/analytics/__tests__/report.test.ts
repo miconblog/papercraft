@@ -40,7 +40,7 @@ function fakeClient() {
 
 vi.mock('../client', () => ({ reportClient: () => fakeClient() }));
 
-const { loadReport } = await import('../report');
+const { loadFunnel, loadReport } = await import('../report');
 const RANGE = { from: '2025-09-20', to: '2026-09-19' };
 
 beforeEach(() => {
@@ -108,8 +108,7 @@ describe('loadReport', () => {
       downloads: 0,
     }));
 
-    const report = await loadReport(RANGE);
-    expect(report.funnel).toEqual([
+    expect(await loadFunnel(RANGE)).toEqual([
       {
         game_id: '',
         device: 'mobile',
@@ -124,11 +123,13 @@ describe('loadReport', () => {
     ]);
   });
 
-  it('퍼널 표를 못 읽어도 나머지 통계는 선다 — 012 보다 앱이 먼저 나간 경우', async () => {
+  it('퍼널 표를 못 읽으면 null — 화면이 그렇다고 알린다', async () => {
     tables.daily_funnel = new Error('relation "daily_funnel" does not exist');
+    expect(await loadFunnel(RANGE)).toBeNull();
+  });
 
-    const report = await loadReport(RANGE);
-    expect(report.available).toBe(true);
-    expect(report.funnel).toBeNull();
+  it('방문 통계는 퍼널 표를 읽지 않는다 — 화면이 갈라졌다', async () => {
+    await loadReport(RANGE);
+    expect(requested.map((r) => r.table)).not.toContain('daily_funnel');
   });
 });

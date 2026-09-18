@@ -72,11 +72,6 @@ export type Report = {
    * DB 여도 나머지 통계는 선다.
    */
   countries: CountryTotal[] | null;
-  /**
-   * PDF 퍼널(IDE-035). `null` 이면 표(`012`)를 읽지 못한 것이다 — 나라 표와
-   * 같은 이유로 이것 하나 때문에 화면을 세우지 않을 수는 없다.
-   */
-  funnel: FunnelRow[] | null;
   /** 집계가 비어 있는 것과 수집이 꺼져 있는 것은 다른 이야기다. */
   available: boolean;
 };
@@ -87,7 +82,6 @@ const EMPTY: Report = {
   sources: [],
   games: [],
   countries: null,
-  funnel: null,
   available: false,
 };
 
@@ -159,6 +153,15 @@ const readDaily = (
     return query.range(start, end) as unknown as PromiseLike<Page>;
   });
 
+/** 오늘·어제 것을 화면에 띄우기 전에 원본에서 다시 접는다. */
+const refreshRecent = async (supabase: AnalyticsSupabase) => {
+  const today = analyticsDay();
+  await supabase.rpc('rollup_daily', {
+    p_from: daysAgo(today, 2),
+    p_to: today,
+  });
+};
+
 export async function loadReport(range: {
   from: string;
   to: string;
@@ -167,59 +170,45 @@ export async function loadReport(range: {
   if (!supabase) return EMPTY;
 
   try {
-    const today = analyticsDay();
+    await refreshRecent(supabase);
 
-    // 오늘·어제 것을 화면에 띄우기 전에 원본에서 다시 접는다.
-    await supabase.rpc('rollup_daily', {
-      p_from: daysAgo(today, 2),
-      p_to: today,
-    });
-
-    const [traffic, channels, sources, games, countries, funnel] =
-      await Promise.all([
-        readDaily(
-          supabase,
-          'daily_traffic',
-          'day, pageviews, visitors, sessions, downloads',
-          ['day'],
-          range,
-        ),
-        readDaily(
-          supabase,
-          'daily_channel',
-          'day, channel, pageviews, visitors, sessions, downloads',
-          ['day', 'channel'],
-          range,
-        ),
-        readDaily(
-          supabase,
-          'daily_source',
-          'day, channel, source, medium, campaign, pageviews, sessions, downloads',
-          ['day', 'channel', 'source', 'medium', 'campaign'],
-          range,
-        ),
-        readDaily(
-          supabase,
-          'daily_game',
-          'day, game_id, views, downloads',
-          ['day', 'game_id'],
-          range,
-        ),
-        readDaily(
-          supabase,
-          'daily_country',
-          'day, country, pageviews, sessions, downloads',
-          ['day', 'country'],
-          range,
-        ),
-        readDaily(
-          supabase,
-          'daily_funnel',
-          'day, game_id, device, channel, sessions, game_views, edits, print_opens, export_fails, downloads',
-          ['day', 'game_id', 'device', 'channel'],
-          range,
-        ),
-      ]);
+    const [traffic, channels, sources, games, countries] = await Promise.all([
+      readDaily(
+        supabase,
+        'daily_traffic',
+        'day, pageviews, visitors, sessions, downloads',
+        ['day'],
+        range,
+      ),
+      readDaily(
+        supabase,
+        'daily_channel',
+        'day, channel, pageviews, visitors, sessions, downloads',
+        ['day', 'channel'],
+        range,
+      ),
+      readDaily(
+        supabase,
+        'daily_source',
+        'day, channel, source, medium, campaign, pageviews, sessions, downloads',
+        ['day', 'channel', 'source', 'medium', 'campaign'],
+        range,
+      ),
+      readDaily(
+        supabase,
+        'daily_game',
+        'day, game_id, views, downloads',
+        ['day', 'game_id'],
+        range,
+      ),
+      readDaily(
+        supabase,
+        'daily_country',
+        'day, country, pageviews, sessions, downloads',
+        ['day', 'country'],
+        range,
+      ),
+    ]);
 
     // 나라 표만은 실패해도 화면을 세운다. `011` 을 적용하기 전에 앱이 먼저
     // 배포돼도 나머지 통계까지 "저장소에 닿지 못했다"가 되지 않는다.
@@ -228,10 +217,6 @@ export async function loadReport(range: {
         '[analytics] 나라별 집계 조회 실패:',
         countries.error.message,
       );
-    }
-
-    if (funnel.error) {
-      console.warn('[analytics] 퍼널 집계 조회 실패:', funnel.error.message);
     }
 
     const failed = [traffic, channels, sources, games].find((q) => q.error);
@@ -319,11 +304,43 @@ export async function loadReport(range: {
             .sort(
               (a, b) => b.sessions - a.sessions || b.pageviews - a.pageviews,
             ),
-      funnel: funnel.error ? null : foldFunnel(funnel.data ?? []),
     };
   } catch (cause) {
     // 대시보드는 있으면 좋은 화면이다. Supabase 가 죽었다고 500 을 낼 이유가 없다.
     console.warn('[analytics] 집계 조회 실패:', cause);
     return EMPTY;
+  }
+}
+
+/**
+ * PDF 퍼널 (IDE-035). 방문 통계와 다른 화면(`/admin/funnel`)이 읽는다.
+ *
+ * `null` 이면 저장소에 닿지 못했거나 표(`012`)를 읽지 못한 것이다 — 화면이
+ * 그렇다고 알린다.
+ */
+export async function loadFunnel(range: {
+  from: string;
+  to: string;
+}): Promise<FunnelRow[] | null> {
+  const supabase = reportClient();
+  if (!supabase) return null;
+
+  try {
+    await refreshRecent(supabase);
+    const funnel = await readDaily(
+      supabase,
+      'daily_funnel',
+      'day, game_id, device, channel, sessions, game_views, edits, print_opens, export_fails, downloads',
+      ['day', 'game_id', 'device', 'channel'],
+      range,
+    );
+    if (funnel.error) {
+      console.warn('[analytics] 퍼널 집계 조회 실패:', funnel.error.message);
+      return null;
+    }
+    return foldFunnel(funnel.data ?? []);
+  } catch (cause) {
+    console.warn('[analytics] 퍼널 집계 조회 실패:', cause);
+    return null;
   }
 }

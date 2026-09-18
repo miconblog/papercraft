@@ -142,6 +142,9 @@ daddys_craft.run_daily_maintenance()` 로 언제든 손으로 돌릴 수 있다.
 
 ## PDF 를 받기까지 — 퍼널 (IDE-035)
 
+화면은 `/admin/funnel` 이다. 방문 통계와 따로 둔다 — "얼마나 왔나"와 "받기까지
+어디서 멈추나"는 묻는 것이 다르다.
+
 인쇄는 게임 화면 안의 모달이라 페이지뷰로는 게임 화면과 PDF 사이가 비어 있다.
 그래서 단계를 다섯으로 센다.
 
@@ -325,6 +328,9 @@ select daddys_craft.rollup_daily(current_date - 30, current_date, 3::smallint);
 
 `/admin/analytics` — 최근 30일 PV/UV 추이, 채널 구성, 소스·매체·캠페인별 세션·PV·PDF,
 게임별 조회·다운로드.
+
+`/admin/funnel` — PDF 퍼널. 방문 → 게임 화면 → 편집 시작 → 출력 창 → PDF 와
+기기·채널·게임별 표. 방문 통계와 같은 기간 필터를 쓴다(아래 "PDF 를 받기까지").
 
 관리자가 한 명뿐이라 `ANALYTICS_ADMIN_PASSWORD` 하나로 잠근다. Supabase Auth 를
 붙이면 사용자 표·세션·비밀번호 재설정까지 딸려 오는데, 쓸 사람이 한 명이면 전부 짐이다.
