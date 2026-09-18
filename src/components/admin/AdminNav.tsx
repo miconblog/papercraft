@@ -31,10 +31,29 @@ const ITEMS = [
   { href: '/admin/share', label: '공유 링크', icon: Link2Icon },
 ] as const;
 
+type Href = (typeof ITEMS)[number]['href'];
+
+/** 이보다 크면 `99+` 로 적는다. 셀 쪽(`PENDING_COUNT_CAP`)과 같은 값을 받는다. */
+const formatCount = (count: number, cap: number): string =>
+  count > cap ? `${cap}+` : String(count);
+
 const BASE =
   'inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm transition-colors outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current md:rounded-md';
 
-export function AdminNav() {
+type AdminNavProps = {
+  /**
+   * 메뉴 옆에 붙일 "처리할 것" 숫자. 0 이거나 없으면 아무것도 안 붙는다 —
+   * 늘 `0` 이 붙어 있으면 숫자가 생겨도 눈이 안 간다.
+   *
+   * 값은 서버(`(shell)/layout.tsx`)가 센다. 여기서 세려면 브라우저가 서비스 롤
+   * 키로 DB 를 두드려야 한다.
+   */
+  counts?: Partial<Record<Href, number>>;
+  /** `counts` 가 이보다 크면 `99+` 로 적는다. */
+  countCap?: number;
+};
+
+export function AdminNav({ counts = {}, countCap = 99 }: AdminNavProps) {
   const pathname = usePathname();
 
   return (
@@ -42,6 +61,7 @@ export function AdminNav() {
       {ITEMS.map(({ href, label, icon: Icon }) => {
         // 하위 경로까지 켠다 — `/admin/games/무엇` 이 생겨도 메뉴가 꺼지지 않는다.
         const active = pathname === href || pathname.startsWith(`${href}/`);
+        const count = counts[href] ?? 0;
 
         return (
           <Link
@@ -57,6 +77,20 @@ export function AdminNav() {
           >
             <Icon className="size-4 shrink-0" aria-hidden />
             {label}
+            {count > 0 && (
+              <>
+                {/* 눈에는 숫자만, 스크린리더에게는 무엇의 숫자인지까지. */}
+                <span
+                  aria-hidden
+                  className="ml-auto min-w-5 rounded-full bg-primary px-1.5 text-center text-xs leading-5 font-medium text-primary-foreground tabular-nums"
+                >
+                  {formatCount(count, countCap)}
+                </span>
+                <span className="sr-only">
+                  , 검토 대기 {formatCount(count, countCap)}개
+                </span>
+              </>
+            )}
           </Link>
         );
       })}

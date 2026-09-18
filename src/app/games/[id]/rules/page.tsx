@@ -47,9 +47,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${game.title} 게임 방법`,
     description: game.tagline,
+    alternates: { canonical: `/games/${id}/rules` },
     openGraph: {
       title: game.title,
       description: game.tagline,
+      url: `/games/${id}/rules`,
     },
   };
 }

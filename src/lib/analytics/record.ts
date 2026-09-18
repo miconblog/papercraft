@@ -10,6 +10,7 @@ import { analyticsClient } from './client';
 import { analyticsConfig } from './config';
 import {
   classifyChannel,
+  inAppOf,
   readUtm,
   referrerHost,
   type Channel,
@@ -82,7 +83,8 @@ export async function recordEvent(input: RecordInput): Promise<RecordResult> {
     if (isExcludedPath(path)) return { recorded: false, reason: 'excluded' };
     const utm = readUtm(url.searchParams);
     const fromHost = referrerHost(input.referrer);
-    const channel = classifyChannel(utm, fromHost, selfHost);
+    const inApp = inAppOf(userAgent);
+    const channel = classifyChannel(utm, fromHost, selfHost, inApp);
     const ua = summarizeUa(userAgent);
     const day = analyticsDay(input.now);
     // 페이지뷰만 브라우저의 `fetch` 로 들어온다. 다운로드는 링크를 누른 이동이라
@@ -109,6 +111,9 @@ export async function recordEvent(input: RecordInput): Promise<RecordResult> {
       p_utm_source: utm.source,
       p_utm_medium: utm.medium,
       p_utm_campaign: utm.campaign,
+      p_utm_content: utm.content,
+      p_utm_term: utm.term,
+      p_in_app: inApp,
       p_ua_browser: ua.browser,
       p_ua_os: ua.os,
       p_ua_device: ua.device,

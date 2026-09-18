@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
-import { adminPassword } from '@/lib/analytics/config';
+import { adminPassword, analyticsConfig } from '@/lib/analytics/config';
 import { ADMIN_COOKIE, isValidSession } from '@/lib/analytics/session';
 import { daysAgo, loadReport, type DailyTraffic } from '@/lib/analytics/report';
+import { sourceLabel } from '@/lib/analytics/channel';
 import { analyticsDay } from '@/lib/analytics/visitor';
 import { getGame } from '@/lib/games';
 
@@ -100,12 +101,20 @@ export default async function AnalyticsPage() {
 
       {!report.available ? (
         <p className="mt-8 rounded-lg border border-border p-4 text-sm">
-          수집이 꺼져 있거나 저장소에 닿지 못했습니다. 환경변수(
-          <code>SUPABASE_URL</code> · <code>SUPABASE_SERVICE_ROLE_KEY</code> ·{' '}
-          <code>ANALYTICS_HASH_SALT</code>)를 확인하세요.
+          저장소에 닿지 못했습니다. 환경변수(
+          <code>SUPABASE_URL</code> · <code>SUPABASE_SERVICE_ROLE_KEY</code>)를
+          확인하세요.
         </p>
       ) : (
         <>
+          {/* 이 한 줄을 빼면 로컬에서 둘러본 뒤 왜 숫자가 안 느는지 헷갈린다. */}
+          {!analyticsConfig() && (
+            <p className="mt-6 rounded-lg border border-border p-3 text-sm text-muted-foreground">
+              이 서버는 <strong>수집이 꺼져 있습니다</strong>(
+              <code>ANALYTICS_ENABLED</code>). 아래는 이미 쌓인 숫자이고, 여기서
+              둘러보는 것은 세지 않습니다.
+            </p>
+          )}
           <dl className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Stat label="순 페이지뷰" value={sum((d) => d.pageviews)} />
             <Stat label="세션" value={sum((d) => d.sessions)} />
@@ -178,6 +187,13 @@ export default async function AnalyticsPage() {
 
           <section className="mt-8">
             <h2 className="text-lg font-semibold">어디서 왔나</h2>
+            {/* 이 한 줄을 빼면 첫 화면만 캠페인이고 나머지는 직접 방문이라고 읽는다. */}
+            <p className="mt-1 text-xs text-muted-foreground">
+              세션 안에서 옮겨 다닌 화면과 받은 PDF 는{' '}
+              <strong>그 세션이 들어온 곳</strong>으로 셉니다.
+              카카오톡·인스타그램 안에서 연 링크는 utm 이 없어도 앱 이름으로
+              건집니다.
+            </p>
             <table className="mt-3 w-full text-sm">
               <caption className="sr-only">채널별 유입</caption>
               <thead>
@@ -186,17 +202,20 @@ export default async function AnalyticsPage() {
                     채널
                   </th>
                   <th scope="col" className="py-1.5 text-right font-medium">
+                    세션
+                  </th>
+                  <th scope="col" className="py-1.5 text-right font-medium">
                     PV
                   </th>
                   <th scope="col" className="py-1.5 text-right font-medium">
-                    세션
+                    PDF
                   </th>
                 </tr>
               </thead>
               <tbody className="tabular-nums">
                 {report.channels.length === 0 ? (
                   <tr>
-                    <td colSpan={3} className="py-3 text-muted-foreground">
+                    <td colSpan={4} className="py-3 text-muted-foreground">
                       아직 없습니다.
                     </td>
                   </tr>
@@ -206,13 +225,88 @@ export default async function AnalyticsPage() {
                       <td className="py-1.5">
                         {CHANNEL_LABEL[row.channel] ?? row.channel}
                       </td>
-                      <td className="py-1.5 text-right">{row.pageviews}</td>
                       <td className="py-1.5 text-right">{row.sessions}</td>
+                      <td className="py-1.5 text-right">{row.pageviews}</td>
+                      <td className="py-1.5 text-right">{row.downloads}</td>
                     </tr>
                   ))
                 )}
               </tbody>
             </table>
+          </section>
+
+          <section className="mt-8">
+            <h2 className="text-lg font-semibold">소스 · 매체 · 캠페인</h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              소스는 utm_source 가 있으면 그것, 없으면 들어온 사이트, 그것도
+              없으면 앱 이름입니다. 한 세션이 도중에 다른 곳을 거쳐 다시
+              들어오면 두 줄에 모두 셉니다.
+            </p>
+            <div className="mt-3 overflow-x-auto">
+              <table className="w-full text-sm">
+                <caption className="sr-only">
+                  소스·매체·캠페인별 세션·페이지뷰·PDF 다운로드
+                </caption>
+                <thead>
+                  <tr className="border-b border-border text-left">
+                    <th scope="col" className="py-1.5 pr-3 font-medium">
+                      소스
+                    </th>
+                    <th scope="col" className="py-1.5 pr-3 font-medium">
+                      매체
+                    </th>
+                    <th scope="col" className="py-1.5 pr-3 font-medium">
+                      캠페인
+                    </th>
+                    <th scope="col" className="py-1.5 pr-3 font-medium">
+                      채널
+                    </th>
+                    <th scope="col" className="py-1.5 text-right font-medium">
+                      세션
+                    </th>
+                    <th scope="col" className="py-1.5 text-right font-medium">
+                      PV
+                    </th>
+                    <th scope="col" className="py-1.5 text-right font-medium">
+                      PDF
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="tabular-nums">
+                  {report.sources.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-3 text-muted-foreground">
+                        아직 없습니다.
+                      </td>
+                    </tr>
+                  ) : (
+                    report.sources.map((row) => (
+                      <tr
+                        key={JSON.stringify([
+                          row.channel,
+                          row.source,
+                          row.medium,
+                          row.campaign,
+                        ])}
+                        className="border-b border-border/50"
+                      >
+                        <td className="py-1.5 pr-3 break-all">
+                          {sourceLabel(row.source)}
+                        </td>
+                        <td className="py-1.5 pr-3">{row.medium || '—'}</td>
+                        <td className="py-1.5 pr-3">{row.campaign || '—'}</td>
+                        <td className="py-1.5 pr-3 whitespace-nowrap">
+                          {CHANNEL_LABEL[row.channel] ?? row.channel}
+                        </td>
+                        <td className="py-1.5 text-right">{row.sessions}</td>
+                        <td className="py-1.5 text-right">{row.pageviews}</td>
+                        <td className="py-1.5 text-right">{row.downloads}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </section>
 
           <section className="mt-8">

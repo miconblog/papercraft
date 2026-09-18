@@ -11,7 +11,7 @@
  * 않고 대신 아무것도 공개하지 않는다. 공개하는 일이 여기 모여 있고, 여기는
  * 확인부터 한다.
  */
-import { updateTag } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import { ADMIN_COOKIE, hasAdminSession } from '@/lib/analytics/session';
@@ -75,6 +75,9 @@ async function change(
   // 성공했든 아니든 깨운다 — 실패한 줄 알았는데 들어간 경우까지 1분 동안 옛
   // 화면을 보여 주지 않는다(`lib/blog/posts.ts` 의 메모 버리기와 같은 태도다).
   refreshTarget(readTarget(form));
+  // 사이드 메뉴의 대기 숫자. 레이아웃은 `redirect` 로 돌아가는 이동에서 다시
+  // 그려지지 않아, 승인해도 숫자가 그대로 남는다 — 레이아웃째 무효화한다.
+  revalidatePath('/admin', 'layout');
 
   if (!result.ok) back({ error: result.message });
   return back({ done });

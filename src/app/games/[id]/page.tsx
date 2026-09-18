@@ -26,7 +26,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: game.tagline,
     // 밖에서 이 주소를 나눌 때 보이는 것은 "만들기 화면"이 아니라 게임이다 —
     // 카탈로그·공유 링크(`/admin/share`)가 가리키는 주소가 여기다.
-    openGraph: { title: game.title, description: game.tagline },
+    // 자기 주소를 대표로 적는다. 공유 링크에는 utm 이 붙어 오므로, 적지 않으면
+    // `?utm_source=…` 가 붙은 주소가 저마다 다른 페이지로 실린다.
+    alternates: { canonical: `/games/${id}` },
+    openGraph: {
+      title: game.title,
+      description: game.tagline,
+      url: `/games/${id}`,
+    },
   };
 }
 

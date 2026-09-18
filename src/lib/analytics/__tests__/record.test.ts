@@ -59,6 +59,47 @@ describe('recordEvent', () => {
     });
   });
 
+  it('utm content·term 과 인앱 앱 이름을 함께 실어 보낸다 (IDE-033)', async () => {
+    const result = await recordEvent({
+      type: 'pageview',
+      url: '/?utm_source=kakao&utm_medium=social&utm_content=share-bar&utm_term=종이',
+      headers: headers({
+        'accept-language': 'ko-KR',
+        'user-agent':
+          'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 KAKAOTALK 10.8.0',
+      }),
+    });
+
+    expect(result).toEqual({ recorded: true, channel: 'social' });
+    expect(lastArgs()).toMatchObject({
+      p_utm_source: 'kakao',
+      p_utm_content: 'share-bar',
+      p_utm_term: '종이',
+      p_in_app: 'kakaotalk',
+    });
+  });
+
+  it('referrer 없이 카카오톡 안에서 열면 소셜로 매긴다 (IDE-033)', async () => {
+    const result = await recordEvent({
+      type: 'pageview',
+      url: '/',
+      referrer: null,
+      headers: headers({
+        'accept-language': 'ko-KR',
+        'user-agent':
+          'Mozilla/5.0 (Linux; Android 14; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/141.0.0.0 Mobile Safari/537.36 KAKAOTALK/10.8.0',
+      }),
+    });
+
+    expect(result).toEqual({ recorded: true, channel: 'social' });
+    expect(lastArgs()).toMatchObject({
+      p_channel: 'social',
+      p_referrer_host: null,
+      p_utm_source: null,
+      p_in_app: 'kakaotalk',
+    });
+  });
+
   it('봇으로 매겨도 줄은 나간다 — 집계에서만 빠진다', async () => {
     const result = await recordEvent({
       type: 'pageview',
