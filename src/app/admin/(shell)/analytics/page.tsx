@@ -18,6 +18,14 @@ import {
   type DailyTraffic,
 } from '@/lib/analytics/report';
 import { sourceLabel } from '@/lib/analytics/channel';
+import {
+  FUNNEL_STEPS,
+  groupFunnel,
+  rateOf,
+  type FunnelDimension,
+  type FunnelGroup,
+  type FunnelRow,
+} from '@/lib/analytics/funnel';
 import { analyticsDay } from '@/lib/analytics/visitor';
 import { getGame } from '@/lib/games';
 
@@ -187,6 +195,200 @@ function CountryTable({ countries }: { countries: CountryTotal[] }) {
   );
 }
 
+const DEVICE_LABEL: Record<string, string> = {
+  desktop: '데스크톱',
+  mobile: '모바일',
+  tablet: '태블릿',
+  '': '알 수 없음',
+};
+
+/** 비율 한 칸. 첫 단계가 0 이면 잴 것이 없으므로 대시만. */
+const Rate = ({ value, base }: { value: number; base: number }) => {
+  const rate = rateOf(value, base);
+  return (
+    <span className="ml-1 text-xs text-muted-foreground">
+      {rate === null ? '—' : `${rate}%`}
+    </span>
+  );
+};
+
+/**
+ * 전체 퍼널. 단계마다 막대 하나 — 첫 단계(방문)에 대한 비율이다. 바로 앞
+ * 단계 대비로 적으면 작은 숫자에서 100% 가 줄줄이 나와 어디서 새는지가 흐려진다.
+ */
+function FunnelBars({ total }: { total: FunnelGroup }) {
+  const base = total.sessions;
+  return (
+    <ol className="mt-4 space-y-2">
+      {FUNNEL_STEPS.map((step) => {
+        const value = total[step.key];
+        const width =
+          base > 0 ? Math.max((value / base) * 100, value > 0 ? 1 : 0) : 0;
+        return (
+          <li
+            key={step.key}
+            className="grid grid-cols-[6rem_1fr_6rem] items-center gap-3 text-sm"
+          >
+            <span>{step.label}</span>
+            <span className="h-3 rounded-sm bg-muted" aria-hidden>
+              <span
+                className="block h-full rounded-sm bg-primary"
+                style={{ width: `${width}%` }}
+              />
+            </span>
+            <span className="text-right tabular-nums">
+              {value}
+              <Rate value={value} base={base} />
+            </span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+/** 기준 하나로 가른 퍼널 표. 게임별은 첫 단계가 "그 게임에 닿은 세션"이다. */
+function FunnelTable({
+  rows,
+  by,
+  title,
+  labelOf,
+}: {
+  rows: readonly FunnelRow[];
+  by: Exclude<FunnelDimension, 'total'>;
+  title: string;
+  labelOf: (key: string) => string;
+}) {
+  const groups = groupFunnel(rows, by);
+  // 게임별 표의 첫 칸은 방문이 아니라 그 게임의 세션이다 — 게임 화면과 같아
+  // 한 칸을 비운다.
+  const steps =
+    by === 'game'
+      ? FUNNEL_STEPS.filter((s) => s.key !== 'sessions')
+      : FUNNEL_STEPS;
+
+  return (
+    <div className="mt-4 overflow-x-auto">
+      <table className="w-full text-sm">
+        <caption className="mb-1 text-left text-sm font-medium">
+          {title}
+        </caption>
+        <thead>
+          <tr className="border-b border-border text-left">
+            <th scope="col" className="py-1.5 pr-3 font-medium">
+              {title.replace(/별$/, '')}
+            </th>
+            {steps.map((step) => (
+              <th
+                key={step.key}
+                scope="col"
+                className="py-1.5 text-right font-medium whitespace-nowrap"
+              >
+                {step.label}
+              </th>
+            ))}
+            <th
+              scope="col"
+              className="py-1.5 text-right font-medium whitespace-nowrap"
+            >
+              막힘
+            </th>
+          </tr>
+        </thead>
+        <tbody className="tabular-nums">
+          {groups.length === 0 ? (
+            <tr>
+              <td
+                colSpan={steps.length + 2}
+                className="py-3 text-muted-foreground"
+              >
+                아직 없습니다.
+              </td>
+            </tr>
+          ) : (
+            groups.map((group) => {
+              const base = group[steps[0].key];
+              return (
+                <tr key={group.key} className="border-b border-border/50">
+                  <td className="py-1.5 pr-3 whitespace-nowrap">
+                    {labelOf(group.key)}
+                  </td>
+                  {steps.map((step, index) => (
+                    <td
+                      key={step.key}
+                      className="py-1.5 text-right whitespace-nowrap"
+                    >
+                      {group[step.key]}
+                      {index > 0 && (
+                        <Rate value={group[step.key]} base={base} />
+                      )}
+                    </td>
+                  ))}
+                  <td className="py-1.5 text-right">{group.export_fails}</td>
+                </tr>
+              );
+            })
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function FunnelSection({ rows }: { rows: FunnelRow[] | null }) {
+  return (
+    <section className="mt-8">
+      <h2 className="text-lg font-semibold">PDF 를 받기까지</h2>
+      {/* 이 한 줄을 빼면 편집·출력 창이 0 인 지난 날을 "아무도 안 만졌다"로 읽는다. */}
+      <p className="mt-1 text-xs text-muted-foreground">
+        단계마다 <strong>닿은 세션 수</strong>이고, 비율은 첫 칸 대비입니다.
+        편집 시작·출력 창은 2026-09-19 이후부터 쌓입니다. 막힘은 내보내기가
+        거절된(입력 오류) 세션입니다.
+      </p>
+      {rows === null ? (
+        <p className="mt-3 rounded-lg border border-border p-3 text-sm text-muted-foreground">
+          퍼널 집계를 읽지 못했습니다. DB 에 마이그레이션{' '}
+          <code>012-download-funnel.sql</code> 이 적용됐는지 확인하세요.
+        </p>
+      ) : (
+        <>
+          <FunnelBars
+            total={
+              groupFunnel(rows, 'total')[0] ?? {
+                key: '',
+                sessions: 0,
+                game_views: 0,
+                edits: 0,
+                print_opens: 0,
+                downloads: 0,
+                export_fails: 0,
+              }
+            }
+          />
+          <FunnelTable
+            rows={rows}
+            by="device"
+            title="기기별"
+            labelOf={(key) => DEVICE_LABEL[key] ?? key}
+          />
+          <FunnelTable
+            rows={rows}
+            by="channel"
+            title="채널별"
+            labelOf={(key) => CHANNEL_LABEL[key] ?? key}
+          />
+          <FunnelTable
+            rows={rows}
+            by="game"
+            title="게임별"
+            labelOf={(key) => getGame(key)?.title ?? key}
+          />
+        </>
+      )}
+    </section>
+  );
+}
+
 function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-lg border border-border p-4">
@@ -330,6 +532,8 @@ export default async function AnalyticsPage({
               </table>
             </div>
           </section>
+
+          <FunnelSection rows={report.funnel} />
 
           <section className="mt-8">
             <h2 className="text-lg font-semibold">어느 나라에서 왔나</h2>

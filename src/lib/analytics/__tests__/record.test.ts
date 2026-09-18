@@ -324,4 +324,59 @@ describe('recordEvent', () => {
       p_game_id: 'soccer',
     });
   });
+
+  it('내보내기 실패는 서버가 적는 줄이라 fetch 헤더 잣대를 대지 않는다 (IDE-035)', async () => {
+    await recordEvent({
+      type: 'export_fail',
+      url: '/games/soccer/print',
+      // 브라우저의 fetch 가 아닌 요청 — 페이지뷰였다면 봇 점수 3 이 붙는다.
+      headers: headers({
+        'accept-language': 'ko-KR',
+        'sec-fetch-site': 'none',
+        'sec-fetch-mode': 'navigate',
+      }),
+      gameId: 'soccer',
+      detail: 'region:home-1',
+    });
+    expect(lastArgs()).toMatchObject({
+      p_type: 'export_fail',
+      p_bot_score: 0,
+      p_detail: 'region:home-1',
+    });
+  });
+
+  it('퍼널 비콘은 페이지뷰와 같은 잣대로 본다 (IDE-035)', async () => {
+    await recordEvent({
+      type: 'print_open',
+      url: '/games/soccer',
+      headers: headers({
+        'accept-language': 'ko-KR',
+        'sec-ch-ua': '"Chromium";v="141"',
+        'sec-fetch-site': 'cross-site',
+        'sec-fetch-mode': 'cors',
+      }),
+    });
+    expect(lastArgs()).toMatchObject({
+      p_type: 'print_open',
+      p_game_id: 'soccer',
+    });
+    expect(lastArgs().p_bot_score).toBeGreaterThanOrEqual(2);
+  });
+
+  it('주인 브라우저는 퍼널 단계도 세지 않는다 (IDE-026 · IDE-035)', async () => {
+    for (const type of ['edit_start', 'print_open', 'export_fail'] as const) {
+      const result = await recordEvent({
+        type,
+        url: '/games/soccer',
+        headers: headers({ cookie: 'dc_owner=1' }),
+      });
+      expect(result, type).toEqual({ recorded: false, reason: 'opted-out' });
+    }
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it('사유가 없으면 p_detail 을 싣지 않는다 — 012 전의 DB 도 받는다', async () => {
+    await recordEvent({ type: 'pageview', url: '/', headers: headers() });
+    expect(lastArgs()).not.toHaveProperty('p_detail');
+  });
 });

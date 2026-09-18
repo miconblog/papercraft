@@ -93,4 +93,42 @@ describe('loadReport', () => {
     const report = await loadReport(RANGE);
     expect(report.available).toBe(false);
   });
+
+  it('퍼널 표를 읽어 기간 합으로 접는다 (IDE-035)', async () => {
+    tables.daily_funnel = ['2026-09-18', '2026-09-19'].map((day) => ({
+      day,
+      game_id: '',
+      device: 'mobile',
+      channel: 'social',
+      sessions: 2,
+      game_views: 1,
+      edits: 1,
+      print_opens: 1,
+      export_fails: 0,
+      downloads: 0,
+    }));
+
+    const report = await loadReport(RANGE);
+    expect(report.funnel).toEqual([
+      {
+        game_id: '',
+        device: 'mobile',
+        channel: 'social',
+        sessions: 4,
+        game_views: 2,
+        edits: 2,
+        print_opens: 2,
+        export_fails: 0,
+        downloads: 0,
+      },
+    ]);
+  });
+
+  it('퍼널 표를 못 읽어도 나머지 통계는 선다 — 012 보다 앱이 먼저 나간 경우', async () => {
+    tables.daily_funnel = new Error('relation "daily_funnel" does not exist');
+
+    const report = await loadReport(RANGE);
+    expect(report.available).toBe(true);
+    expect(report.funnel).toBeNull();
+  });
 });

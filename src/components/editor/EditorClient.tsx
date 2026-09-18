@@ -24,6 +24,7 @@ import {
 import { useHydrated } from '@/lib/customization/useHydrated';
 import { useStoredCustomization } from '@/lib/customization/useStoredCustomization';
 import { PrintDialog } from '@/components/print/PrintDialog';
+import { sendFunnelStep } from '@/lib/analytics/beacon';
 import { PartSeriesSelect } from './PartSeriesSelect';
 import { groupPartsBySeries } from '@/lib/games/format';
 import {
@@ -121,7 +122,10 @@ function EditorForm({
 
   const hasErrors = Object.values(errors).some((e) => e !== null);
 
+  // 퍼널의 "편집 시작"(IDE-035). 값·위치·대형 어느 것이든 처음 손댄 순간이다 —
+  // 되돌리기는 만든 것이 아니라 넣지 않는다. 한 번만 나가는 것은 비콘이 챙긴다.
   const handleChange = (slotId: string, value: SlotValue) => {
+    sendFunnelStep('edit_start');
     setCustomization((prev) => ({
       ...prev,
       values: { ...prev.values, [slotId]: value },
@@ -151,6 +155,7 @@ function EditorForm({
   const handleMoveSlot = (slotId: string, point: SlotPoint) => {
     const slot = findSlot(game, slotId);
     if (!slot) return;
+    sendFunnelStep('edit_start');
     setCustomization((prev) => ({
       ...prev,
       positions: { ...prev.positions, [slotId]: movedPoint(game, slot, point) },
@@ -166,6 +171,7 @@ function EditorForm({
   };
 
   const handleApplyPreset = (groupId: string, presetId: string) => {
+    sendFunnelStep('edit_start');
     setCustomization((prev) => applyPreset(game, prev, presetId));
     setSelectedPresetByGroup((prev) => ({ ...prev, [groupId]: presetId }));
   };

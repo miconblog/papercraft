@@ -77,4 +77,25 @@ describe('POST /api/analytics/event', () => {
     expect(res.status).toBe(204);
     expect(recordEvent).not.toHaveBeenCalled();
   });
+
+  it('퍼널 단계는 타입째 넘긴다 (IDE-035)', async () => {
+    for (const type of ['edit_start', 'print_open']) {
+      recordEvent.mockClear();
+      await post({ type, url: '/games/soccer' });
+      expect(recordEvent.mock.calls[0][0], type).toMatchObject({
+        type,
+        url: '/games/soccer',
+      });
+    }
+  });
+
+  it('다운로드·실패는 브라우저가 적을 수 없다 — 서버만 적는다', async () => {
+    for (const type of ['download', 'export_fail', 'anything']) {
+      recordEvent.mockClear();
+      expect((await post({ type, url: '/games/soccer' })).status, type).toBe(
+        204,
+      );
+      expect(recordEvent, type).not.toHaveBeenCalled();
+    }
+  });
 });

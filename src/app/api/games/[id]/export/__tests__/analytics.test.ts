@@ -25,7 +25,16 @@ const { POST } = await import('../route');
 
 const game = getGame('soccer')!;
 
-const call = () =>
+const validBody = () => ({
+  customization: defaultCustomization(game),
+  options: {
+    parts: [{ partId: 'field', scale: 1, copies: 1 }],
+    marginMm: 6,
+    overlapMm: 10,
+  },
+});
+
+const call = (body: unknown = validBody()) =>
   POST(
     new Request('http://localhost/api/games/soccer/export', {
       method: 'POST',
@@ -34,14 +43,7 @@ const call = () =>
         'user-agent': 'Mozilla/5.0 (Macintosh) Chrome/141 Safari/537.36',
         referer: 'http://localhost/games/soccer/print',
       },
-      body: JSON.stringify({
-        customization: defaultCustomization(game),
-        options: {
-          parts: [{ partId: 'field', scale: 1, copies: 1 }],
-          marginMm: 6,
-          overlapMm: 10,
-        },
-      }),
+      body: JSON.stringify(body),
     }),
     { params: Promise.resolve({ id: 'soccer' }) } as never,
   );
@@ -82,5 +84,60 @@ describe('PDF 다운로드 집계', () => {
     expect((await res.arrayBuffer()).byteLength).toBeGreaterThan(0);
     // 던지지 않는다 — 여기서 새어 나가면 서버 로그가 아니라 사용자가 본다.
     await expect(runScheduled()).resolves.toBeDefined();
+  });
+});
+
+describe('내보내기 실패 집계 (IDE-035)', () => {
+  it('막힌 요청은 400 과 함께 사유 한 줄을 남긴다', async () => {
+    const body = validBody();
+    const [slotId] = Object.keys(body.customization.positions);
+    body.customization.positions[slotId] = { xMm: -9999, yMm: -9999 };
+
+    const res = await call(body);
+    expect(res.status).toBe(400);
+
+    await runScheduled();
+    expect(recordEvent).toHaveBeenCalledOnce();
+    const passed = recordEvent.mock.calls[0][0];
+    expect(passed).toMatchObject({ type: 'export_fail', gameId: 'soccer' });
+    expect(passed.detail).toMatch(/^(customization|region):/);
+    expect(passed.detail).toContain(slotId);
+  });
+
+  it('형식이 틀린 요청도 갈래만 남긴다', async () => {
+    const res = await call({ customization: null });
+    expect(res.status).toBe(400);
+
+    await runScheduled();
+    expect(recordEvent.mock.calls[0][0]).toMatchObject({
+      type: 'export_fail',
+      detail: 'request',
+    });
+  });
+
+  it('사유에 사용자가 적은 값이 섞이지 않는다', async () => {
+    const body = validBody();
+    const textSlot = game.slots.find((s) => s.kind === 'text');
+    expect(textSlot, '글자 슬롯이 있는 게임이어야 한다').toBeDefined();
+    body.customization.values[textSlot!.id] = '비밀스러운이름'.repeat(50);
+
+    const res = await call(body);
+    expect(res.status).toBe(400);
+
+    await runScheduled();
+    expect(recordEvent.mock.calls[0][0].detail).not.toContain('비밀');
+  });
+
+  it('집계가 터져도 400 응답은 그대로다', async () => {
+    recordEvent.mockRejectedValue(new Error('Supabase 가 죽었다'));
+    const res = await call({ customization: null });
+    expect(res.status).toBe(400);
+    await expect(runScheduled()).resolves.toBeDefined();
+  });
+
+  it('성공한 내보내기는 실패를 남기지 않는다', async () => {
+    await call();
+    await runScheduled();
+    expect(recordEvent.mock.calls.map((c) => c[0].type)).toEqual(['download']);
   });
 });
