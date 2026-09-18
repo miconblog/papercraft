@@ -21,7 +21,7 @@ vi.mock('next/headers', () => ({ cookies: async () => ({ get }) }));
 vi.mock('next/navigation', () => ({ redirect, notFound }));
 vi.mock('next/cache', () => ({ updateTag, revalidatePath }));
 
-const { publishNow, savePost, setCoverImage, uploadPhoto } =
+const { publishNow, savePost, setCoverFromBody, setCoverImage, uploadPhoto } =
   await import('../actions');
 const { issueSession } = await import('@/lib/analytics/session');
 const { POSTS_TAG, forgetPosts } = await import('@/lib/blog/posts');
@@ -244,6 +244,85 @@ describe('사진', () => {
       expect(
         await redirectedTo(setCoverImage(form({ title: '글' }))),
       ).toContain('올릴 사진을 고르세요');
+    });
+  });
+
+  /**
+   * 본문 사진을 대표 사진으로 (2026-09-19 사용자 요청)
+   *
+   * 편집기의 사진 위 단추가 부른다. 새로 올리지 않고 본문의 주소를 그대로 쓴다.
+   */
+  describe('대표 사진 — 본문에서 고른다', () => {
+    const SOLO =
+      'https://example.supabase.co/storage/v1/object/public/blog/a.jpg';
+    const CELL =
+      'https://example.supabase.co/storage/v1/object/public/blog/b.jpg';
+    const withPhotos = JSON.stringify({
+      type: 'doc',
+      content: [
+        { type: 'paragraph', content: [{ type: 'text', text: '첫 문단' }] },
+        { type: 'image', attrs: { src: SOLO, alt: '' } },
+        {
+          type: 'imageRow',
+          attrs: {
+            images: [
+              { src: CELL, alt: '' },
+              { src: SOLO, alt: '' },
+            ],
+          },
+        },
+      ],
+    });
+
+    it('세션이 없으면 404 다', async () => {
+      get.mockReturnValue(undefined);
+      await expect(
+        setCoverFromBody(
+          form({ title: '글', doc: withPhotos, coverPick: SOLO }),
+        ),
+      ).rejects.toThrow('NOT_FOUND');
+    });
+
+    it('고른 사진이 대표 사진이 되고, 쓰던 글도 함께 저장된다', async () => {
+      asAdmin();
+      expect(
+        await redirectedTo(
+          setCoverFromBody(
+            form({ title: '쓰던 제목', doc: withPhotos, coverPick: SOLO }),
+          ),
+        ),
+      ).toContain('대표 사진을 바꿨습니다');
+
+      const written = writeCall().body;
+      expect(written.cover_url).toBe(SOLO);
+      expect(written.title).toBe('쓰던 제목');
+      expect(written.doc.content).toHaveLength(3);
+    });
+
+    it('줄에 묶인 사진도 고를 수 있다', async () => {
+      asAdmin();
+      await expect(
+        setCoverFromBody(
+          form({ title: '글', doc: withPhotos, coverPick: CELL }),
+        ),
+      ).rejects.toThrow(/REDIRECT/);
+      expect(writeCall().body.cover_url).toBe(CELL);
+    });
+
+    it('본문에 없는 주소는 받지 않는다 — 밖에서 불러 남의 그림을 걸 수 없다', async () => {
+      asAdmin();
+      expect(
+        await redirectedTo(
+          setCoverFromBody(
+            form({
+              title: '글',
+              doc: withPhotos,
+              coverPick: 'https://evil.example/x.jpg',
+            }),
+          ),
+        ),
+      ).toContain('본문에 있는 사진만');
+      expect(() => writeCall()).toThrow('쓰기 요청이 없다');
     });
   });
 });

@@ -38,6 +38,7 @@ import { Columns2Icon, XIcon } from 'lucide-react';
 import { MAX_ROW_IMAGES, toWidth } from '@/lib/blog/doc';
 import {
   AlignButtons,
+  CoverButton,
   WidthBadge,
   WidthHandle,
   clampWidth,
@@ -206,6 +207,16 @@ function RowView({
               />
               {handle(-1)}
               {handle(1)}
+
+              {/* 대표 사진 단추(2026-09-19). 줄의 왼쪽 위 막대는 **줄 전체**의
+                  것이라 어느 칸인지 말할 수 없다 — 칸마다 빼기 단추 곁에 둔다. */}
+              <div className="absolute top-1.5 right-9 z-10">
+                <CoverButton
+                  src={image.src}
+                  compact
+                  reveal="group-hover/cell:opacity-100"
+                />
+              </div>
 
               <button
                 type="button"

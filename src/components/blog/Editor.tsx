@@ -16,7 +16,7 @@
  * `'use client'` 는 여기까지다 — 편집기 코드는 관리자 화면에만 실리고 글을
  * 읽는 사람은 받지 않는다.
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   EditorContent,
   useEditor,
@@ -25,6 +25,7 @@ import {
 import { StarterKit } from '@tiptap/starter-kit';
 import { ImageRow } from '@/components/blog/ImageRow';
 import { ResizableImage } from '@/components/blog/ResizableImage';
+import { CoverContext, type CoverPick } from '@/components/blog/imageControls';
 import { SideDrop } from '@/components/blog/SideDrop';
 import { Link } from '@tiptap/extension-link';
 import {
@@ -237,6 +238,8 @@ export function Editor({
   name,
   initial,
   upload,
+  coverUrl = null,
+  pickCover,
 }: {
   name: string;
   initial: Doc;
@@ -244,6 +247,13 @@ export function Editor({
   upload: (
     form: FormData,
   ) => Promise<{ ok: true; url: string } | { ok: false; message: string }>;
+  /** 지금 대표 사진. 같은 사진의 단추가 눌린 채로 선다. */
+  coverUrl?: string | null;
+  /**
+   * 본문 사진을 대표 사진으로 세우는 서버 액션. 없으면 사진 위에 단추가 없다.
+   * 폼 전체와 함께 `coverPick` 으로 고른 주소를 받는다.
+   */
+  pickCover?: (form: FormData) => Promise<void>;
 }) {
   const [json, setJson] = useState(() => JSON.stringify(initial));
   const [busy, setBusy] = useState(0);
@@ -258,6 +268,41 @@ export function Editor({
    */
   const [uploaded, setUploaded] = useState<string[]>([]);
   const picker = useRef<HTMLInputElement>(null);
+  const coverSubmit = useRef<HTMLButtonElement>(null);
+  const coverPick = useRef<HTMLInputElement>(null);
+
+  /**
+   * 대표 사진 고르기 (2026-09-19 사용자 요청)
+   *
+   * 사진 위 단추가 부른다. **폼 전체를 보낸다** — 대표 사진만 바꾸는 액션을 따로
+   * 두면 쓰던 본문이 저장되지 않은 채 화면이 새로 그려져 날아간다(`attach` 가
+   * 같은 이유로 먼저 저장한다).
+   *
+   * 고른 주소는 **숨은 칸**(`coverPick`)에 실었다가 보내자마자 비운다 — 다른
+   * 버튼으로 저장할 때 따라가지 않게. 제출 단추의 `name`·`value` 에 실으면 안
+   * 된다: 서버 액션을 `formAction` 으로 단 단추는 React 가 `name` 을 액션
+   * 식별자(`$ACTION_ID_…`)로 덮어써서 **값이 서버에 안 가고**, 서버가 그린
+   * HTML 과 이름이 달라 하이드레이션도 어긋난다(2026-09-19 사용자 신고).
+   * React 는 제출 이벤트 안에서 폼 값을 **곧바로** 읽으므로
+   * `requestSubmit` 뒤에 비워도 이미 실린 뒤다.
+   */
+  const cover = useMemo<CoverPick | null>(
+    () =>
+      pickCover
+        ? {
+            current: coverUrl,
+            pick: (src) => {
+              const button = coverSubmit.current;
+              const field = coverPick.current;
+              if (!button?.form || !field) return;
+              field.value = src;
+              button.form.requestSubmit(button);
+              field.value = '';
+            },
+          }
+        : null,
+    [coverUrl, pickCover],
+  );
 
   const editor = useEditor({
     extensions: [
@@ -383,7 +428,9 @@ export function Editor({
           onPickPhoto={() => picker.current?.click()}
         />
       )}
-      <EditorContent editor={editor} />
+      <CoverContext.Provider value={cover}>
+        <EditorContent editor={editor} />
+      </CoverContext.Provider>
 
       {/* 도구 막대의 사진 버튼이 여는 자리. 폼에 실리면 안 되므로 이름이 없다
           — 사진은 위 `upload` 액션으로 따로 간다. */}
@@ -418,6 +465,18 @@ export function Editor({
 
       {/* 폼이 실제로 보내는 값. 버튼 넷이 전부 이걸 함께 가져간다. */}
       <input type="hidden" name={name} value={json} readOnly />
+      {pickCover && (
+        <>
+          <input ref={coverPick} type="hidden" name="coverPick" />
+          <button
+            ref={coverSubmit}
+            type="submit"
+            formAction={pickCover}
+            hidden
+            tabIndex={-1}
+          />
+        </>
+      )}
       <input
         type="hidden"
         name="uploadedImages"
