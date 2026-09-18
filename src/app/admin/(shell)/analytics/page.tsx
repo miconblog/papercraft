@@ -17,7 +17,7 @@ import {
   type CountryTotal,
   type DailyTraffic,
 } from '@/lib/analytics/report';
-import { sourceLabel } from '@/lib/analytics/channel';
+import { CHANNEL_LABEL, sourceLabel } from '@/lib/analytics/channel';
 import { analyticsDay } from '@/lib/analytics/visitor';
 import { getGame } from '@/lib/games';
 
@@ -28,14 +28,6 @@ export const metadata: Metadata = {
 
 /** 매번 새로 그린다. 캐시된 통계는 통계가 아니다. */
 export const dynamic = 'force-dynamic';
-
-const CHANNEL_LABEL: Record<string, string> = {
-  direct: '직접 방문',
-  organic: '검색',
-  social: '소셜',
-  referral: '다른 사이트',
-  campaign: '캠페인(utm)',
-};
 
 /** 이 화면의 주소. 기간 필터가 여기로 돌아온다. */
 const PATH = '/admin/analytics';

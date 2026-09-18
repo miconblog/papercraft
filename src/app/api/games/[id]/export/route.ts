@@ -61,27 +61,57 @@ export async function POST(
   if (!game || !(await isGameVisible(id, request.headers)))
     return Response.json({ messages: ['없는 게임이다'] }, { status: 404 });
 
+  // 400 은 퍼널의 "막힘"이다(IDE-035). 서버가 직접 적는다 — 성공(다운로드)을
+  // 서버가 세는 것과 같은 이유다. 사유에는 **갈래와 슬롯·파트 id 만** 남긴다.
+  // 메시지에는 사용자가 적은 값이 섞일 수 있다.
+  const rejected = (reason: string, messages: string[]) => {
+    afterResponse(async () => {
+      await recordEvent({
+        type: 'export_fail',
+        url: `/games/${game.id}/print`,
+        referrer: request.headers.get('referer'),
+        headers: request.headers,
+        gameId: game.id,
+        detail: reason,
+      });
+    });
+    return badRequest(messages);
+  };
+  const ids = (list: readonly (string | null)[]) =>
+    [...new Set(list.filter(Boolean))].join(',');
+
   const parsed = requestBody.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return badRequest(parsed.error.issues.map((i) => i.message));
+    return rejected(
+      'request',
+      parsed.error.issues.map((i) => i.message),
+    );
   }
   const { customization, options } = parsed.data;
 
   const customizationIssues = validateCustomization(game, customization);
   if (customizationIssues.length > 0) {
-    return badRequest(
+    return rejected(
+      `customization:${ids(customizationIssues.map((i) => i.slotId))}`,
       customizationIssues.map((i) => `${i.slotId}: ${i.message}`),
     );
   }
   const blocked = blockingIssues(
     validateExportOptions(game, options, customization),
   );
-  if (blocked.length > 0) return badRequest(blocked.map((i) => i.message));
+  if (blocked.length > 0) {
+    return rejected(
+      `options:${ids(blocked.map((i) => i.partId))}`,
+      blocked.map((i) => i.message),
+    );
+  }
 
   // 여기까지 왔는데 좌표가 영역 밖이면 도안 쪽 규칙이 어긋난 것이다.
   const strayed = outOfRegionSlots(game, customization);
   if (strayed.length > 0) {
-    return badRequest([`슬롯 좌표가 영역 밖이다: ${strayed.join(', ')}`]);
+    return rejected(`region:${ids(strayed)}`, [
+      `슬롯 좌표가 영역 밖이다: ${strayed.join(', ')}`,
+    ]);
   }
 
   const document = composeExport({

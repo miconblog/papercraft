@@ -40,7 +40,7 @@ function fakeClient() {
 
 vi.mock('../client', () => ({ reportClient: () => fakeClient() }));
 
-const { loadReport } = await import('../report');
+const { loadFunnel, loadReport } = await import('../report');
 const RANGE = { from: '2025-09-20', to: '2026-09-19' };
 
 beforeEach(() => {
@@ -92,5 +92,44 @@ describe('loadReport', () => {
     tables.daily_channel = new Error('boom');
     const report = await loadReport(RANGE);
     expect(report.available).toBe(false);
+  });
+
+  it('퍼널 표를 읽어 기간 합으로 접는다 (IDE-035)', async () => {
+    tables.daily_funnel = ['2026-09-18', '2026-09-19'].map((day) => ({
+      day,
+      game_id: '',
+      device: 'mobile',
+      channel: 'social',
+      sessions: 2,
+      game_views: 1,
+      edits: 1,
+      print_opens: 1,
+      export_fails: 0,
+      downloads: 0,
+    }));
+
+    expect(await loadFunnel(RANGE)).toEqual([
+      {
+        game_id: '',
+        device: 'mobile',
+        channel: 'social',
+        sessions: 4,
+        game_views: 2,
+        edits: 2,
+        print_opens: 2,
+        export_fails: 0,
+        downloads: 0,
+      },
+    ]);
+  });
+
+  it('퍼널 표를 못 읽으면 null — 화면이 그렇다고 알린다', async () => {
+    tables.daily_funnel = new Error('relation "daily_funnel" does not exist');
+    expect(await loadFunnel(RANGE)).toBeNull();
+  });
+
+  it('방문 통계는 퍼널 표를 읽지 않는다 — 화면이 갈라졌다', async () => {
+    await loadReport(RANGE);
+    expect(requested.map((r) => r.table)).not.toContain('daily_funnel');
   });
 });

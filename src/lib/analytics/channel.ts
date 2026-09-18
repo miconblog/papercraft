@@ -99,6 +99,15 @@ const SOCIAL_APPS = new Set([
   'band',
 ]);
 
+/** 관리자 화면의 채널 이름. 방문 통계와 퍼널 분석이 같은 말을 쓴다. */
+export const CHANNEL_LABEL: Record<string, string> = {
+  direct: '직접 방문',
+  organic: '검색',
+  social: '소셜',
+  referral: '다른 사이트',
+  campaign: '캠페인(utm)',
+};
+
 export const IN_APP_LABEL: Record<string, string> = {
   kakaotalk: '카카오톡',
   threads: '스레드',

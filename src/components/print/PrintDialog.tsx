@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Dialog } from '@base-ui/react/dialog';
 import type { GameCustomization, GameDefinition } from '@/lib/schema';
+import { sendFunnelStep } from '@/lib/analytics/beacon';
 import { ExportClient } from './ExportClient';
 
 /**
@@ -28,8 +29,15 @@ export function PrintDialog({
 }) {
   const [open, setOpen] = useState(false);
 
+  // 퍼널의 "출력 창 열기"(IDE-035). 여기서 멈추는지, PDF 까지 가는지가 이
+  // 사이트에서 가장 궁금한 갈림길이다.
+  const handleOpenChange = (next: boolean) => {
+    if (next) sendFunnelStep('print_open');
+    setOpen(next);
+  };
+
   return (
-    <Dialog.Root open={open} onOpenChange={setOpen}>
+    <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Trigger className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground outline-none transition-colors hover:bg-primary/85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current">
         출력하기
       </Dialog.Trigger>

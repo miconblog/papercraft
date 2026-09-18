@@ -27,7 +27,23 @@ import { isExcludedPath } from './excluded';
 import { isOwnerBrowser } from './session';
 import { analyticsDay, clientIp, visitorId } from './visitor';
 
-export type EventType = 'pageview' | 'download';
+export type EventType =
+  | 'pageview'
+  | 'download'
+  // 퍼널의 중간 단계 (IDE-035). 브라우저가 보낸다.
+  | 'edit_start'
+  | 'print_open'
+  // 내보내기가 400 으로 막힌 것. 서버가 적는다.
+  | 'export_fail';
+
+/**
+ * 서버가 스스로 적는 타입. 브라우저의 `fetch` 가 아니라 요청을 받은 라우트가
+ * 부르므로 `sec-fetch-*` 기대값이 다르다.
+ */
+const SERVER_TYPES: ReadonlySet<EventType> = new Set([
+  'download',
+  'export_fail',
+]);
 
 export type RecordInput = {
   type: EventType;
@@ -38,6 +54,8 @@ export type RecordInput = {
   headers: Headers;
   /** 경로로 알 수 없는 게임(내보내기 API 가 그렇다)은 여기로 넘긴다. */
   gameId?: string | null;
+  /** 짧은 사유. 지금은 `export_fail` 만 쓴다 — 개인 값을 넣지 않는다. */
+  detail?: string | null;
   now?: Date;
 };
 
@@ -87,12 +105,12 @@ export async function recordEvent(input: RecordInput): Promise<RecordResult> {
     const channel = classifyChannel(utm, fromHost, selfHost, inApp);
     const ua = summarizeUa(userAgent);
     const day = analyticsDay(input.now);
-    // 페이지뷰만 브라우저의 `fetch` 로 들어온다. 다운로드는 링크를 누른 이동이라
-    // `sec-fetch-*` 기대값이 달라서, 같은 잣대를 대면 전부 봇이 된다.
+    // 페이지뷰와 퍼널 비콘은 브라우저의 `fetch` 로 들어온다. 서버가 적는
+    // 다운로드·실패는 `sec-fetch-*` 기대값이 달라서, 같은 잣대를 대면 전부 봇이 된다.
     const bot = botVerdict({
       headers: input.headers,
       userAgent: userAgent ?? '',
-      fromBrowserFetch: input.type === 'pageview',
+      fromBrowserFetch: !SERVER_TYPES.has(input.type),
     });
 
     const { error } = await supabase.rpc('record_event', {
@@ -121,6 +139,9 @@ export async function recordEvent(input: RecordInput): Promise<RecordResult> {
       p_lang: primaryLanguage(input.headers),
       p_bot_score: bot.score,
       p_bot_reason: bot.reason,
+      // 있을 때만 싣는다. `012` 전의 DB 는 이 인자를 모르므로, 늘 실으면 그
+      // 사이 페이지뷰까지 전부 실패한다.
+      ...(input.detail ? { p_detail: input.detail } : {}),
     });
 
     if (error) {
