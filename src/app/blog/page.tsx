@@ -1,6 +1,14 @@
 import type { Metadata } from 'next';
 import { PostListItem } from '@/components/blog/PostListItem';
+import { JsonLd } from '@/components/JsonLd';
 import { publishedPosts } from '@/lib/blog/posts';
+import {
+  BLOG_DESCRIPTION,
+  BLOG_TITLE,
+  OPEN_GRAPH_BASE,
+  RSS_ALTERNATE,
+} from '@/lib/site';
+import { breadcrumbLd } from '@/lib/structured-data';
 
 /**
  * 공방 일지 목록 (IDE-023)
@@ -28,15 +36,15 @@ import { publishedPosts } from '@/lib/blog/posts';
  */
 export const revalidate = 60;
 
-const TITLE = '공방 일지';
-const DESCRIPTION =
-  '옛 인쇄본을 다시 그리며 겪은 것들 — 종이로 뽑고 접고 아이와 놀아 본 기록.';
+const TITLE = BLOG_TITLE;
+const DESCRIPTION = BLOG_DESCRIPTION;
 
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
-  alternates: { canonical: '/blog' },
+  alternates: { canonical: '/blog', types: RSS_ALTERNATE },
   openGraph: {
+    ...OPEN_GRAPH_BASE,
     type: 'website',
     url: '/blog',
     title: TITLE,
@@ -49,6 +57,8 @@ export default async function BlogIndexPage() {
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
+      {/* 화면에는 제목이 없지만 검색 결과에는 내가 어디 있는지가 뜬다. */}
+      <JsonLd data={breadcrumbLd([{ name: TITLE, path: '/blog' }])} />
       {posts.length === 0 ? (
         // Supabase 에 닿지 못해도 여기까지는 뜬다 — 글 자리만 빈다.
         <p className="text-muted-foreground">아직 쓴 글이 없다.</p>

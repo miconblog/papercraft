@@ -5,9 +5,12 @@ import { notFound } from 'next/navigation';
 import { PostArticle } from '@/components/blog/PostArticle';
 import { CommentSection } from '@/components/comments/CommentSection';
 import { CommentSectionFallback } from '@/components/comments/CommentSectionFallback';
+import { JsonLd } from '@/components/JsonLd';
 import { ShareSection } from '@/components/share/ShareSection';
 import { isPublished, postBySlug, type Post } from '@/lib/blog/posts';
 import { postSummary } from '@/lib/blog/summary';
+import { OPEN_GRAPH_BASE } from '@/lib/site';
+import { blogPostingLd, breadcrumbLd } from '@/lib/structured-data';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -56,6 +59,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description,
     alternates: { canonical: url },
     openGraph: {
+      ...OPEN_GRAPH_BASE,
       type: 'article',
       url,
       title: post.title,
@@ -84,6 +88,15 @@ export default async function PostPage({ params }: Props) {
 
   return (
     <article className="mx-auto w-full max-w-2xl px-4 py-10 sm:px-6 sm:py-14">
+      <JsonLd
+        data={[
+          blogPostingLd(post),
+          breadcrumbLd([
+            { name: '공방 일지', path: '/blog' },
+            { name: post.title, path: `/blog/${post.slug}` },
+          ]),
+        ]}
+      />
       <Link
         href="/blog"
         className="text-sm text-muted-foreground hover:underline"

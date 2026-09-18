@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { BackLink } from '@/components/BackLink';
+import { JsonLd } from '@/components/JsonLd';
 import { gameIds, getGame } from '@/lib/games';
 import { groupRuleSections, type RuleBody } from '@/lib/schema';
 import {
@@ -10,6 +11,8 @@ import {
   boardOf,
   formatPlayers,
 } from '@/lib/games/format';
+import { OPEN_GRAPH_BASE } from '@/lib/site';
+import { breadcrumbLd, gameLd } from '@/lib/structured-data';
 
 type Params = { id: string };
 type Props = { params: Promise<Params> };
@@ -49,7 +52,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: game.tagline,
     alternates: { canonical: `/games/${id}/rules` },
     openGraph: {
-      title: game.title,
+      ...OPEN_GRAPH_BASE,
+      type: 'website',
+      title: `${game.title} 게임 방법`,
       description: game.tagline,
       url: `/games/${id}/rules`,
     },
@@ -75,6 +80,15 @@ export default async function GameRulesPage({ params }: Props) {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
+      <JsonLd
+        data={[
+          gameLd(game, `/games/${game.id}/rules`),
+          breadcrumbLd([
+            { name: game.title, path: `/games/${game.id}` },
+            { name: '게임 방법', path: `/games/${game.id}/rules` },
+          ]),
+        ]}
+      />
       {/* 좌상단은 **왔던 곳으로** 돌아간다(2026-09-12 사용자 요청). 이 화면에
           오는 길이 카탈로그 하나가 아니라 만들기 화면에서도 생겼으므로
           "목록으로"는 거짓이 됐다.
