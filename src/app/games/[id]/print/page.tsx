@@ -14,7 +14,14 @@ export function generateStaticParams(): Params[] {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const game = getGame(id);
-  return game ? { title: `${game.title} 인쇄하기` } : {};
+  // 도구지 읽을거리가 아니다 — 사이트맵에서 뺀 것과 같은 이유로 검색에도
+  // 싣지 않는다. 링크는 따라가게 둔다(만들기·게임 방법으로 이어진다).
+  return game
+    ? {
+        title: `${game.title} 인쇄하기`,
+        robots: { index: false, follow: true },
+      }
+    : {};
 }
 
 /**

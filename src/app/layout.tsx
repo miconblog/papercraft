@@ -3,7 +3,14 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { PageViews } from '@/components/analytics/PageViews';
 import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
-import { siteUrl } from '@/lib/site';
+import {
+  OPEN_GRAPH_BASE,
+  SITE_AUTHOR,
+  SITE_AUTHOR_URL,
+  SITE_DESCRIPTION,
+  SITE_TITLE,
+  siteUrl,
+} from '@/lib/site';
 import { THEME_INIT_SCRIPT } from '@/lib/theme';
 import './globals.css';
 
@@ -17,15 +24,18 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-// 헤더에 걸리는 이름과 같은 문구다 — 탭 제목·공유 카드·검색 결과가 사이트에서
-// 보이는 이름과 어긋나지 않게 한 곳에서 정한다.
-const SITE_TITLE = '아빠 뭐해?, 아빠 공방';
-const SITE_DESCRIPTION =
-  '추억의 종이 보드게임을 아이와 함께 만든다. 팀 색과 배치를 원하는 대로 바꿔 집 프린터로 정확한 크기에 맞춰 뽑는다.';
-const SITE_AUTHOR = "Daddy's Craft";
-
 // 값은 `lib/site.ts` 가 주인이다 — `sitemap`·`robots` 가 같은 주소를 봐야 한다.
 const SITE_URL = siteUrl();
+
+/**
+ * 검색엔진 소유 확인 (SEO)
+ *
+ * 구글 서치 콘솔·네이버 서치어드바이저가 내주는 값을 배포 환경변수에 넣으면
+ * `<meta>` 로 실린다. 코드에 적지 않는 것은 사이트를 옮기거나 다시 등록할 때
+ * 값이 바뀌기 때문이다. 없으면 태그도 없다.
+ */
+const GOOGLE_VERIFICATION = process.env.GOOGLE_SITE_VERIFICATION?.trim();
+const NAVER_VERIFICATION = process.env.NAVER_SITE_VERIFICATION?.trim();
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -35,7 +45,7 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   applicationName: SITE_TITLE,
-  authors: [{ name: SITE_AUTHOR, url: 'https://buymeacoffee.com/miconblog' }],
+  authors: [{ name: SITE_AUTHOR, url: SITE_AUTHOR_URL }],
   creator: SITE_AUTHOR,
   publisher: SITE_AUTHOR,
   keywords: [
@@ -51,19 +61,26 @@ export const metadata: Metadata = {
   // 정한 모든 페이지가 물려받아서, `/games/soccer` 까지 "나는 홈과 같은
   // 페이지"라고 선언하게 된다(2026-09-19 라이브에서 확인) — 검색엔진은 그런
   // 페이지를 홈의 사본으로 보고 따로 싣지 않는다. 페이지마다 자기 주소를 적는다.
+  //
+  // `og:url` 도 같은 이유로 여기 없다 — 홈이 스스로 적는다.
   openGraph: {
+    ...OPEN_GRAPH_BASE,
     type: 'website',
-    locale: 'ko_KR',
-    url: '/',
-    siteName: SITE_TITLE,
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
   },
-  twitter: {
-    card: 'summary_large_image',
-    title: SITE_TITLE,
-    description: SITE_DESCRIPTION,
-  },
+  // 카드 모양만 정한다. 제목·설명·그림을 여기 적으면 `openGraph` 를 자기 것으로
+  // 적은 페이지(게임·게임 방법·공방 일지)까지 트위터 카드만은 사이트 제목으로
+  // 나간다 — 비워 두면 Next 가 페이지의 `openGraph` 에서 채운다.
+  twitter: { card: 'summary_large_image' },
+  ...((GOOGLE_VERIFICATION || NAVER_VERIFICATION) && {
+    verification: {
+      ...(GOOGLE_VERIFICATION && { google: GOOGLE_VERIFICATION }),
+      ...(NAVER_VERIFICATION && {
+        other: { 'naver-site-verification': NAVER_VERIFICATION },
+      }),
+    },
+  }),
 };
 
 // themeColor·colorScheme은 Next 14부터 `metadata`가 아니라 이 export에서

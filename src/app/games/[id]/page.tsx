@@ -7,7 +7,10 @@ import { movableSlots } from '@/lib/schema';
 import { CommentSection } from '@/components/comments/CommentSection';
 import { CommentSectionFallback } from '@/components/comments/CommentSectionFallback';
 import { EditorClient } from '@/components/editor/EditorClient';
+import { JsonLd } from '@/components/JsonLd';
 import { ShareSection } from '@/components/share/ShareSection';
+import { OPEN_GRAPH_BASE } from '@/lib/site';
+import { breadcrumbLd, gameLd } from '@/lib/structured-data';
 
 type Params = { id: string };
 type Props = { params: Promise<Params> };
@@ -30,6 +33,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // `?utm_source=…` 가 붙은 주소가 저마다 다른 페이지로 실린다.
     alternates: { canonical: `/games/${id}` },
     openGraph: {
+      ...OPEN_GRAPH_BASE,
+      type: 'website',
       title: game.title,
       description: game.tagline,
       url: `/games/${id}`,
@@ -58,6 +63,12 @@ export default async function EditGamePage({ params }: Props) {
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6">
+      <JsonLd
+        data={[
+          gameLd(game, `/games/${game.id}`),
+          breadcrumbLd([{ name: game.title, path: `/games/${game.id}` }]),
+        ]}
+      />
       {/* 왼쪽은 목록으로, 오른쪽은 게임 방법이다. 규칙은 이제 이 화면에 없고
           (`./rules`), 놀다가 되짚을 것이라 늘 한 번에 닿아야 한다. */}
       <div className="flex items-center justify-between gap-4">

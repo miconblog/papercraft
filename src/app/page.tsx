@@ -10,9 +10,17 @@ import {
   ScissorsIcon,
 } from 'lucide-react';
 import { GameCard } from '@/components/GameCard';
+import { JsonLd } from '@/components/JsonLd';
 import { openGames } from '@/lib/games/open';
 import { boardOf } from '@/lib/games/format';
 import { formatPlayers, SUPPORTED_PAPER_SIZE } from '@/lib/games/format';
+import {
+  OPEN_GRAPH_BASE,
+  RSS_ALTERNATE,
+  SITE_DESCRIPTION,
+  SITE_TITLE,
+} from '@/lib/site';
+import { websiteLd } from '@/lib/structured-data';
 
 /**
  * 랜딩 — 처음 온 사람에게 이게 무엇이고 왜 만드는지를 먼저 말한다 (IDE-005).
@@ -41,7 +49,16 @@ import { formatPlayers, SUPPORTED_PAPER_SIZE } from '@/lib/games/format';
 export const revalidate = 60;
 
 /** 레이아웃은 대표 주소를 정하지 않는다(`layout.tsx` 참고) — 홈도 스스로 적는다. */
-export const metadata: Metadata = { alternates: { canonical: '/' } };
+export const metadata: Metadata = {
+  alternates: { canonical: '/', types: RSS_ALTERNATE },
+  openGraph: {
+    ...OPEN_GRAPH_BASE,
+    type: 'website',
+    url: '/',
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+};
 
 /** 부모에게 하는 약속. 문구는 사용자가 직접 정했다(2026-09-07). */
 const VALUES = [
@@ -88,6 +105,7 @@ export default async function Home() {
 
   return (
     <div className="w-full">
+      <JsonLd data={websiteLd()} />
       <section className="border-b border-border">
         <div className="mx-auto grid w-full max-w-5xl items-center gap-10 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
           <div>

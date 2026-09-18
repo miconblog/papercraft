@@ -43,3 +43,48 @@ export function deployedSiteUrl(env: Env = process.env): string | null {
 
 export const siteUrl = (env: Env = process.env): string =>
   deployedSiteUrl(env) ?? 'http://localhost:3000';
+
+/**
+ * 사이트 이름·소개·지은이 (SEO)
+ *
+ * 헤더에 걸리는 이름과 같은 문구다 — 탭 제목·공유 카드·검색 결과·구조화
+ * 데이터·RSS 가 사이트에서 보이는 이름과 어긋나지 않게 한 곳에서 정한다.
+ */
+export const SITE_TITLE = '아빠 뭐해?, 아빠 공방';
+export const SITE_DESCRIPTION =
+  '추억의 종이 보드게임을 아이와 함께 만든다. 팀 색과 배치를 원하는 대로 바꿔 집 프린터로 정확한 크기에 맞춰 뽑는다.';
+export const SITE_AUTHOR = "Daddy's Craft";
+export const SITE_AUTHOR_URL = 'https://buymeacoffee.com/miconblog';
+
+/**
+ * 페이지마다 `openGraph` 에 펼쳐 넣는 공통 칸.
+ *
+ * Next 는 메타데이터를 **얕게** 합친다 — 페이지가 `openGraph` 를 적는 순간
+ * 레이아웃의 `siteName`·`locale` 이 통째로 사라진다. 그러면 카카오톡·페이스북
+ * 카드에서 사이트 이름이 빠지고, 한국어 페이지라는 표시도 없어진다.
+ */
+export const OPEN_GRAPH_BASE = {
+  siteName: SITE_TITLE,
+  locale: 'ko_KR',
+} as const;
+
+/**
+ * 공방 일지 이름과 소개. 목록 화면의 탭 제목·공유 카드와 RSS 채널이 같은
+ * 문구를 쓴다.
+ */
+export const BLOG_TITLE = '공방 일지';
+export const BLOG_DESCRIPTION =
+  '옛 인쇄본을 다시 그리며 겪은 것들 — 종이로 뽑고 접고 아이와 놀아 본 기록.';
+
+/**
+ * 공방 일지 RSS (`app/feed.xml`) 를 알리는 `<link rel="alternate">`.
+ *
+ * 레이아웃에 두지 않는 것은 `alternates` 도 얕게 합쳐지기 때문이다 — 대표
+ * 주소를 적는 페이지마다 이 칸이 지워진다. 피드를 찾으러 오는 자리인 홈과
+ * 공방 일지 목록이 `canonical` 옆에 함께 적는다.
+ */
+export const RSS_ALTERNATE = {
+  'application/rss+xml': [
+    { url: '/feed.xml', title: `${SITE_TITLE} · ${BLOG_TITLE}` },
+  ],
+};
