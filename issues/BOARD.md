@@ -14,7 +14,7 @@
 | `todo`    | 0    |
 | `doing`   | 0    |
 | `blocked` | 4    |
-| `review`  | 13   |
+| `review`  | 14   |
 | `done`    | 18   |
 
 **지금 할 것** — [IDE-007](IDE-007-print-and-pdf-export.md)(인쇄·PDF 내보내기)은
@@ -400,6 +400,12 @@ PostgREST 로 읽는 길까지 확인). 남은 것은 **카카오 키·도메인
 화면 → 편집 → 출력 창 → PDF 를 기기·채널·게임별로 가르는 표를 냈다. 게임 화면에
 들어온 세션 21 중 20 이 모바일이라는 것이 이 이슈를 연 단서다. 마이그레이션 `012` 는
 2026-09-19 **운영 DB 에 적용했다**(기존 집계 다섯 표 그대로). 남은 것은 앱 배포다.
+
+[IDE-036](IDE-036-editor-unsaved-guard.md)(저장 안 한 글 보호)이 `review`다.
+`IDE-028` 에 "남은 구멍"으로 적어 둔 것 — 편집 화면에서 「목록으로」 · 사이드 메뉴 ·
+새로고침으로 떠나면 쓰던 글이 날아갔다. 폼이 보낼 값을 처음 값과 견줘 바뀌었으면
+묻는다. 저장이 실패하면 기준을 새로 찍지 않아 보호가 풀리지 않는다. 앱 안 뒤로
+가기는 잡지 않았다(이유는 결정 기록). 남은 것은 실제 브라우저 확인이다.
 ---
 
 ## M0 — 기반 (001–003)
@@ -456,6 +462,7 @@ PostgREST 로 읽는 길까지 확인). 남은 것은 **카카오 키·도메인
 | [IDE-033](IDE-033-traffic-source-attribution.md) | 유입 출처 — 세션 귀속 · 소스별 표 · 인앱 브라우저             | backend  | P1   | 1d   | `review` |
 | [IDE-034](IDE-034-devlog-sns-export.md)          | 공방 일지 글을 SNS 로 내보내기                                | frontend | P2   | 2d   | `review` |
 | [IDE-035](IDE-035-download-funnel.md)            | PDF 다운로드 퍼널 — 편집 시작 · 출력 창 · 내보내기 실패       | backend  | P1   | 1d   | `review` |
+| [IDE-036](IDE-036-editor-unsaved-guard.md)       | 저장 안 한 글을 두고 떠나기 전에 묻기                         | frontend | P2   | 0.5d | `review` |
 
 ---
 
