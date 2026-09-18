@@ -31,7 +31,11 @@ beforeEach(() => {
 });
 
 /** `notFound()` 는 Next 가 알아보는 특별한 예외를 던진다. */
-const rendering = () => AnalyticsPage();
+const rendering = () =>
+  AnalyticsPage({
+    params: Promise.resolve({}),
+    searchParams: Promise.resolve({}),
+  });
 
 describe('AnalyticsPage', () => {
   it('비밀번호가 설정돼 있지 않으면 404 다 — 경로의 존재 자체를 숨긴다', async () => {
