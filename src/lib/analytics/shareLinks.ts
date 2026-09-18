@@ -36,6 +36,14 @@ export const SHARE_PRESETS: readonly SharePreset[] = [
     medium: 'social',
   },
   { id: 'linkedin', label: '링크드인', source: 'linkedin', medium: 'social' },
+  // 공방 일지 글을 옮겨 올리는 곳(IDE-034). 이름을 여기 먼저 정해 두어야
+  // `/admin/share` 에서 만든 링크와 내보내기 칸이 만든 링크가 한 줄로 모인다.
+  {
+    id: 'naver-blog',
+    label: '네이버 블로그',
+    source: 'naver_blog',
+    medium: 'social',
+  },
   {
     id: 'naver-cafe',
     label: '네이버 카페',

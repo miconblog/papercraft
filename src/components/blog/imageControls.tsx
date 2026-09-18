@@ -17,8 +17,13 @@
  * 손을 놓을 때 한 번만 담는다. 움직일 때마다 쓰면 되돌리기 기록이 픽셀 수만큼
  * 쌓여서 **Ctrl+Z 한 번이 1% 를 되돌린다.**
  */
-import { useCallback, useState } from 'react';
-import { AlignCenterIcon, AlignLeftIcon, AlignRightIcon } from 'lucide-react';
+import { createContext, useCallback, useContext, useState } from 'react';
+import {
+  AlignCenterIcon,
+  AlignLeftIcon,
+  AlignRightIcon,
+  StarIcon,
+} from 'lucide-react';
 
 /** 너비의 아래 끝(%). `lib/blog/doc.ts` 의 `MIN_IMAGE_WIDTH` 와 같은 값이다. */
 export const MIN_WIDTH = 20;
@@ -215,5 +220,77 @@ export function AlignButtons({
         );
       })}
     </>
+  );
+}
+
+/**
+ * 대표 사진 고르기 (2026-09-19 사용자 요청)
+ *
+ * "사진 마우스 호버하면 좌상단에 정렬 3가지 옵션이 있는데, 그 오른쪽에
+ * 대표사진으로 지정 버튼을 넣어서 클릭하면 대표사진으로 지정해줘."
+ *
+ * 사진 마디는 TipTap 이 그리는 곳이라 폼과 액션을 직접 모른다. 편집기
+ * (`Editor`)가 이 문맥으로 **지금 대표 사진이 무엇인지와 고르는 함수**만
+ * 내려 준다 — 저장은 편집기가 폼으로 한다. 문맥이 없으면(편집기 밖) 단추도 없다.
+ */
+export type CoverPick = {
+  /** 지금 대표 사진의 주소. 같은 사진이면 단추가 눌린 채로 선다. */
+  current: string | null;
+  pick: (src: string) => void;
+};
+
+export const CoverContext = createContext<CoverPick | null>(null);
+
+/**
+ * 대표 사진 단추.
+ *
+ * `compact` 는 줄의 칸에 붙는 동그란 단추다 — 칸이 좁아 글자가 들어갈 자리가 없다.
+ */
+export function CoverButton({
+  src,
+  compact = false,
+  reveal = '',
+}: {
+  src: string;
+  compact?: boolean;
+  /** 줄의 칸에서 마우스를 올렸을 때 드러내는 클래스(`WidthHandle` 과 같다). */
+  reveal?: string;
+}) {
+  const cover = useContext(CoverContext);
+  if (!cover || !src) return null;
+
+  const on = cover.current === src;
+  const label = on ? '지금 대표 사진' : '대표 사진으로 지정';
+
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      aria-pressed={on}
+      title={
+        on
+          ? '이 사진이 대표 사진입니다'
+          : '이 사진을 대표 사진으로 (쓰던 글이 먼저 저장됩니다)'
+      }
+      // 이미 대표 사진이면 누를 것이 없다 — 눌러도 저장만 한 바퀴 돈다.
+      disabled={on}
+      onMouseDown={(event) => event.preventDefault()}
+      onClick={() => cover.pick(src)}
+      className={
+        compact
+          ? `inline-flex size-6 items-center justify-center rounded-full border border-border bg-popover/95 opacity-0 transition-opacity outline-none hover:text-foreground focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current ${reveal} ${
+              on ? 'text-retro-teal opacity-100' : 'text-muted-foreground'
+            }`
+          : `inline-flex h-7 items-center gap-1 rounded px-1.5 text-xs outline-none hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current disabled:hover:bg-transparent ${
+              on ? 'text-retro-teal' : 'text-muted-foreground'
+            }`
+      }
+    >
+      <StarIcon
+        className={`size-3.5 ${on ? 'fill-current' : ''}`}
+        aria-hidden
+      />
+      {!compact && (on ? '대표 사진' : '대표 사진으로')}
+    </button>
   );
 }

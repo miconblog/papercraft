@@ -7,13 +7,17 @@ import { adminPassword } from '@/lib/analytics/config';
 import { ADMIN_COOKIE, isValidSession } from '@/lib/analytics/session';
 import { Editor } from '@/components/blog/Editor';
 import { PhotoField } from '@/components/blog/PhotoField';
+import { SnsExport } from '@/components/blog/SnsExport';
 import { EMPTY_DOC } from '@/lib/blog/doc';
-import { postById, type Post } from '@/lib/blog/posts';
+import { isPublished, postById, type Post } from '@/lib/blog/posts';
+import { postSummary } from '@/lib/blog/summary';
 import { instantToKstLocal } from '@/lib/kst';
+import { siteUrl } from '@/lib/site';
 import {
   clearCoverImage,
   publishNow,
   savePost,
+  setCoverFromBody,
   setCoverImage,
   uploadPhoto,
 } from '../actions';
@@ -166,7 +170,13 @@ export default async function AdminPostEditorPage({
           <span className="ml-2 text-xs text-muted-foreground">
             보이는 대로 씁니다 · 엔터를 누른 자리에서 줄이 바뀝니다
           </span>
-          <Editor name="doc" initial={post.doc} upload={uploadPhoto} />
+          <Editor
+            name="doc"
+            initial={post.doc}
+            upload={uploadPhoto}
+            coverUrl={post.coverUrl}
+            pickCover={setCoverFromBody}
+          />
         </div>
 
         {/* 본문 사진은 편집기가 맡는다(끌어다 놓기·붙여넣기). 여기 남은 것은
@@ -176,7 +186,7 @@ export default async function AdminPostEditorPage({
           <legend className="px-1 text-sm font-medium">대표 사진</legend>
           <p className="text-xs text-muted-foreground">
             목록 카드와 공유 카드(카톡·트위터)에 서는 한 장입니다. 없으면 사이트
-            기본 이미지가 나갑니다.
+            기본 이미지가 나갑니다. 본문 사진 위의 ☆ 단추로도 고를 수 있습니다.
           </p>
 
           {post.coverUrl && (
@@ -258,6 +268,55 @@ export default async function AdminPostEditorPage({
           )}
         </div>
       </form>
+
+      {!isNew && <ExportSection post={post} />}
     </div>
+  );
+}
+
+/**
+ * SNS 로 내보내기 (IDE-034)
+ *
+ * **열린 글에서만** 칸을 연다. 안 낸 글의 링크는 404 라, 올려 두면 누른 사람이
+ * 전부 빈 화면을 본다. 판정은 공개 화면과 같은 `isPublished` 에게 묻는다.
+ *
+ * 문구는 **마지막으로 저장한 글**로 만든다 — 편집기에서 고치는 중인 제목은
+ * 아직 이 서버에 없다.
+ */
+function ExportSection({ post }: { post: Post }) {
+  const closed = post.hidden
+    ? '내려 둔 글입니다. 다시 올린 뒤에 내보낼 수 있습니다.'
+    : post.publishAt === null
+      ? '아직 안 낸 글입니다. 낸 뒤에 열립니다.'
+      : !isPublished(post)
+        ? `${instantToKstLocal(post.publishAt).replace('T', ' ')}(KST)에 공개된 뒤에 열립니다.`
+        : null;
+
+  return (
+    <section aria-labelledby="sns-export" className="mt-10 border-t pt-6">
+      <h2 id="sns-export" className="text-xl font-bold tracking-tight">
+        SNS 로 내보내기
+      </h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        플랫폼마다 문구와 링크를 맞춰 두었습니다. 링크에는 출처가 붙어 방문
+        통계의
+        <strong> 소셜</strong> 칸에 플랫폼별로 잡힙니다. 마지막으로 저장한 글
+        기준입니다.
+      </p>
+
+      {closed ? (
+        <p className="mt-4 rounded-lg border border-border bg-secondary/40 p-3 text-sm">
+          {closed}
+        </p>
+      ) : (
+        <SnsExport
+          origin={siteUrl()}
+          slug={post.slug}
+          title={post.title}
+          summary={postSummary(post)}
+          coverUrl={post.coverUrl}
+        />
+      )}
+    </section>
   );
 }
