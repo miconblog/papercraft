@@ -27,6 +27,7 @@ import {
 } from '@tiptap/react';
 import {
   AlignButtons,
+  CoverButton,
   WidthBadge,
   WidthHandle,
   clampWidth,
@@ -106,6 +107,8 @@ function ImageView({
           align={align}
           onChange={(value) => updateAttributes({ align: value })}
         />
+        <span className="mx-0.5 my-1 w-px bg-border" aria-hidden />
+        <CoverButton src={node.attrs.src} />
       </div>
 
       {/* 사진 빼기 (2026-09-10 사용자 요청). 줄의 칸에만 있던 것을 낱장에도

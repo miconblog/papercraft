@@ -265,3 +265,89 @@ describe('미리보기가 쓰던 글을 날리지 않는다', () => {
     expect(body.textContent).toContain('마지막으로 저장한 내용');
   });
 });
+
+/**
+ * SNS 로 내보내기 (IDE-034)
+ *
+ * **열린 글에서만** 칸이 열린다. 안 낸 글의 링크는 404 라, 올려 두면 누른
+ * 사람이 전부 빈 화면을 본다.
+ */
+describe('SNS 로 내보내기', () => {
+  const base = { id: 'id-1', slug: 'yut-stick', title: '윷가락 무게중심' };
+  const exportCards = (body: HTMLElement) =>
+    body.querySelectorAll('section[aria-labelledby="sns-export"] textarea');
+
+  it('낸 글에는 플랫폼 넷의 문구 칸이 선다', async () => {
+    loggedIn();
+    withPost({ ...base, publish_at: '2020-01-01T00:00:00+09:00' });
+
+    const body = await draw(editor('id-1'));
+    expect(exportCards(body)).toHaveLength(4);
+    const text = body.textContent ?? '';
+    for (const label of [
+      '페이스북',
+      '링크드인',
+      '인스타그램',
+      '네이버 블로그',
+    ]) {
+      expect(text).toContain(label);
+    }
+    // 링크에 출처와 캠페인이 붙는다.
+    const link = [
+      ...body.querySelectorAll(
+        'section[aria-labelledby="sns-export"] input[readonly]',
+      ),
+    ].map((input) => (input as HTMLInputElement).value);
+    expect(link.some((value) => value.includes('utm_source=linkedin'))).toBe(
+      true,
+    );
+    expect(
+      link.every((value) => value.includes('utm_campaign=devlog-yut-stick')),
+    ).toBe(true);
+  });
+
+  it('대표 사진이 없으면 인스타그램 칸이 막힌다', async () => {
+    loggedIn();
+    withPost({ ...base, publish_at: '2020-01-01T00:00:00+09:00' });
+
+    const body = await draw(editor('id-1'));
+    expect(body.textContent).toContain('사진 없이 올릴 수 없습니다');
+  });
+
+  it('안 낸 글에는 칸이 없고 이유를 말한다', async () => {
+    loggedIn();
+    withPost({ ...base, publish_at: null });
+
+    const body = await draw(editor('id-1'));
+    expect(exportCards(body)).toHaveLength(0);
+    expect(body.textContent).toContain('아직 안 낸 글입니다');
+  });
+
+  it('예약된 글은 공개 시각을 알려 준다', async () => {
+    loggedIn();
+    withPost({ ...base, publish_at: '2999-01-01T09:00:00+09:00' });
+
+    const body = await draw(editor('id-1'));
+    expect(exportCards(body)).toHaveLength(0);
+    expect(body.textContent).toContain('2999-01-01 09:00(KST)에 공개된 뒤에');
+  });
+
+  it('내려 둔 글은 열지 않는다', async () => {
+    loggedIn();
+    withPost({
+      ...base,
+      publish_at: '2020-01-01T00:00:00+09:00',
+      hidden: true,
+    });
+
+    const body = await draw(editor('id-1'));
+    expect(exportCards(body)).toHaveLength(0);
+    expect(body.textContent).toContain('내려 둔 글입니다');
+  });
+
+  it('새 글에는 칸 자체가 없다', async () => {
+    loggedIn();
+    const body = await draw(editor('new'));
+    expect(body.textContent).not.toContain('SNS 로 내보내기');
+  });
+});

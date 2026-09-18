@@ -14,8 +14,8 @@
 | `todo`    | 0    |
 | `doing`   | 0    |
 | `blocked` | 4    |
-| `review`  | 14   |
-| `done`    | 16   |
+| `review`  | 13   |
+| `done`    | 18   |
 
 **지금 할 것** — [IDE-007](IDE-007-print-and-pdf-export.md)(인쇄·PDF 내보내기)은
 2026-09-07 사용자가 종이 실측·Safari·Firefox 확인을 마쳐 `done`이 됐다. 남은 것은
@@ -386,13 +386,20 @@ PostgREST 로 읽는 길까지 확인). 남은 것은 **카카오 키·도메인
 건진다. 마이그레이션 `010` 은 2026-09-17 **운영 DB 에 적용했다**(소급 결과까지 확인). 남은 것은
 앱 배포와 배포본 대시보드 확인이다.
 
+[IDE-034](IDE-034-devlog-sns-export.md)(공방 일지 SNS 내보내기)가 `review`다. 사용자
+요청(2026-09-19). 방문자 공유 줄(`IDE-029`)의 반대편 — **주인이 낸 글을 자기 SNS
+계정에 알리는 일**이다. 사용자 결정은 "궁극적으로 API 자동 게시, 먼저 꾸러미"이고
+대상은 페이스북 · 링크드인 · 인스타그램 · 네이버 블로그다. 글 편집 화면 아래에서
+플랫폼마다 한도에 맞춘 문구 · utm 링크(`devlog-<슬러그>` 캠페인) · 대표 사진 ·
+글쓰기 창을 준다. 남은 것은 실제 브라우저에서 창이 열리는지와 네 곳에 올려 보는 것이다.
+
 [IDE-035](IDE-035-download-funnel.md)(PDF 다운로드 퍼널)이 `review`다. 사용자
 질문(2026-09-19) — "PDF 다운로드가 0인데 실제로 0인게 맞는거지?" 원본을 열어 보니
 수집은 멀쩡하고 **정말 0** 이었다. 다만 인쇄가 게임 화면 안의 모달이라 **왜 0 인지는
 알 수 없었다.** 편집 시작 · 출력 창 · 내보내기 실패를 세고, 대시보드에 방문 → 게임
 화면 → 편집 → 출력 창 → PDF 를 기기·채널·게임별로 가르는 표를 냈다. 게임 화면에
-들어온 세션 21 중 20 이 모바일이라는 것이 이 이슈를 연 단서다. 남은 것은 운영 DB 에
-`012` 적용 → 앱 배포다.
+들어온 세션 21 중 20 이 모바일이라는 것이 이 이슈를 연 단서다. 마이그레이션 `012` 는
+2026-09-19 **운영 DB 에 적용했다**(기존 집계 다섯 표 그대로). 남은 것은 앱 배포다.
 ---
 
 ## M0 — 기반 (001–003)
@@ -439,14 +446,15 @@ PostgREST 로 읽는 길까지 확인). 남은 것은 **카카오 키·도메인
 | ID                                               | 제목                                                          | 영역     | 우선 | 추정 | 상태     |
 | ------------------------------------------------ | ------------------------------------------------------------- | -------- | ---- | ---- | -------- |
 | [IDE-022](IDE-022-scheduled-game-publish.md)     | 게임 예약 공개 — 관리자 화면에서 오픈일 지정                  | backend  | P1   | 3d   | `done`   |
-| [IDE-023](IDE-023-devlog-blog.md)                | 공방 일지 — 관리자 화면에서 쓰고 게시하는 글                  | frontend | P2   | 4d   | `review` |
-| [IDE-028](IDE-028-devlog-wysiwyg-editor.md)      | 공방 일지 — 보이는 대로 쓰는 편집기                           | frontend | P2   | 2d   | `review` |
+| [IDE-023](IDE-023-devlog-blog.md)                | 공방 일지 — 관리자 화면에서 쓰고 게시하는 글                  | frontend | P2   | 4d   | `done`   |
+| [IDE-028](IDE-028-devlog-wysiwyg-editor.md)      | 공방 일지 — 보이는 대로 쓰는 편집기                           | frontend | P2   | 2d   | `done`   |
 | [IDE-024](IDE-024-bot-signals-and-exclusion.md)  | 봇 신호와 집계 제외 — 사람인 척하는 자동화 가려내기           | backend  | P1   | 2d   | `done`   |
 | [IDE-025](IDE-025-unique-pageviews.md)           | 순 페이지뷰 — 한 세션에서 같은 경로는 한 번만                 | backend  | P1   | 1d   | `done`   |
 | [IDE-026](IDE-026-admin-optout-cookie.md)        | 관리자 브라우저를 통계에서 빼기 — 제외 쿠키와 명시적 로그아웃 | backend  | P1   | 1d   | `done`   |
 | [IDE-027](IDE-027-admin-nav-and-index.md)        | 헤더의 관리자 메뉴 · /admin 404 고치기                        | frontend | P2   | 1d   | `done`   |
 | [IDE-029](IDE-029-comments-and-share.md)         | 게임·글 아래 댓글과 공유하기                                  | frontend | P2   | 2d   | `review` |
 | [IDE-033](IDE-033-traffic-source-attribution.md) | 유입 출처 — 세션 귀속 · 소스별 표 · 인앱 브라우저             | backend  | P1   | 1d   | `review` |
+| [IDE-034](IDE-034-devlog-sns-export.md)          | 공방 일지 글을 SNS 로 내보내기                                | frontend | P2   | 2d   | `review` |
 | [IDE-035](IDE-035-download-funnel.md)            | PDF 다운로드 퍼널 — 편집 시작 · 출력 창 · 내보내기 실패       | backend  | P1   | 1d   | `review` |
 
 ---

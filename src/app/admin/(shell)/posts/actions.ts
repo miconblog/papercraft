@@ -233,6 +233,31 @@ export async function setCoverImage(form: FormData): Promise<void> {
   return attach(form);
 }
 
+/**
+ * 본문의 사진 한 장을 대표 사진으로 세운다 (2026-09-19 사용자 요청)
+ *
+ * 편집기의 사진 위 단추가 부른다(`coverPick`). 새로 올리지 않는다 — 이미 본문에
+ * 있는 파일을 그대로 가리킨다. 폼 전체를 먼저 저장하는 것은 `attach` 와 같다.
+ *
+ * **본문에 있는 사진만 받는다.** 버튼이 보내는 값이지만 서버 액션은 밖에서도
+ * 부를 수 있다 — 아무 주소나 받으면 공유 카드에 남의 그림이 걸린다.
+ */
+export async function setCoverFromBody(form: FormData): Promise<void> {
+  await requireAdmin();
+
+  const id = str(form, 'id');
+  const pick = str(form, 'coverPick');
+  const doc = parseDoc(String(form.get('doc') ?? ''));
+  if (!pick || !docImageUrls(doc).includes(pick)) {
+    return back(`${LIST}/${id || 'new'}`, {
+      error: '본문에 있는 사진만 대표 사진으로 세울 수 있습니다.',
+    });
+  }
+
+  form.set('coverUrl', pick);
+  return saveAndReturn(form, false, '대표 사진을 바꿨습니다');
+}
+
 /** 대표 사진을 뗀다. 보관소의 파일은 그대로 둔다 — 본문에 쓰고 있을 수 있다. */
 export async function clearCoverImage(form: FormData): Promise<void> {
   await requireAdmin();
