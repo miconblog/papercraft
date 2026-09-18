@@ -8,6 +8,7 @@ import { ADMIN_COOKIE, isValidSession } from '@/lib/analytics/session';
 import { Editor } from '@/components/blog/Editor';
 import { PhotoField } from '@/components/blog/PhotoField';
 import { SnsExport } from '@/components/blog/SnsExport';
+import { UnsavedGuard } from '@/components/blog/UnsavedGuard';
 import { EMPTY_DOC } from '@/lib/blog/doc';
 import { isPublished, postById, type Post } from '@/lib/blog/posts';
 import { postSummary } from '@/lib/blog/summary';
@@ -116,6 +117,7 @@ export default async function AdminPostEditorPage({
       )}
 
       <form
+        id="post-form"
         // `formAction` 이 붙지 않은 곳(모바일 키보드의 「이동」 등)에서 눌러도
         // 저장으로 떨어지게 폼 자신의 기본 동작을 저장으로 둔다.
         action={savePost}
@@ -268,6 +270,14 @@ export default async function AdminPostEditorPage({
           )}
         </div>
       </form>
+
+      {/* 저장 안 한 글을 두고 떠나기 전에 묻는다(IDE-036). **저장에 성공했을
+          때만** 처음 값을 새로 찍는다 — 실패(`error`)에 찍으면 저장 안 된 글이
+          "바뀌지 않음"이 되어 보호가 풀린다. */}
+      <UnsavedGuard
+        formId="post-form"
+        version={error ? null : `${post.updatedAt}:${saved ?? ''}`}
+      />
 
       {!isNew && <ExportSection post={post} />}
     </div>
