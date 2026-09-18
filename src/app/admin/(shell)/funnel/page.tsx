@@ -19,7 +19,7 @@ import { analyticsDay } from '@/lib/analytics/visitor';
 import { getGame } from '@/lib/games';
 
 /**
- * PDF 퍼널 (IDE-035)
+ * 퍼널 분석 (IDE-035)
  *
  * 방문 통계 화면에 섹션으로 붙어 있다가 따로 나왔다(2026-09-19 사용자 요청).
  * "얼마나 왔나"와 "받기까지 어디서 멈추나"는 묻는 것이 달라, 한 화면에 두면
@@ -27,7 +27,7 @@ import { getGame } from '@/lib/games';
  */
 
 export const metadata: Metadata = {
-  title: 'PDF 퍼널',
+  title: '퍼널 분석',
   robots: { index: false, follow: false },
 };
 
@@ -203,7 +203,7 @@ export default async function FunnelPage({
 
   return (
     <div className="w-full max-w-3xl">
-      <h1 className="text-3xl font-bold tracking-tight">PDF 퍼널</h1>
+      <h1 className="text-3xl font-bold tracking-tight">퍼널 분석</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         {describeRange(range)} · 들어온 사람이 도안을 받기까지 어디서 멈추나.
       </p>

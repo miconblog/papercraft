@@ -329,7 +329,7 @@ select daddys_craft.rollup_daily(current_date - 30, current_date, 3::smallint);
 `/admin/analytics` — 최근 30일 PV/UV 추이, 채널 구성, 소스·매체·캠페인별 세션·PV·PDF,
 게임별 조회·다운로드.
 
-`/admin/funnel` — PDF 퍼널. 방문 → 게임 화면 → 편집 시작 → 출력 창 → PDF 와
+`/admin/funnel` — 퍼널 분석. 방문 → 게임 화면 → 편집 시작 → 출력 창 → PDF 와
 기기·채널·게임별 표. 방문 통계와 같은 기간 필터를 쓴다(아래 "PDF 를 받기까지").
 
 관리자가 한 명뿐이라 `ANALYTICS_ADMIN_PASSWORD` 하나로 잠근다. Supabase Auth 를

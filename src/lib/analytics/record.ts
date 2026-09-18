@@ -30,7 +30,7 @@ import { analyticsDay, clientIp, visitorId } from './visitor';
 export type EventType =
   | 'pageview'
   | 'download'
-  // PDF 퍼널의 중간 단계 (IDE-035). 브라우저가 보낸다.
+  // 퍼널의 중간 단계 (IDE-035). 브라우저가 보낸다.
   | 'edit_start'
   | 'print_open'
   // 내보내기가 400 으로 막힌 것. 서버가 적는다.

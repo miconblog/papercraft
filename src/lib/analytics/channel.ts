@@ -99,7 +99,7 @@ const SOCIAL_APPS = new Set([
   'band',
 ]);
 
-/** 관리자 화면의 채널 이름. 방문 통계와 PDF 퍼널이 같은 말을 쓴다. */
+/** 관리자 화면의 채널 이름. 방문 통계와 퍼널 분석이 같은 말을 쓴다. */
 export const CHANNEL_LABEL: Record<string, string> = {
   direct: '직접 방문',
   organic: '검색',

@@ -313,7 +313,7 @@ export async function loadReport(range: {
 }
 
 /**
- * PDF 퍼널 (IDE-035). 방문 통계와 다른 화면(`/admin/funnel`)이 읽는다.
+ * 퍼널 분석 (IDE-035). 방문 통계와 다른 화면(`/admin/funnel`)이 읽는다.
  *
  * `null` 이면 저장소에 닿지 못했거나 표(`012`)를 읽지 못한 것이다 — 화면이
  * 그렇다고 알린다.
