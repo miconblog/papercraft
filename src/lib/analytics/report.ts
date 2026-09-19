@@ -9,6 +9,7 @@
  */
 import 'server-only';
 import { reportClient, type AnalyticsSupabase } from './client';
+import { foldCrawls, type CrawlReport, type CrawlRow } from './crawlReport';
 import { daysAgo } from './days';
 import { foldFunnel, type FunnelRow } from './funnel';
 import { analyticsDay } from './visitor';
@@ -341,6 +342,36 @@ export async function loadFunnel(range: {
     return foldFunnel(funnel.data ?? []);
   } catch (cause) {
     console.warn('[analytics] 퍼널 집계 조회 실패:', cause);
+    return null;
+  }
+}
+
+/**
+ * 누가 읽어 가나 — 크롤러 집계 (IDE-040). 못 읽으면 `null` — 화면이 그 칸만
+ * "아직 없다"로 둔다(`015` 전의 DB 도 그렇다).
+ */
+export async function loadCrawls(range: {
+  from: string;
+  to: string;
+}): Promise<CrawlReport | null> {
+  const supabase = reportClient();
+  if (!supabase) return null;
+
+  try {
+    const rows = await readDaily(
+      supabase,
+      'crawler_daily',
+      'day, crawler, path, hits, last_seen',
+      ['day', 'crawler', 'path'],
+      range,
+    );
+    if (rows.error) {
+      console.warn('[analytics] 크롤러 집계 조회 실패:', rows.error.message);
+      return null;
+    }
+    return foldCrawls((rows.data ?? []) as unknown as CrawlRow[]);
+  } catch (cause) {
+    console.warn('[analytics] 크롤러 집계 조회 실패:', cause);
     return null;
   }
 }

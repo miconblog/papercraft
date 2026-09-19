@@ -17,7 +17,11 @@
  * 3. **`/blog`** — 아직 안 낸 글도 없는 것처럼 군다(IDE-023). 2번과 같은
  *    문제라 같은 방식으로 푼다.
  */
-import { NextResponse, type NextRequest } from 'next/server';
+import {
+  NextResponse,
+  type NextFetchEvent,
+  type NextRequest,
+} from 'next/server';
 import { adminPassword } from '@/lib/analytics/config';
 import {
   ADMIN_COOKIE,
@@ -25,6 +29,8 @@ import {
   isValidSession,
   sessionCookie,
 } from '@/lib/analytics/session';
+import { recordCrawl } from '@/lib/analytics/crawlLog';
+import { crawlerOf } from '@/lib/analytics/crawlers';
 import { openSlugsForRequest } from '@/lib/blog/posts';
 import { isOpen, releasesForRequest } from '@/lib/games/release';
 
@@ -32,7 +38,21 @@ export const config = {
   // `/games/:path*` 는 화면(`/games/<id>`·`/edit`·`/print`·OG 이미지)만이
   // 아니라 **`public/games/` 아래의 도안 SVG 까지** 같은 이름 아래 있다.
   // 한 줄로 둘 다 덮인다 — 화면만 막고 자산을 열어 두면 도안이 그대로 샌다.
-  matcher: ['/admin/:path*', '/games/:path*', '/blog/:path*'],
+  //
+  // 나머지는 **크롤러를 세려고** 넣었다(IDE-040). AI 가 사이트를 알아 가는 문 —
+  // 홈 · robots · 사이트맵 · llms.txt · RSS. 이 경로에는 막을 것이 없어서 그냥
+  // 지나간다. 방문자에게는 문지기 한 번이 더 도는 것이 대가다.
+  matcher: [
+    '/admin/:path*',
+    '/games/:path*',
+    '/blog/:path*',
+    '/',
+    '/robots.txt',
+    '/sitemap.xml',
+    '/llms.txt',
+    '/llms-full.txt',
+    '/feed.xml',
+  ],
 };
 
 /**
@@ -162,13 +182,28 @@ async function postGate(
   return NextResponse.rewrite(new URL(CLOSED_POST_PATH, request.url));
 }
 
-export async function proxy(request: NextRequest): Promise<NextResponse> {
+export async function proxy(
+  request: NextRequest,
+  event?: NextFetchEvent,
+): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
+
+  // AI · 검색 크롤러를 센다(IDE-040). 응답을 보낸 **뒤에** 적는다 — 세는 일이
+  // 크롤러에게 나가는 응답을 늦추거나 깨뜨리면 안 된다. 관리자 경로는 세지 않는다.
+  const crawler = crawlerOf(request.headers.get('user-agent'));
+  if (crawler && !pathname.startsWith('/admin')) {
+    event?.waitUntil(recordCrawl(crawler, pathname));
+  }
+
   if (pathname === '/admin' || pathname.startsWith('/admin/')) {
     return adminGate(request, pathname);
   }
   if (pathname === '/blog' || pathname.startsWith('/blog/')) {
     return postGate(request, pathname);
   }
-  return releaseGate(request, pathname);
+  if (pathname === '/games' || pathname.startsWith('/games/')) {
+    return releaseGate(request, pathname);
+  }
+  // 크롤러를 세려고 들어온 경로(홈 · robots · 사이트맵 …) — 막을 것이 없다.
+  return NextResponse.next();
 }

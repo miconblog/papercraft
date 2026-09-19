@@ -13,11 +13,15 @@ import {
 } from '@/lib/analytics/range';
 import { ADMIN_COOKIE, isValidSession } from '@/lib/analytics/session';
 import {
+  loadCrawls,
   loadReport,
   type CountryTotal,
   type DailyTraffic,
 } from '@/lib/analytics/report';
 import { CHANNEL_LABEL, sourceLabel } from '@/lib/analytics/channel';
+import { CRAWLER_KIND_LABEL } from '@/lib/analytics/crawlers';
+import type { CrawlReport } from '@/lib/analytics/crawlReport';
+import { formatKst } from '@/lib/kst';
 import { analyticsDay } from '@/lib/analytics/visitor';
 import { getGame } from '@/lib/games';
 
@@ -179,6 +183,97 @@ function CountryTable({ countries }: { countries: CountryTotal[] }) {
   );
 }
 
+/**
+ * 누가 읽어 가나 — AI · 검색 크롤러 (IDE-040)
+ *
+ * 방문 통계와 따로 센다 — 크롤러는 자바스크립트를 돌리지 않아 위 숫자에는 안
+ * 들어간다. **AI 검색 색인**이 읽어야 AI 답변에 인용될 수 있으므로 그 칸이 핵심이고,
+ * 일반 검색 크롤러는 견줄 기준으로 함께 둔다.
+ */
+function CrawlSection({ crawls }: { crawls: CrawlReport | null }) {
+  return (
+    <section className="mt-8">
+      <h2 className="text-lg font-semibold">
+        누가 읽어 가나 — AI · 검색 크롤러
+      </h2>
+      <p className="mt-1 text-xs text-muted-foreground">
+        크롤러는 위 방문 수에 들어가지 않습니다. 이름(UA)으로만 가려서, 이름을
+        사칭한 봇이 섞일 수 있습니다.
+      </p>
+      {crawls === null ? (
+        <p className="mt-3 rounded-lg border border-border p-3 text-sm text-muted-foreground">
+          크롤러 집계를 읽지 못했습니다 — 마이그레이션 <code>015</code> 가
+          적용됐는지 확인하세요.
+        </p>
+      ) : crawls.crawlers.length === 0 ? (
+        <p className="mt-3 text-sm text-muted-foreground">
+          이 기간에 온 크롤러가 없습니다.
+        </p>
+      ) : (
+        <>
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-left text-muted-foreground">
+                <tr>
+                  <th className="py-1 pr-3 font-medium">크롤러</th>
+                  <th className="py-1 pr-3 font-medium">종류</th>
+                  <th className="py-1 pr-3 text-right font-medium">요청</th>
+                  <th className="py-1 pr-3 text-right font-medium">
+                    읽은 페이지
+                  </th>
+                  <th className="py-1 font-medium">마지막</th>
+                </tr>
+              </thead>
+              <tbody>
+                {crawls.crawlers.map((row) => (
+                  <tr key={row.id} className="border-t border-border">
+                    <td className="py-1 pr-3">
+                      {row.vendor}{' '}
+                      <span className="text-muted-foreground">{row.id}</span>
+                    </td>
+                    <td className="py-1 pr-3">
+                      {CRAWLER_KIND_LABEL[row.kind]}
+                    </td>
+                    <td className="py-1 pr-3 text-right tabular-nums">
+                      {row.hits.toLocaleString()}
+                    </td>
+                    <td className="py-1 pr-3 text-right tabular-nums">
+                      {row.pages.toLocaleString()}
+                    </td>
+                    <td className="py-1 text-xs text-muted-foreground tabular-nums">
+                      {row.lastSeen ? formatKst(Date.parse(row.lastSeen)) : '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <h3 className="mt-5 text-sm font-semibold">
+            AI 가 가장 많이 읽은 페이지
+          </h3>
+          {crawls.aiPaths.length === 0 ? (
+            <p className="mt-1 text-sm text-muted-foreground">
+              아직 AI 검색 색인이나 AI 사용자 요청이 없습니다.
+            </p>
+          ) : (
+            <ol className="mt-1 list-decimal space-y-0.5 pl-6 text-sm">
+              {crawls.aiPaths.map((row) => (
+                <li key={row.path}>
+                  <code>{row.path}</code>{' '}
+                  <span className="text-muted-foreground tabular-nums">
+                    {row.hits.toLocaleString()}회
+                  </span>
+                </li>
+              ))}
+            </ol>
+          )}
+        </>
+      )}
+    </section>
+  );
+}
+
 function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-lg border border-border p-4">
@@ -203,7 +298,10 @@ export default async function AnalyticsPage({
 
   const today = analyticsDay();
   const range = parseRange(await searchParams, today);
-  const report = await loadReport(range);
+  const [report, crawls] = await Promise.all([
+    loadReport(range),
+    loadCrawls(range),
+  ]);
   const sum = (pick: (d: DailyTraffic) => number) =>
     report.days.reduce((total, day) => total + Number(pick(day) ?? 0), 0);
   const { unit, buckets } = bucketsOf(range);
@@ -467,6 +565,8 @@ export default async function AnalyticsPage({
               </table>
             </div>
           </section>
+
+          <CrawlSection crawls={crawls} />
 
           <section className="mt-8">
             <h2 className="text-lg font-semibold">게임별 조회·다운로드</h2>
