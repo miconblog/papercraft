@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
+import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics';
 import { PageViews } from '@/components/analytics/PageViews';
 import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
@@ -11,6 +12,7 @@ import {
   SITE_TITLE,
   siteUrl,
 } from '@/lib/site';
+import { gaMeasurementId } from '@/lib/analytics/google';
 import { THEME_INIT_SCRIPT } from '@/lib/theme';
 import './globals.css';
 
@@ -36,6 +38,12 @@ const SITE_URL = siteUrl();
  */
 const GOOGLE_VERIFICATION = process.env.GOOGLE_SITE_VERIFICATION?.trim();
 const NAVER_VERIFICATION = process.env.NAVER_SITE_VERIFICATION?.trim();
+
+/**
+ * GA4 측정 ID (IDE-038). 운영 배포에서만 값이 있고, 없으면 스크립트도 없다 —
+ * 로컬 · CI · 미리보기 배포의 방문이 GA 에 섞이지 않게.
+ */
+const GA_ID = gaMeasurementId();
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -108,6 +116,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             script다. 우리가 만든 고정 문자열이라 외부 입력이 섞이지 않는다. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <PageViews />
+        {GA_ID && <GoogleAnalytics id={GA_ID} />}
         <SiteHeader />
         <main className="flex flex-1 flex-col">{children}</main>
         <SiteFooter />

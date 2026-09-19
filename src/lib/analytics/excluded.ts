@@ -8,8 +8,13 @@
  * — 게임 등록소처럼 무거운 것을 딸려 오게 하면 클라이언트 번들에 실린다.
  */
 
-/** 이 접두어로 시작하는 경로는 기록하지 않는다. */
-const EXCLUDED = ['/admin'];
+/**
+ * 이 접두어로 시작하는 경로는 기록하지 않는다.
+ *
+ * GA 의 초기화 스크립트도 이 목록을 그대로 싣는다(`google.ts`) — 두 통계가 다른
+ * 경로를 빼면 둘의 숫자를 견줄 수 없다.
+ */
+export const EXCLUDED_PREFIXES: readonly string[] = ['/admin'];
 
 /**
  * 기록에서 빼는 경로인가.
@@ -18,4 +23,6 @@ const EXCLUDED = ['/admin'];
  * 접두어 자신이거나 그 아래(`/admin/...`)일 때만 참이다.
  */
 export const isExcludedPath = (path: string): boolean =>
-  EXCLUDED.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+  EXCLUDED_PREFIXES.some(
+    (prefix) => path === prefix || path.startsWith(`${prefix}/`),
+  );
