@@ -1,12 +1,13 @@
 /**
  * 채널 분류 (IDE-013)
  *
- * "어디서 왔나"를 다섯 갈래로 줄인다. utm 이 붙어 있으면 그것을 믿고,
+ * "어디서 왔나"를 여섯 갈래로 줄인다. utm 이 붙어 있으면 그것을 믿고,
  * 없으면 referrer 로 판정한다 — 링크를 만든 사람이 스스로 밝힌 것이 추측보다
  * 정확하다.
  */
 
-export type Channel = 'direct' | 'organic' | 'social' | 'referral' | 'campaign';
+export type Channel =
+  'direct' | 'organic' | 'social' | 'referral' | 'campaign' | 'ai';
 
 export type Utm = {
   source: string | null;
@@ -17,6 +18,55 @@ export type Utm = {
   /** 검색 광고의 키워드. 분류에는 안 쓴다. */
   term: string | null;
 };
+
+/**
+ * AI 검색 · 대화 서비스 (IDE-039)
+ *
+ * 사용자 요청(2026-09-19) — "요즘은 AI를 이용해 검색을 많이해서 AI 로 검색
+ * 최적화도 하고 싶어." 재야 고칠 수 있다. 전에는 이 방문들이 **다른 사이트**에
+ * 섞였고, Gemini(`gemini.google.com`)는 `google.` 을 품어 **검색**으로 샜다.
+ *
+ * 조각이 아니라 **그 도메인이거나 그 하위 도메인**일 때만 맞춘다(`isAiHost`) —
+ * `meta.ai` 를 조각으로 보면 `xmeta.ai` 까지 걸린다.
+ *
+ * 한국에서 쓰는 것(뤼튼 · 라이너)도 넣었다. 빙 코파일럿의 채팅은 `bing.com` 으로
+ * 와서 검색과 가를 수 없다 — 검색으로 둔다.
+ *
+ * SQL 에도 같은 목록이 한 번 있다(`db/migrations/014-ai-channel.sql` 의 소급).
+ * 새로 들어오는 줄은 앱이 매기므로 거기는 과거만 본다.
+ */
+export const AI_HOSTS = [
+  'chatgpt.com',
+  'chat.openai.com',
+  'perplexity.ai',
+  'claude.ai',
+  'gemini.google.com',
+  'bard.google.com',
+  'copilot.microsoft.com',
+  'chat.deepseek.com',
+  'grok.com',
+  'meta.ai',
+  'chat.mistral.ai',
+  'you.com',
+  'phind.com',
+  'poe.com',
+  'wrtn.ai',
+  'liner.com',
+] as const;
+
+/**
+ * AI 서비스가 스스로 붙이는 `utm_source`. ChatGPT 는 링크마다
+ * `utm_source=chatgpt.com` 을 붙인다 — referrer 가 비어도 이것으로 잡힌다.
+ */
+const AI_SOURCES =
+  /^(chatgpt(\.com)?|openai|perplexity(\.ai)?|claude(\.ai)?|gemini|copilot|deepseek|grok|meta\.ai|mistral|you\.com|phind|poe|wrtn|liner)$/;
+
+/** 이 호스트가 AI 서비스인가. 그 도메인이거나 하위 도메인일 때만 참이다. */
+export const isAiHost = (host: string): boolean =>
+  AI_HOSTS.some((domain) => host === domain || host.endsWith(`.${domain}`));
+
+const isAiSource = (source: string): boolean =>
+  AI_SOURCES.test(source) || isAiHost(source);
 
 /** 호스트 이름에 이 조각이 들어 있으면 검색이다. */
 const SEARCH_HOSTS = [
@@ -106,6 +156,7 @@ export const CHANNEL_LABEL: Record<string, string> = {
   social: '소셜',
   referral: '다른 사이트',
   campaign: '캠페인(utm)',
+  ai: 'AI 검색·대화',
 };
 
 export const IN_APP_LABEL: Record<string, string> = {
@@ -195,14 +246,18 @@ export function classifyChannel(
   if (utm.source || utm.medium) {
     const medium = utm.medium ?? '';
     const source = utm.source ?? '';
-    if (medium === 'organic' || medium === 'search') return 'organic';
-    if (SOCIAL_MEDIUM.test(medium)) return 'social';
-    if (medium === 'referral') return 'referral';
-    // 광고는 검색·소셜로 접지 않는다. `utm_source=google` 하나만 보고 organic
-    // 이라 적으면 돈 주고 산 방문이 자연 유입으로 둔갑한다.
+    // 광고는 검색·소셜·AI 로 접지 않는다. `utm_source=google` 하나만 보고
+    // organic 이라 적으면 돈 주고 산 방문이 자연 유입으로 둔갑한다. AI 서비스
+    // 안의 광고도 같다.
     if (/^(cpc|ppc|paid|display|banner|retargeting)/.test(medium)) {
       return 'campaign';
     }
+    // AI 가 붙인 표식은 매체(`medium`)보다 앞선다 — ChatGPT 는 source 만 붙이고,
+    // 다른 서비스가 `referral` 을 함께 붙여도 AI 에서 온 것은 그대로다.
+    if (isAiSource(source)) return 'ai';
+    if (medium === 'organic' || medium === 'search') return 'organic';
+    if (SOCIAL_MEDIUM.test(medium)) return 'social';
+    if (medium === 'referral') return 'referral';
     // 소셜을 먼저 본다 — `blog.naver.com` 은 `naver.` 를 품고 있어서 검색을
     // 먼저 보면 블로그 유입이 검색으로 잡힌다.
     if (SOCIAL_SOURCES.test(source) || matchesSource(source, SOCIAL_HOSTS)) {
@@ -215,6 +270,8 @@ export function classifyChannel(
 
   if (!host) return inApp && SOCIAL_APPS.has(inApp) ? 'social' : 'direct';
   if (selfHost && host === selfHost.toLowerCase()) return 'direct';
+  // AI 가 검색보다 먼저다 — `gemini.google.com` 은 `google.` 을 품는다.
+  if (isAiHost(host)) return 'ai';
   // 여기서도 소셜이 먼저다(위와 같은 이유).
   if (matches(host, SOCIAL_HOSTS)) return 'social';
   if (matches(host, SEARCH_HOSTS)) return 'organic';

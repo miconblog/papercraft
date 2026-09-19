@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  CHANNEL_LABEL,
   classifyChannel,
   inAppOf,
   readUtm,
@@ -165,5 +166,59 @@ describe('sourceLabel', () => {
     expect(sourceLabel('app:unknown')).toBe('unknown 앱');
     expect(sourceLabel('facebook')).toBe('facebook');
     expect(sourceLabel('')).toBe('(알 수 없음)');
+  });
+});
+
+/**
+ * AI 채널 (IDE-039)
+ *
+ * 전에는 ChatGPT · Perplexity 가 "다른 사이트"에 섞이고 Gemini 가 "검색"으로
+ * 샜다. 재야 AI 검색 최적화가 효과가 있었는지 안다.
+ */
+describe('AI 채널', () => {
+  const none = { source: null, medium: null };
+
+  it('AI 서비스에서 온 referrer 는 AI 다 — 하위 도메인도', () => {
+    for (const host of [
+      'chatgpt.com',
+      'www.perplexity.ai',
+      'claude.ai',
+      'copilot.microsoft.com',
+      'chat.deepseek.com',
+      'wrtn.ai',
+    ]) {
+      expect(classifyChannel(none, host, SELF), host).toBe('ai');
+    }
+  });
+
+  it('Gemini 는 google 을 품어도 검색이 아니다 — 구글 검색은 그대로 검색', () => {
+    expect(classifyChannel(none, 'gemini.google.com', SELF)).toBe('ai');
+    expect(classifyChannel(none, 'www.google.com', SELF)).toBe('organic');
+  });
+
+  it('ChatGPT 가 붙이는 utm_source=chatgpt.com 은 referrer 가 비어도 AI 다', () => {
+    expect(
+      classifyChannel({ source: 'chatgpt.com', medium: null }, null, SELF),
+    ).toBe('ai');
+    expect(
+      classifyChannel({ source: 'perplexity', medium: 'referral' }, null, SELF),
+    ).toBe('ai');
+  });
+
+  it('AI 서비스 안의 광고는 캠페인이다 — 돈 주고 산 방문이 자연 유입이 되면 안 된다', () => {
+    expect(
+      classifyChannel({ source: 'chatgpt.com', medium: 'cpc' }, null, SELF),
+    ).toBe('campaign');
+  });
+
+  it('이름이 비슷한 남의 도메인은 AI 가 아니다', () => {
+    expect(classifyChannel(none, 'xmeta.ai', SELF)).toBe('referral');
+    // 이 호스트는 소셜 목록의 조각 `t.co` 에 걸려 소셜이 된다(IDE-039 이전부터
+    // 있던 조각 맞춤의 한계 — 이슈에 적었다). 여기서 보는 것은 AI 가 아니라는 것뿐이다.
+    expect(classifyChannel(none, 'notchatgpt.com', SELF)).not.toBe('ai');
+  });
+
+  it('관리자 화면에 이름이 있다', () => {
+    expect(CHANNEL_LABEL.ai).toBe('AI 검색·대화');
   });
 });

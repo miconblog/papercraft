@@ -25,16 +25,9 @@ import {
   channelOf,
   SHARE_PRESETS,
 } from '@/lib/analytics/shareLinks';
+import { CHANNEL_LABEL } from '@/lib/analytics/channel';
 
 const CUSTOM = 'custom';
-
-const CHANNEL_LABEL: Record<string, string> = {
-  direct: '직접 방문',
-  organic: '검색',
-  social: '소셜',
-  referral: '다른 사이트',
-  campaign: '캠페인(utm)',
-};
 
 export type ShareTarget = { path: string; label: string };
 
