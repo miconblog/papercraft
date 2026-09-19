@@ -86,6 +86,27 @@
 - [ ] GA 관리 > 데이터 수집 > **Google 신호**가 꺼져 있는지(코드도 끄지만 속성
       설정이 이긴다) · 데이터 보관 기간 · 서치 콘솔 연결
 
+## 6-2. 검색어 보기와 AI 유입 (15분) — `IDE-039`
+
+**검색어는 GA 가 아니라 여기서 본다.** 두 곳 모두 코드가 소유 확인 태그를 받을
+준비가 돼 있다(2026-09-19 운영 HTML 에는 아직 없다).
+
+- [ ] [Google Search Console](https://search.google.com/search-console) > 속성 추가 >
+      URL 접두어 `https://www.daddyscraft.com` > **HTML 태그** — `content="…"` 값만
+      배포 환경변수 `GOOGLE_SITE_VERIFICATION` 에 넣고 다시 배포 → 확인
+- [ ] Search Console > Sitemaps 에 `sitemap.xml` 제출
+- [ ] [네이버 서치어드바이저](https://searchadvisor.naver.com) > 사이트 등록 >
+      **HTML 태그** — 값을 `NAVER_SITE_VERIFICATION` 에 넣고 다시 배포 → 확인 →
+      요청 > 사이트맵 제출
+- [ ] GA 관리 > 제품 링크 > **Search Console 링크** — GA 보고서에서 검색어를 방문
+      이후 행동과 함께 본다(보고서는 하루 이틀 뒤부터)
+- [ ] GA 관리 > 데이터 표시 > 채널 그룹 > **새 채널 그룹** — 채널 `AI` 를 맨 위에,
+      조건 "소스가 정규식과 일치"
+      `chatgpt|openai|perplexity|claude|gemini|copilot|deepseek|grok|meta\.ai|mistral|wrtn|liner`
+      (기본 그룹은 AI 를 "추천"에 넣는다)
+- [ ] AI 답변에서 이 사이트 링크를 한 번 눌러 보고, 다음 날 대시보드 채널 표에
+      `AI 검색·대화` 가 서는지
+
 ## 7. 남에게 부탁할 것 (선택)
 
 - [ ] 다른 사람이 게임 화면에 댓글 → 관리자 사이드 메뉴 "댓글"에 숫자 → 승인하면
