@@ -1,5 +1,3 @@
-import Link from 'next/link';
-
 /** 모든 라우트 하단에 붙는 푸터. 왼쪽은 저작권, 오른쪽은 만든 도구 표기다.
  *
  * 만든 사람에게 닿는 메일 링크("게임 후기를 들려주세요")가 있던 자리를
@@ -44,17 +42,9 @@ export function SiteFooter() {
   return (
     <footer className="border-t border-border bg-secondary/40">
       <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <p>
-          © 2026 Daddy&apos;s Craft. All rights reserved
-          {/* 처리방침은 모든 화면에서 한 번에 닿아야 한다(IDE-038). */}
-          <span aria-hidden> · </span>
-          <Link
-            href="/privacy"
-            className="rounded-sm underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
-          >
-            개인정보처리방침
-          </Link>
-        </p>
+        {/* 개인정보처리방침 링크는 페이지와 함께 숨겨 두었다(IDE-038 ·
+            `components/PrivacyContent.tsx` 의 `PRIVACY_PAGE_OPEN`). */}
+        <p>© 2026 Daddy&apos;s Craft. All rights reserved</p>
         <p>
           Built with{' '}
           <a
