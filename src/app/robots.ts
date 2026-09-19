@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next';
+import { CRAWLERS } from '@/lib/analytics/crawlers';
 import { siteUrl } from '@/lib/site';
 
 /**
@@ -20,15 +21,34 @@ import { siteUrl } from '@/lib/site';
  *   새로 만들고**, `?margin=` 값마다 다른 주소라 끝이 없다.
  * - `/api/analytics/` — 방문 기록을 받는 곳이다. 페이지를 그리는 데 필요 없고,
  *   크롤러가 스크립트를 돌리며 보낸 기록은 통계만 흐린다.
+ *
+ * ## AI 검색 크롤러를 이름으로 적는다 (IDE-041)
+ *
+ * `*` 가 이미 모두에게 열려 있어 동작은 같다. 그래도 적는 것은 **의도를 밝히려고**
+ * 다 — AI 검색 색인(OAI-SearchBot · Claude-SearchBot · PerplexityBot …)과 사용자
+ * 대신 읽는 봇(ChatGPT-User …)에게 이 사이트를 읽어도 된다고 말해 둔다(사용자 요청
+ * 2026-09-19, AI 검색 최적화). 목록은 크롤러 표(`lib/analytics/crawlers.ts`)에서
+ * 읽는다 — 세는 목록과 여는 목록이 어긋나지 않게.
+ *
+ * **이름으로 적은 봇은 `*` 칸을 통째로 무시한다.** 그래서 막는 경로를 그 칸에도
+ * 똑같이 적는다(`DISALLOW`). 빼먹으면 그 봇에게만 `/admin` 이 열린다.
+ *
+ * 학습용 수집(GPTBot · ClaudeBot · CCBot …)은 따로 적지 않았다 — `*` 로 지금처럼
+ * 열려 있다. 막을지는 주인이 정할 일이라 결정 기록(`IDE-041`)에 남겼다.
  */
+const DISALLOW = ['/admin', '/api/print/', '/api/analytics/'];
+
+/** 이름으로 여는 봇 — AI 검색 색인과 사용자 대신 읽는 봇. */
+const AI_SEARCH_AGENTS = CRAWLERS.filter(
+  (crawler) => crawler.kind === 'ai-search' || crawler.kind === 'ai-user',
+).map((crawler) => crawler.token);
 export default function robots(): MetadataRoute.Robots {
   const base = siteUrl();
   return {
-    rules: {
-      userAgent: '*',
-      allow: '/',
-      disallow: ['/admin', '/api/print/', '/api/analytics/'],
-    },
+    rules: [
+      { userAgent: '*', allow: '/', disallow: DISALLOW },
+      { userAgent: AI_SEARCH_AGENTS, allow: '/', disallow: DISALLOW },
+    ],
     sitemap: `${base}/sitemap.xml`,
   };
 }

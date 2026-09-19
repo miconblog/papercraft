@@ -14,7 +14,7 @@
 | `todo`    | 0    |
 | `doing`   | 0    |
 | `blocked` | 4    |
-| `review`  | 18   |
+| `review`  | 19   |
 | `done`    | 18   |
 
 **지금 할 것** — [IDE-007](IDE-007-print-and-pdf-export.md)(인쇄·PDF 내보내기)은
@@ -430,7 +430,12 @@ Perplexity · Claude · Gemini 에서 온 방문을 따로 센다(전에는 Gemi
 돌리지 않아 방문 통계에 안 남는다 — 문지기가 UA 로 AI 검색 색인 · 사용자 대신 읽기 ·
 학습용 · 일반 검색을 가려 날짜 · 경로별 횟수만 센다(IP 없음). 대시보드에 "누가 읽어
 가나"와 AI 가 가장 많이 읽은 페이지가 선다. 마이그레이션 `015` 는 2026-09-19 **운영
-DB 에 적용했다**. 다음은 AI 가 읽기 좋게(`IDE-041`)다.
+DB 에 적용했다**.
+
+[IDE-041](IDE-041-ai-readable.md)(AI 가 읽기 좋게)이 `review`다. 사이트맵 · 구조화
+데이터 · RSS 는 이미 있어서, 빠진 둘을 더했다 — `/llms.txt` · `/llms-full.txt`(게임
+규칙 전문까지, 공개된 것만)와 robots.txt 의 AI 검색 크롤러 명시. 학습용 수집을
+막을지는 주인이 정할 일로 남겼다.
 ---
 
 ## M0 — 기반 (001–003)
@@ -492,6 +497,7 @@ DB 에 적용했다**. 다음은 AI 가 읽기 좋게(`IDE-041`)다.
 | [IDE-038](IDE-038-google-analytics.md)           | Google Analytics 4 — 자체 통계와 병행 · 개인정보처리방침      | frontend | P2   | 0.5d | `review` |
 | [IDE-039](IDE-039-ai-channel.md)                 | AI 채널 — AI 검색 · 대화에서 온 방문을 따로 세기              | backend  | P1   | 0.5d | `review` |
 | [IDE-040](IDE-040-crawler-log.md)                | 누가 읽어 가나 — AI · 검색 크롤러 방문 기록                   | backend  | P1   | 1d   | `review` |
+| [IDE-041](IDE-041-ai-readable.md)                | AI 가 읽기 좋게 — llms.txt · robots 의 AI 검색 크롤러         | frontend | P2   | 0.5d | `review` |
 
 ---
 
