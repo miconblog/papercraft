@@ -42,6 +42,8 @@ export function SiteFooter() {
   return (
     <footer className="border-t border-border bg-secondary/40">
       <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        {/* 개인정보처리방침 링크는 페이지와 함께 숨겨 두었다(IDE-038 ·
+            `components/PrivacyContent.tsx` 의 `PRIVACY_PAGE_OPEN`). */}
         <p>© 2026 Daddy&apos;s Craft. All rights reserved</p>
         <p>
           Built with{' '}

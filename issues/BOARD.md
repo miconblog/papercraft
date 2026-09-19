@@ -14,7 +14,7 @@
 | `todo`    | 0    |
 | `doing`   | 0    |
 | `blocked` | 4    |
-| `review`  | 15   |
+| `review`  | 16   |
 | `done`    | 18   |
 
 **지금 할 것** — [IDE-007](IDE-007-print-and-pdf-export.md)(인쇄·PDF 내보내기)은
@@ -413,6 +413,12 @@ PostgREST 로 읽는 길까지 확인). 남은 것은 **카카오 키·도메인
 올린다. 마이그레이션 `013` 은 2026-09-19 **운영 DB 에 적용했다**(RLS · 권한 ·
 PostgREST 로 읽는 길까지 확인). 남은 것은 개발자 앱 등록 · 키 · 실제로 한 편 올려 보기다.
 사람 손이 필요한 확인은 [docs/manual-checks.md](../docs/manual-checks.md)에 모았다.
+
+[IDE-038](IDE-038-google-analytics.md)(GA4)이 `review`다. 사용자 요청(2026-09-19) —
+`IDE-013` 의 "외부 도구 안 붙임"을 **병행**으로 바꿨다. 운영 배포에서만 싣고, 관리자
+브라우저와 `/admin` 은 GA 의 끄기 스위치로 빼며, 광고 신호는 끈다. 처리방침
+(`/privacy`)은 만들어 두었지만 사용자 결정으로 **숨겨 두었다**(로그인 기능 때 연다).
+남은 것은 배포 뒤 실시간 보고서 확인이다.
 ---
 
 ## M0 — 기반 (001–003)
@@ -471,6 +477,7 @@ PostgREST 로 읽는 길까지 확인). 남은 것은 개발자 앱 등록 · �
 | [IDE-035](IDE-035-download-funnel.md)            | PDF 다운로드 퍼널 — 편집 시작 · 출력 창 · 내보내기 실패       | backend  | P1   | 1d   | `review` |
 | [IDE-036](IDE-036-editor-unsaved-guard.md)       | 저장 안 한 글을 두고 떠나기 전에 묻기                         | frontend | P2   | 0.5d | `review` |
 | [IDE-037](IDE-037-linkedin-auto-post.md)         | 링크드인에 바로 올리기 — SNS 자동 게시 첫 단추                | backend  | P2   | 1.5d | `review` |
+| [IDE-038](IDE-038-google-analytics.md)           | Google Analytics 4 — 자체 통계와 병행 · 개인정보처리방침      | frontend | P2   | 0.5d | `review` |
 
 ---
 
