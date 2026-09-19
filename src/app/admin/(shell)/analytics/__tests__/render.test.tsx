@@ -16,8 +16,10 @@ vi.mock('@/lib/analytics/session', async (original) => ({
 }));
 
 const loadReport = vi.fn();
+const loadCrawls = vi.fn();
 vi.mock('@/lib/analytics/report', () => ({
   loadReport: (range: unknown) => loadReport(range),
+  loadCrawls: (range: unknown) => loadCrawls(range),
 }));
 vi.mock('@/lib/analytics/visitor', async (original) => ({
   ...(await original()),
@@ -58,6 +60,7 @@ const draw = async (searchParams: Record<string, string>) =>
 beforeEach(() => {
   vi.stubEnv('ANALYTICS_ADMIN_PASSWORD', 'pw');
   loadReport.mockReset().mockResolvedValue(REPORT);
+  loadCrawls.mockReset().mockResolvedValue({ crawlers: [], aiPaths: [] });
 });
 
 describe('AnalyticsPage — 기간과 나라', () => {
@@ -115,5 +118,47 @@ describe('AnalyticsPage — 기간과 나라', () => {
     await draw({});
     expect(screen.queryByRole('img', { name: /나라별/ })).toBeNull();
     expect(screen.getByText(/011-daily-country.sql/)).toBeInTheDocument();
+  });
+});
+
+/** 누가 읽어 가나 (IDE-040) */
+describe('AnalyticsPage — 크롤러', () => {
+  it('크롤러마다 종류 · 요청 · 읽은 페이지를, AI 가 읽은 페이지를 따로 보인다', async () => {
+    loadCrawls.mockResolvedValue({
+      crawlers: [
+        {
+          id: 'googlebot',
+          vendor: 'Google',
+          kind: 'search',
+          hits: 9,
+          pages: 2,
+          lastSeen: '2026-09-19T01:00:00Z',
+        },
+        {
+          id: 'oai-searchbot',
+          vendor: 'OpenAI',
+          kind: 'ai-search',
+          hits: 3,
+          pages: 1,
+          lastSeen: '2026-09-19T02:00:00Z',
+        },
+      ],
+      aiPaths: [{ path: '/games/soccer', hits: 3 }],
+    });
+    await draw({});
+    expect(
+      screen.getByRole('heading', { name: /누가 읽어 가나/ }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('oai-searchbot')).toBeInTheDocument();
+    expect(screen.getByText('AI 검색 색인')).toBeInTheDocument();
+    expect(screen.getByText('/games/soccer')).toBeInTheDocument();
+  });
+
+  it('크롤러 표를 못 읽으면 그 칸에만 안내를 띄운다', async () => {
+    loadCrawls.mockResolvedValue(null);
+    await draw({});
+    expect(screen.getByText(/015/)).toBeInTheDocument();
+    // 나머지 통계는 그대로 선다.
+    expect(screen.getByText('순 페이지뷰')).toBeInTheDocument();
   });
 });

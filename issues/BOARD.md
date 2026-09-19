@@ -14,7 +14,7 @@
 | `todo`    | 0    |
 | `doing`   | 0    |
 | `blocked` | 4    |
-| `review`  | 17   |
+| `review`  | 18   |
 | `done`    | 18   |
 
 **지금 할 것** — [IDE-007](IDE-007-print-and-pdf-export.md)(인쇄·PDF 내보내기)은
@@ -425,7 +425,12 @@ PostgREST 로 읽는 길까지 확인). 남은 것은 개발자 앱 등록 · �
 사용자에게 맡겼고, AI 는 **재는 것부터** 한다. 여섯째 채널 `ai` 를 열어 ChatGPT ·
 Perplexity · Claude · Gemini 에서 온 방문을 따로 센다(전에는 Gemini 가 검색으로
 샜다). 마이그레이션 `014` 는 2026-09-19 **운영 DB 에 적용했다**(앱보다 먼저).
-다음은 AI 크롤러 방문 기록(`IDE-040`) · AI 가 읽기 좋게(`IDE-041`)다.
+
+[IDE-040](IDE-040-crawler-log.md)(크롤러 기록)이 `review`다. 크롤러는 자바스크립트를
+돌리지 않아 방문 통계에 안 남는다 — 문지기가 UA 로 AI 검색 색인 · 사용자 대신 읽기 ·
+학습용 · 일반 검색을 가려 날짜 · 경로별 횟수만 센다(IP 없음). 대시보드에 "누가 읽어
+가나"와 AI 가 가장 많이 읽은 페이지가 선다. 마이그레이션 `015` 는 2026-09-19 **운영
+DB 에 적용했다**. 다음은 AI 가 읽기 좋게(`IDE-041`)다.
 ---
 
 ## M0 — 기반 (001–003)
@@ -486,6 +491,7 @@ Perplexity · Claude · Gemini 에서 온 방문을 따로 센다(전에는 Gemi
 | [IDE-037](IDE-037-linkedin-auto-post.md)         | 링크드인에 바로 올리기 — SNS 자동 게시 첫 단추                | backend  | P2   | 1.5d | `review` |
 | [IDE-038](IDE-038-google-analytics.md)           | Google Analytics 4 — 자체 통계와 병행 · 개인정보처리방침      | frontend | P2   | 0.5d | `review` |
 | [IDE-039](IDE-039-ai-channel.md)                 | AI 채널 — AI 검색 · 대화에서 온 방문을 따로 세기              | backend  | P1   | 0.5d | `review` |
+| [IDE-040](IDE-040-crawler-log.md)                | 누가 읽어 가나 — AI · 검색 크롤러 방문 기록                   | backend  | P1   | 1d   | `review` |
 
 ---
 

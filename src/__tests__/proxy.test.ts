@@ -330,3 +330,104 @@ describe('proxy · 아직 안 낸 글 (IDE-023)', () => {
     );
   });
 });
+
+/**
+ * 크롤러 세기 (IDE-040)
+ *
+ * AI 는 자바스크립트를 돌리지 않아 방문 통계에 안 남는다. 문지기가 UA 를 보고
+ * **응답을 보낸 뒤** 센다 — 세는 일이 응답을 바꾸면 안 된다.
+ */
+describe('크롤러 세기', () => {
+  const GPTBOT =
+    'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; GPTBot/1.2; +https://openai.com/gptbot';
+  const CHROME =
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36';
+
+  const crawlRequest = (path: string, ua: string) =>
+    new NextRequest(new URL(`https://daddyscraft.example${path}`), {
+      headers: { 'user-agent': ua },
+    });
+
+  /** `waitUntil` 에 넘긴 일을 모았다가 끝까지 기다린다. */
+  const event = () => {
+    const tasks: Promise<unknown>[] = [];
+    return {
+      waitUntil: (task: Promise<unknown>) => void tasks.push(task),
+      settle: () => Promise.all(tasks),
+      tasks,
+    };
+  };
+
+  const stubRpc = () => {
+    vi.stubEnv('SUPABASE_URL', 'https://example.supabase.co');
+    vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'service-role-key');
+    const fetchSpy = vi.fn(async () => new Response(null, { status: 204 }));
+    vi.stubGlobal('fetch', fetchSpy);
+    return fetchSpy;
+  };
+
+  const rpcCalls = (fetchSpy: ReturnType<typeof vi.fn>) =>
+    (fetchSpy.mock.calls as unknown as [string, RequestInit][]).filter(
+      ([url]) => String(url).includes('/rpc/record_crawl'),
+    );
+
+  it('홈에 온 GPTBot 을 센다 — 응답은 그냥 지나간다', async () => {
+    const fetchSpy = stubRpc();
+    const e = event();
+    const response = await proxy(
+      crawlRequest('/', GPTBOT),
+      e as unknown as Parameters<typeof proxy>[1],
+    );
+    await e.settle();
+
+    expect(response.headers.get('x-middleware-next')).toBe('1');
+    const [call] = rpcCalls(fetchSpy);
+    expect(call).toBeDefined();
+    expect(JSON.parse(String(call[1].body))).toMatchObject({
+      p_crawler: 'gptbot',
+      p_path: '/',
+    });
+    expect((call[1].headers as Record<string, string>)['Content-Profile']).toBe(
+      'daddys_craft',
+    );
+  });
+
+  it('사람의 브라우저는 세지 않는다', async () => {
+    stubRpc();
+    const e = event();
+    await proxy(
+      crawlRequest('/robots.txt', CHROME),
+      e as unknown as Parameters<typeof proxy>[1],
+    );
+    expect(e.tasks).toHaveLength(0);
+  });
+
+  it('관리자 경로는 세지 않는다', async () => {
+    stubRpc();
+    vi.stubEnv('ANALYTICS_ADMIN_PASSWORD', PASSWORD);
+    const e = event();
+    await proxy(
+      crawlRequest('/admin/analytics', GPTBOT),
+      e as unknown as Parameters<typeof proxy>[1],
+    );
+    expect(e.tasks).toHaveLength(0);
+  });
+
+  it('세기가 실패해도 응답은 멀쩡하다', async () => {
+    vi.stubEnv('SUPABASE_URL', 'https://example.supabase.co');
+    vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'service-role-key');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new Error('down');
+      }),
+    );
+    const e = event();
+    const response = await proxy(
+      crawlRequest('/sitemap.xml', GPTBOT),
+      e as unknown as Parameters<typeof proxy>[1],
+    );
+    await expect(e.settle()).resolves.toBeDefined();
+    expect(response.headers.get('x-middleware-next')).toBe('1');
+  });
+});
