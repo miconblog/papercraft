@@ -78,6 +78,28 @@ describe('robots.txt', () => {
     ).toBe(false);
   });
 
+  it('AI 검색 크롤러를 이름으로 열되, 그 칸도 같은 경로를 막는다 (IDE-041)', async () => {
+    const { default: robots } = await import('../robots');
+    const rules = [robots().rules].flat();
+    const ai = rules.find((rule) =>
+      [rule.userAgent].flat().includes('OAI-SearchBot'),
+    );
+    expect(ai).toBeDefined();
+    expect([ai?.userAgent].flat()).toEqual(
+      expect.arrayContaining([
+        'Claude-SearchBot',
+        'PerplexityBot',
+        'ChatGPT-User',
+      ]),
+    );
+    // 이름으로 적은 봇은 `*` 칸을 무시한다 — 빼먹으면 그 봇에게만 관리 화면이 열린다.
+    expect([ai?.disallow].flat()).toEqual(
+      expect.arrayContaining(['/admin', '/api/print/', '/api/analytics/']),
+    );
+    // 학습용 수집은 따로 적지 않는다(`*` 로 지금처럼 열려 있다).
+    expect([ai?.userAgent].flat()).not.toContain('GPTBot');
+  });
+
   it('사이트맵 주소를 알린다', async () => {
     const { default: robots } = await import('../robots');
     expect(robots().sitemap).toMatch(/\/sitemap\.xml$/);
