@@ -30,6 +30,7 @@ import { CUSTOM_SLOT } from './artwork/dynamic';
 import {
   BOARD,
   COURSE_PAR,
+  ROUND_SHEET,
   CUSTOM_HOLE,
   CUSTOM_HOLE_DEFAULTS,
   INK,
@@ -323,6 +324,25 @@ export default defineGame({
       minScale: 0.85,
       maxScale: 2,
       artwork: artworkPath(SCORE_CARD_PART_ID),
+    },
+    {
+      id: ROUND_SHEET.partId,
+      kind: 'sheet',
+      // 홀 판 묶음에 넣지 않는다 — 기록표와 나란히 서는 낱장이다.
+      title: '오늘의 라운드',
+      description:
+        'A4 세로 한 장. **사람마다 한 장씩** 뽑는다 — 그래프 선이 하나라 여럿이 ' +
+        '한 장을 나눠 쓸 수 없다. 홀이 끝날 때마다 누적 파차에 점을 찍어 이으면 ' +
+        '오늘 라운드가 선 하나가 되고, 0선 아래로 내려가면 언더파다. 아래 눈금자 ' +
+        '둘에는 라운드가 끝나고 낸 값을 찍는다 — 파와 견준 값, 지난 라운드와 견준 ' +
+        '값. 맨 아래에 10이 되는 짝 표가 있다. 오리거나 접지 않는다.',
+      widthMm: ROUND_SHEET.widthMm,
+      heightMm: ROUND_SHEET.heightMm,
+      orientation: 'portrait',
+      // 홀 번호 줄(2.6mm)이 하한을 정한다. ⚠︎ 실물 출력으로 재확인이 필요하다.
+      minScale: 0.9,
+      maxScale: 2,
+      artwork: artworkPath(ROUND_SHEET.partId),
     },
   ],
 

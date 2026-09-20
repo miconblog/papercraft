@@ -915,6 +915,149 @@ export const SUM_COLUMNS_MM: readonly number[] = [
   40, 30, 10, 30, 10, 34, 52, 61,
 ];
 
+/**
+ * 오늘의 라운드 — **사람마다 한 장**인 별지 (IDE-043)
+ *
+ * 사용자가 아이에게 음수를 손으로 그려 설명한 사진을 주며 청했다(2026-09-19).
+ * 기록표에 얹지 못한 까닭은 둘이다. 세로 여유가 3.5mm뿐이었고(IDE-042), 무엇보다
+ * **그래프는 사람마다 선이 하나**라 넷이 겹친다.
+ *
+ * 세 덩이가 위에서부터 그래프 · 눈금자 둘 · 10의 보수다. 순서가 그런 것은
+ * **치는 동안 쓰는 것이 위에** 있어야 하기 때문이다 — 그래프는 홀마다, 눈금자는
+ * 라운드가 끝나고, 10의 보수는 더할 때 곁눈질하는 표다.
+ */
+export const ROUND_SHEET = {
+  partId: 'round-sheet',
+  widthMm: 210,
+  heightMm: 297,
+  marginMm: 15,
+
+  titleYMm: 17,
+  titleFontMm: 7,
+  leadYMm: 25.5,
+  leadFontMm: 3,
+  /** 이름·날짜 줄. 아이가 직접 쓴다 — 기록표의 이름 칸과 같은 규칙. */
+  fieldYMm: 17,
+  fieldFontMm: 3.2,
+  fieldRuleMm: 26,
+
+  sectionFontMm: 4,
+  captionFontMm: 2.8,
+  noteFontMm: 2.6,
+} as const;
+
+/**
+ * 누적 파차 그래프.
+ *
+ * 세로 범위 −10~+40은 **실제 기록에서 왔다** — 어제 아이가 +27, 아빠가 +34였다.
+ * 0 아래로 10칸을 둔 것은 거기가 비어 있을 것을 알면서도 둔 자리다. **0의
+ * 아래가 무엇인지 보이는 것이 이 종이의 목적**이라서다.
+ */
+export const ROUND_CHART = {
+  xMm: 33,
+  yMm: 40,
+  widthMm: 155,
+  heightMm: 90,
+  /** 위에서부터 아래로 +40 → −10. */
+  topValue: 40,
+  bottomValue: -10,
+  /** 가로선과 눈금 글자가 붙는 간격. */
+  stepValue: 5,
+  labelStepValue: 10,
+  /** 홀 한 칸. 1번 홀이 `firstHoleXMm`, 이후 `holeStepMm`씩 간다. */
+  firstHoleXMm: 38,
+  holeStepMm: 8.5,
+} as const;
+
+/**
+ * 눈금자 둘 — 계산한 값에 점을 찍는 자리.
+ *
+ * 범위가 서로 다른 것이 요점이다. 파와 견주면 0이 왼쪽 끝에 치우치고(언더파는
+ * 한참 뒤에나 나온다), 지난번과 견주면 **0이 한가운데**다. 같은 종이에서 그
+ * 둘을 나란히 보는 것이 「0을 어디에 두느냐」를 말해 준다.
+ */
+export const ROUND_RULERS = {
+  xMm: 25,
+  widthMm: 160,
+  tickMm: 2.4,
+  zeroTickMm: 4.6,
+  /** 축 아래 눈금 글자와, 그 아래 0의 뜻. 시험이 덩이 사이 간격을 잴 때도 읽는다. */
+  labelDyMm: 6,
+  zeroNoteDyMm: 10.5,
+  /** 축 위 양쪽 끝의 말. */
+  endNoteDyMm: -5,
+} as const;
+
+export const PAR_RULER = {
+  titleYMm: 152,
+  axisYMm: 168,
+  min: -10,
+  max: 40,
+  stepValue: 5,
+  labelStepValue: 10,
+} as const;
+
+export const LAST_ROUND_RULER = {
+  titleYMm: 188,
+  axisYMm: 204,
+  min: -20,
+  max: 20,
+  stepValue: 5,
+  labelStepValue: 10,
+} as const;
+
+/**
+ * 10의 보수 — 사진 아래쪽에 그려 주신 그림 그대로.
+ *
+ * 위 줄 1~9, 아래 줄 9~1, 세로로 짝이 맞는다. 표만 있으면 장식이라 **쓰는 법
+ * 한 줄**을 반드시 곁에 둔다(2026-09-20 판단).
+ */
+export const TEN_PAIRS = {
+  titleYMm: 230,
+  howToYMm: 237.5,
+  exampleYMm: 284,
+  topRowYMm: 255,
+  bottomRowYMm: 265,
+  numberFontMm: 5,
+  /**
+   * 짝을 두르는 동그라미.
+   *
+   * 타원이 아니라 **원**인 것은 인쇄 파이프라인 때문이다 — `parseArtwork`가
+   * 읽는 요소는 `rect` · `line` · `circle` · `path` · `text` 뿐이고 `ellipse`는
+   * 없다(`lib/print/artwork.ts`). 화면에서만 보이고 PDF 에서 사라지느니
+   * 처음부터 원으로 그린다.
+   */
+  circleCyMm: 260,
+  circleRMm: 9,
+  count: 9,
+} as const;
+
+/** 짝의 가로 중심 — 아홉 칸이 작도 폭을 고르게 나눈다. */
+export const tenPairCenterX = (index: number): number => {
+  const inner = ROUND_SHEET.widthMm - ROUND_SHEET.marginMm * 2;
+  const step = inner / TEN_PAIRS.count;
+  return ROUND_SHEET.marginMm + step * (index + 0.5);
+};
+
+/** 누적 파차 값 → 그래프 안의 y. */
+export const chartValueY = (value: number): number =>
+  ROUND_CHART.yMm +
+  ((ROUND_CHART.topValue - value) /
+    (ROUND_CHART.topValue - ROUND_CHART.bottomValue)) *
+    ROUND_CHART.heightMm;
+
+/** 홀 번호(1~18) → 그래프 안의 x. */
+export const chartHoleX = (holeNumber: number): number =>
+  ROUND_CHART.firstHoleXMm + ROUND_CHART.holeStepMm * (holeNumber - 1);
+
+/** 눈금자 값 → x. `min`이 왼쪽 끝, `max`가 오른쪽 끝이다. */
+export const rulerValueX = (
+  value: number,
+  ruler: { min: number; max: number },
+): number =>
+  ROUND_RULERS.xMm +
+  ((value - ruler.min) / (ruler.max - ruler.min)) * ROUND_RULERS.widthMm;
+
 /** 에디터의 이름 칸에 붙는 말. 기록표에는 이 말이 아니라 숫자 1~4만 인쇄된다. */
 export const PLAYER_LABELS: readonly string[] = [
   '1번 선수',

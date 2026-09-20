@@ -361,7 +361,10 @@ function renderSumBox(): string[] {
                     fill: 'none',
                     stroke: RULE_COLOR,
                     'stroke-width': 0.3,
-                    rx: 1,
+                    // 둥근 모서리(`rx`)를 주지 않는다 — `parseArtwork`의 `rect`가
+                    // x·y·width·height만 읽어 PDF 에서는 각진 네모로 나온다.
+                    // 화면과 종이가 달라지느니 양쪽 다 각지게 둔다(IDE-043에서
+                    // 발견).
                   },
                 )
               : text(piece.value, centers[index], y, SCORE_CARD.sumFontMm, {
