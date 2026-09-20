@@ -127,43 +127,79 @@
 <text x="18.5" y="139" font-size="3.4" dominant-baseline="central" fill="#6b7280" text-anchor="middle">3</text>
 <text x="18.5" y="150" font-size="3.4" dominant-baseline="central" fill="#6b7280" text-anchor="middle">4</text>
 <g fill="none" stroke="#6b7280" stroke-width="0.3">
-<line x1="15" y1="162" x2="15" y2="204" />
-<line x1="71" y1="162" x2="71" y2="204" />
-<line x1="105" y1="162" x2="105" y2="204" />
-<line x1="117" y1="162" x2="117" y2="204" />
-<line x1="151" y1="162" x2="151" y2="204" />
-<line x1="163" y1="162" x2="163" y2="204" />
-<line x1="201" y1="162" x2="201" y2="204" />
-<line x1="282" y1="162" x2="282" y2="204" />
-<line x1="15" y1="162" x2="282" y2="162" />
+<line x1="15" y1="159" x2="15" y2="204" />
+<line x1="55" y1="159" x2="55" y2="204" />
+<line x1="85" y1="159" x2="85" y2="204" />
+<line x1="95" y1="159" x2="95" y2="204" />
+<line x1="125" y1="159" x2="125" y2="204" />
+<line x1="135" y1="159" x2="135" y2="204" />
+<line x1="169" y1="159" x2="169" y2="204" />
+<line x1="221" y1="159" x2="221" y2="204" />
+<line x1="282" y1="159" x2="282" y2="204" />
+<line x1="15" y1="159" x2="282" y2="159" />
 <line x1="15" y1="204" x2="282" y2="204" />
+<line x1="169" y1="159" x2="169" y2="204" stroke="#1a1a1a" stroke-width="0.5" />
 <line x1="15" y1="170" x2="282" y2="170" stroke="#1a1a1a" stroke-width="0.5" />
 <line x1="15" y1="178.5" x2="282" y2="178.5" stroke="#6b7280" stroke-width="0.3" />
 <line x1="15" y1="187" x2="282" y2="187" stroke="#6b7280" stroke-width="0.3" />
 <line x1="15" y1="195.5" x2="282" y2="195.5" stroke="#6b7280" stroke-width="0.3" />
 </g>
-<text x="43" y="166" font-size="3.4" dominant-baseline="central" fill="#6b7280" text-anchor="middle">이름</text>
-<text x="88" y="166" font-size="3.4" dominant-baseline="central" fill="#6b7280" text-anchor="middle">전반(OUT)</text>
-<text x="134" y="166" font-size="3.4" dominant-baseline="central" fill="#6b7280" text-anchor="middle">후반(IN)</text>
-<text x="182" y="166" font-size="3.4" dominant-baseline="central" fill="#6b7280" text-anchor="middle">총타수</text>
-<text x="241.5" y="166" font-size="3.4" dominant-baseline="central" fill="#6b7280" text-anchor="middle">파 72와 견주기</text>
+<text x="35" y="163.2" font-size="3.4" dominant-baseline="central" fill="#6b7280" text-anchor="middle">이름</text>
+<text x="70" y="163.2" font-size="3.4" dominant-baseline="central" fill="#6b7280" text-anchor="middle">전반(OUT)</text>
+<text x="110" y="163.2" font-size="3.4" dominant-baseline="central" fill="#6b7280" text-anchor="middle">후반(IN)</text>
+<text x="152" y="163.2" font-size="3.4" dominant-baseline="central" fill="#6b7280" text-anchor="middle">총타수</text>
+<text x="195" y="163.2" font-size="3.4" dominant-baseline="central" fill="#6b7280" text-anchor="middle">파 72와 견주기</text>
+<text x="180.74" y="167.2" font-size="2.6" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">총타수</text>
+<text x="209.26" y="167.2" font-size="2.6" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">+ 오버파 − 언더파</text>
+<text x="251.5" y="163.2" font-size="3.4" dominant-baseline="central" fill="#6b7280" text-anchor="middle">지난번과 견주기</text>
+<text x="230.63" y="167.2" font-size="2.6" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">총타수</text>
+<text x="251.5" y="167.2" font-size="2.6" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">지난 라운드</text>
+<text x="272.37" y="167.2" font-size="2.6" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">−면 잘 쳤다</text>
 <text x="18.5" y="174.25" font-size="3.4" dominant-baseline="central" fill="#6b7280" text-anchor="middle">1</text>
-<text x="111" y="174.25" font-size="5" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">+</text>
-<text x="157" y="174.25" font-size="5" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">=</text>
-<text x="215" y="174.25" font-size="3.4" dominant-baseline="central" fill="#6b7280" text-anchor="middle">− 72 =</text>
+<text x="90" y="174.25" font-size="5" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">+</text>
+<text x="130" y="174.25" font-size="5" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">=</text>
+<rect x="173.24" y="171.5" width="15" height="5.5" fill="none" stroke="#6b7280" stroke-width="0.3" rx="1" />
+<text x="195" y="174.25" font-size="3.4" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">− 72 =</text>
+<rect x="201.76" y="171.5" width="15" height="5.5" fill="none" stroke="#6b7280" stroke-width="0.3" rx="1" />
+<rect x="223.13" y="171.5" width="15" height="5.5" fill="none" stroke="#6b7280" stroke-width="0.3" rx="1" />
+<text x="241.065" y="174.25" font-size="3.4" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">−</text>
+<rect x="244" y="171.5" width="15" height="5.5" fill="none" stroke="#6b7280" stroke-width="0.3" rx="1" />
+<text x="261.935" y="174.25" font-size="3.4" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">=</text>
+<rect x="264.87" y="171.5" width="15" height="5.5" fill="none" stroke="#6b7280" stroke-width="0.3" rx="1" />
 <text x="18.5" y="182.75" font-size="3.4" dominant-baseline="central" fill="#6b7280" text-anchor="middle">2</text>
-<text x="111" y="182.75" font-size="5" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">+</text>
-<text x="157" y="182.75" font-size="5" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">=</text>
-<text x="215" y="182.75" font-size="3.4" dominant-baseline="central" fill="#6b7280" text-anchor="middle">− 72 =</text>
+<text x="90" y="182.75" font-size="5" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">+</text>
+<text x="130" y="182.75" font-size="5" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">=</text>
+<rect x="173.24" y="180" width="15" height="5.5" fill="none" stroke="#6b7280" stroke-width="0.3" rx="1" />
+<text x="195" y="182.75" font-size="3.4" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">− 72 =</text>
+<rect x="201.76" y="180" width="15" height="5.5" fill="none" stroke="#6b7280" stroke-width="0.3" rx="1" />
+<rect x="223.13" y="180" width="15" height="5.5" fill="none" stroke="#6b7280" stroke-width="0.3" rx="1" />
+<text x="241.065" y="182.75" font-size="3.4" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">−</text>
+<rect x="244" y="180" width="15" height="5.5" fill="none" stroke="#6b7280" stroke-width="0.3" rx="1" />
+<text x="261.935" y="182.75" font-size="3.4" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">=</text>
+<rect x="264.87" y="180" width="15" height="5.5" fill="none" stroke="#6b7280" stroke-width="0.3" rx="1" />
 <text x="18.5" y="191.25" font-size="3.4" dominant-baseline="central" fill="#6b7280" text-anchor="middle">3</text>
-<text x="111" y="191.25" font-size="5" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">+</text>
-<text x="157" y="191.25" font-size="5" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">=</text>
-<text x="215" y="191.25" font-size="3.4" dominant-baseline="central" fill="#6b7280" text-anchor="middle">− 72 =</text>
+<text x="90" y="191.25" font-size="5" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">+</text>
+<text x="130" y="191.25" font-size="5" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">=</text>
+<rect x="173.24" y="188.5" width="15" height="5.5" fill="none" stroke="#6b7280" stroke-width="0.3" rx="1" />
+<text x="195" y="191.25" font-size="3.4" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">− 72 =</text>
+<rect x="201.76" y="188.5" width="15" height="5.5" fill="none" stroke="#6b7280" stroke-width="0.3" rx="1" />
+<rect x="223.13" y="188.5" width="15" height="5.5" fill="none" stroke="#6b7280" stroke-width="0.3" rx="1" />
+<text x="241.065" y="191.25" font-size="3.4" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">−</text>
+<rect x="244" y="188.5" width="15" height="5.5" fill="none" stroke="#6b7280" stroke-width="0.3" rx="1" />
+<text x="261.935" y="191.25" font-size="3.4" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">=</text>
+<rect x="264.87" y="188.5" width="15" height="5.5" fill="none" stroke="#6b7280" stroke-width="0.3" rx="1" />
 <text x="18.5" y="199.75" font-size="3.4" dominant-baseline="central" fill="#6b7280" text-anchor="middle">4</text>
-<text x="111" y="199.75" font-size="5" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">+</text>
-<text x="157" y="199.75" font-size="5" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">=</text>
-<text x="215" y="199.75" font-size="3.4" dominant-baseline="central" fill="#6b7280" text-anchor="middle">− 72 =</text>
-<text x="148.5" y="207.5" font-size="2.8" dominant-baseline="central" fill="#6b7280" text-anchor="middle">홀마다 친 횟수를 적는다. 아홉 칸을 더해 OUT과 IN을 내고, 둘을 더하면 총타수다. 총타수에서 72를 빼면 오늘의 성적 — 적을수록 잘 친 것이다.</text>
+<text x="90" y="199.75" font-size="5" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">+</text>
+<text x="130" y="199.75" font-size="5" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">=</text>
+<rect x="173.24" y="197" width="15" height="5.5" fill="none" stroke="#6b7280" stroke-width="0.3" rx="1" />
+<text x="195" y="199.75" font-size="3.4" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">− 72 =</text>
+<rect x="201.76" y="197" width="15" height="5.5" fill="none" stroke="#6b7280" stroke-width="0.3" rx="1" />
+<rect x="223.13" y="197" width="15" height="5.5" fill="none" stroke="#6b7280" stroke-width="0.3" rx="1" />
+<text x="241.065" y="199.75" font-size="3.4" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">−</text>
+<rect x="244" y="197" width="15" height="5.5" fill="none" stroke="#6b7280" stroke-width="0.3" rx="1" />
+<text x="261.935" y="199.75" font-size="3.4" dominant-baseline="central" fill="#1a1a1a" text-anchor="middle">=</text>
+<rect x="264.87" y="197" width="15" height="5.5" fill="none" stroke="#6b7280" stroke-width="0.3" rx="1" />
+<text x="148.5" y="207.5" font-size="2.8" dominant-baseline="central" fill="#6b7280" text-anchor="middle">홀마다 친 횟수를 적는다. 아홉 칸을 더해 OUT과 IN을 내고, 둘을 더하면 총타수다. 거기서 72를 빼면 오늘의 성적이고, 지난 라운드를 빼면 지난번보다 나아진 만큼이다.</text>
 </g>
 <g id="pc-slot" />
 </svg>
