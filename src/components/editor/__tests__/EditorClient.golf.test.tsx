@@ -30,6 +30,24 @@ const previewBox = (): HTMLElement =>
   screen.getByRole('group', { name: /미리보기 —/ }) as HTMLElement;
 
 describe('골프 — 홀 열여덟 장을 셀렉트로 고른다', () => {
+  it('고른 홀 셀렉트가 다크에서도 읽힌다', () => {
+    render(<EditorClient game={game} />);
+    const holes = screen.getByLabelText('홀 판 고르기');
+
+    // 1번 홀을 보고 있으니 눌린 차림이다 — 단추와 같은 주황 바탕.
+    expect(holes.className).toContain('bg-primary');
+    expect(holes.className).toContain('text-primary-foreground');
+
+    // 트리거의 기본 차림(`dark:bg-input/…`)이 살아남으면 다크에서 배경만 어두운
+    // 채로 남고, 글자는 `--primary-foreground`(다크에서 거의 검정)라 읽히지
+    // 않는다(2026-09-20 사용자 제보). `cn`이 걷어냈는지 여기서 본다.
+    expect(holes.className).not.toMatch(/dark:bg-input/);
+    expect(holes.className).not.toMatch(/dark:hover:bg-input/);
+
+    // 화살표는 트리거가 회색으로 박아 둔다 — 주황 바탕에서 묻히지 않게 넘긴다.
+    expect(holes.className).toContain('[&_svg]:text-primary-foreground');
+  });
+
   it('홀 판은 셀렉트 하나로 접히고 나머지 파트는 단추로 남는다', () => {
     render(<EditorClient game={game} />);
 
