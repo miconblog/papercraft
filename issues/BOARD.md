@@ -14,8 +14,8 @@
 | `todo`    | 0    |
 | `doing`   | 0    |
 | `blocked` | 4    |
-| `review`  | 20   |
-| `done`    | 19   |
+| `review`  | 19   |
+| `done`    | 20   |
 
 **지금 할 것** — [IDE-007](IDE-007-print-and-pdf-export.md)(인쇄·PDF 내보내기)은
 2026-09-07 사용자가 종이 실측·Safari·Firefox 확인을 마쳐 `done`이 됐다. 남은 것은
@@ -477,7 +477,7 @@ DB 에 적용했다**.
 | [IDE-031](IDE-031-golf-custom-hole.md)                     | 나만의 홀 — 판 위에서 끌어 짓는 골프 홀        | frontend | P1   | 2d   | `review`  |
 | [IDE-032](IDE-032-golf-penalty-marks-on-ground.md)         | 땅이 제 처분을 말한다 · 없어도 되는 것 빼기    | content  | P1   | 1d   | `review`  |
 | [IDE-042](IDE-042-golf-score-sign-and-personal-best.md)    | 골프 기록표 — 부호 방향 · 지난번의 나와 견주기 | content  | P1   | 1d   | `done`    |
-| [IDE-043](IDE-043-golf-round-chart-sheet.md)               | 오늘의 라운드 — 눈금자 · 꺾은선 · 10의 보수    | content  | P2   | 1d   | `review`  |
+| [IDE-043](IDE-043-golf-round-chart-sheet.md)               | 오늘의 라운드 — 눈금자 · 꺾은선 · 10의 보수    | content  | P2   | 1d   | `done`    |
 
 ## M3 — 운영: 예약 공개 · 공방 일지 · 수집 다듬기 (022–030)
 
