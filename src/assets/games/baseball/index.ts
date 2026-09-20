@@ -26,100 +26,34 @@
 import { defineGame } from '@/lib/schema';
 import { RULES } from './rules';
 import {
+  abilityRoomMm,
+  ABILITY_BUDGET_MM,
   artworkPath,
   BOARD,
+  DEFAULT_RULE_SET,
+  DEFAULT_SHIFT,
   DEFENSE_POSITIONS,
+  DEFENSE_REACH,
+  DEFENSE_SHIFTS,
+  defenseSlotId,
+  ABILITY_SLOT_ID,
+  RULE_SET_SLOT_ID,
   FIELDER_CIRCLE_ARTWORK_ID,
   FIELDER_POSES,
   markerArtworkId,
   PLAY_AREA,
   PLAYER_MARKER,
   poseStyleSetId,
+  RULE_SETS,
   SHEETS,
 } from './dimensions';
 
 const FIELD_PART_ID = 'field';
 const PLAY_REGION_ID = 'fair-territory';
 
-const defenseSlotId = (positionId: string): string => `defense-${positionId}`;
-
-/**
- * 수비 시프트 — 판에 서는 여덟 명의 좌표 한 벌.
- *
- * 순서가 `DEFENSE_POSITIONS`와 같다. 좌표는 눈으로 맞춘 뒤 마커 상자(20×22mm)가
- * 서로 닿지 않는지 확인한 값이고, 그 확인은 `parseGame`이 등록 때 다시 한다 —
- * 겹치는 시프트는 등록되는 순간 예외로 터진다.
- *
- * 야구에서 수비 위치는 **타자에 따라 바뀌는 전술**이다. 그래서 프리셋 이름이
- * 진영이 아니라 상황이다 — 번트를 대비하면 내야가 앞으로 나오고, 장타를
- * 경계하면 외야가 담장까지 물러선다. 판을 처음 열었을 때는 기본 수비다.
- */
-const SHIFTS: ReadonlyArray<{
-  readonly id: string;
-  readonly label: string;
-  /** `DEFENSE_POSITIONS` 순서대로 [x, y]. */
-  readonly positions: ReadonlyArray<readonly [number, number]>;
-}> = [
-  {
-    id: 'standard',
-    label: '기본 수비',
-    positions: [
-      [105, 210], // 투수 — 마운드
-      [158, 194], // 1루수
-      [145, 144], // 2루수 — 1·2루 사이 베이스라인 뒤
-      [52, 194], // 3루수
-      [65, 144], // 유격수 — 2·3루 사이 베이스라인 뒤
-      [35, 82], // 좌익수
-      [105, 62], // 중견수
-      [175, 82], // 우익수
-    ],
-  },
-  {
-    id: 'infield-in',
-    label: '내야 전진',
-    positions: [
-      [105, 210],
-      [150, 214],
-      [135, 174],
-      [60, 214],
-      [75, 174],
-      [35, 82],
-      [105, 62],
-      [175, 82],
-    ],
-  },
-  {
-    id: 'no-doubles',
-    label: '장타 경계',
-    positions: [
-      [105, 210],
-      [165, 184],
-      [140, 149],
-      [45, 184],
-      [70, 149],
-      [28, 55],
-      [105, 38],
-      [182, 55],
-    ],
-  },
-  {
-    id: 'pull-shift',
-    label: '당겨치기 시프트',
-    positions: [
-      [105, 210],
-      [162, 199],
-      [150, 154],
-      [62, 184],
-      [112, 152],
-      [60, 88],
-      [125, 58],
-      [185, 92],
-    ],
-  },
-];
-
-/** 슬롯의 기본 좌표는 기본 수비다 — 첫 화면이 곧 쓸 수 있는 배치여야 한다. */
-const DEFAULT_SHIFT = SHIFTS[0];
+// 수비 시프트(`DEFENSE_SHIFTS`)와 기본 배치는 `./dimensions.ts`에 있다 —
+// 실제 야구 규칙의 수비 범위 원이 같은 좌표를 중심으로 그려지므로 아트워크
+// 생성기도 그것을 읽어야 한다(IDE-044).
 
 /**
  * 등번호 슬롯의 공통 모양.
@@ -231,6 +165,61 @@ const TEAMS = [
  * `groupColorOf`). 스코어보드에 색 막대를 두지 않은 것도 같은 이유다 — 팀 이름을
  * 아이가 직접 쓰는 자리라 색이 미리 정해져 있으면 오히려 걸린다.
  */
+/**
+ * 규칙 한 벌 고르기 (IDE-044)
+ *
+ * **파트 변형이 아니라 선택 슬롯이다.** 스키마가 "변형(variants)과
+ * 동적(dynamic)은 함께 쓰지 않는다"로 막는데 야구장은 능력치 배분 때문에 이미
+ * 동적이라, 규칙도 같은 렌더러가 값으로 읽는 편이 맞다. 크기가 바뀌는 것이
+ * 아니라 **같은 종이 위 그림만** 갈리는 일이기도 하다.
+ *
+ * 기본값이 `basic`이고, 기본 규칙 판은 IDE-014가 그린 야구장과 **바이트까지
+ * 같다** — 카탈로그 썸네일과 소개 페이지가 보는 정적 파일이 그것이다.
+ */
+const ruleSetSlot = {
+  id: RULE_SET_SLOT_ID,
+  kind: 'choice' as const,
+  label: '규칙',
+  help:
+    '실제 야구 규칙을 고르면 수비수마다 수비 범위 원이 그려지고, 땅볼 아웃·병살·' +
+    '뜬공 아웃·선상 2루타·번트를 판으로 판정한다. 기본 규칙 판은 지금 야구장 그대로다.',
+  options: RULE_SETS.map((set) => ({ value: set.id, label: set.label })),
+  default: DEFAULT_RULE_SET,
+  placements: [{ partId: FIELD_PART_ID, mode: 'control' as const }],
+};
+
+/**
+ * 팀 수비 능력치 — 여덟 자리에 나눠 주는 mm (2026-09-20 사용자 요청).
+ *
+ * **예산 슬롯의 첫 사용처**다(`lib/schema/slots.ts`의 `budgetSlot`). 숫자 슬롯
+ * 여덟으로는 합에 상한을 둘 수 없고, 합을 도안 밖에서 보면 에디터가 "남은 4mm"를
+ * 그리려고 그 규칙을 화면에서 다시 알아야 한다.
+ *
+ * 기본 규칙에서는 값이 그림을 바꾸지 않는다 — 범위 원 자체가 없다. 그래도 슬롯을
+ * 숨기지는 않는다: 규칙을 바꿔 보는 사람이 같은 화면에서 둘을 함께 만진다.
+ */
+const abilitySlot = {
+  id: ABILITY_SLOT_ID,
+  kind: 'budget' as const,
+  label: '팀 수비 능력치',
+  help:
+    `여덟 자리에 합쳐서 ${ABILITY_BUDGET_MM}mm를 나눠 준다. 한 자리는 ` +
+    `${abilityRoomMm('infield')}mm까지 올릴 수 있다 — 내야는 ` +
+    `${DEFENSE_REACH.infield.baseMm}에서 ${DEFENSE_REACH.infield.maxMm}mm, 외야는 ` +
+    `${DEFENSE_REACH.outfield.baseMm}에서 ${DEFENSE_REACH.outfield.maxMm}mm다. ` +
+    '실제 야구 규칙에서만 판에 나타난다.',
+  items: DEFENSE_POSITIONS.map((position) => ({
+    id: position.id,
+    label: position.label,
+    max: abilityRoomMm(position.zone),
+  })),
+  total: ABILITY_BUDGET_MM,
+  unit: 'mm',
+  // 아무에게도 주지 않은 상태가 기본이다 — 첫 화면이 곧 기본 수비다.
+  default: DEFENSE_POSITIONS.map(() => 0),
+  placements: [{ partId: FIELD_PART_ID, mode: 'control' as const }],
+};
+
 const teamColorSlots = TEAMS.map((team) => ({
   id: `${team.id}-color`,
   kind: 'color' as const,
@@ -275,6 +264,13 @@ export default defineGame({
       // 타순표의 번호(3.4mm)가 하한을 정한다. 절반으로 줄이면 1.7mm다.
       minScale: 0.5,
       maxScale: 4,
+      // 판을 값에서 그린다 (IDE-044) — 규칙 한 벌과 능력치 배분이 그림을
+      // 바꾸고, 수비 범위 원은 마커를 끌면 따라 움직인다. 크기는 A4 세로로
+      // 고정이라 `sizeSteps`가 없다(점 잇기·나만의 홀과 같다).
+      //
+      // `artwork`는 **기본 규칙·배분 없음으로 그린 정적 파일**이다 — 카탈로그
+      // 썸네일과 소개 페이지가 그것을 본다(`lib/schema/parts.ts`의 규약).
+      dynamic: {},
       artwork: artworkPath(FIELD_PART_ID),
       regions: [
         {
@@ -378,11 +374,13 @@ export default defineGame({
       default: 'outline',
       placements: [{ partId: FIELD_PART_ID, mode: 'control' }],
     },
+    ruleSetSlot,
+    abilitySlot,
     ...teamColorSlots,
     ...defenseSlots,
   ],
 
-  presets: SHIFTS.map((shift) => ({
+  presets: DEFENSE_SHIFTS.map((shift) => ({
     id: shift.id,
     label: shift.label,
     groupId: 'defense',

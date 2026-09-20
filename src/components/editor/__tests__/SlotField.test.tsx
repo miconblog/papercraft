@@ -171,3 +171,64 @@ describe('SlotField (IDE-006 — 슬롯 kind별 입력 컴포넌트)', () => {
     );
   });
 });
+
+describe('예산 슬롯 (IDE-044 — 나눠 주는데 합에 상한이 있다)', () => {
+  const budgetSlot: Slot = {
+    id: 'defense-ability',
+    label: '팀 수비 능력치',
+    tags: [],
+    placements: [{ partId: 'board', mode: 'control' }],
+    kind: 'budget',
+    items: [
+      { id: 'shortstop', label: '유격수', max: 6 },
+      { id: 'center', label: '중견수', max: 6 },
+      { id: 'right', label: '우익수', max: 6 },
+    ],
+    total: 10,
+    unit: 'mm',
+    default: [0, 0, 0],
+  };
+
+  const renderBudget = (value: number[], onChange = vi.fn()) => {
+    render(
+      <SlotField
+        slot={budgetSlot}
+        value={value}
+        error={null}
+        onChange={onChange}
+      />,
+    );
+    return onChange;
+  };
+
+  it('항목마다 입력이 하나씩, 남은 예산이 함께 보인다', () => {
+    renderBudget([4, 2, 0]);
+    for (const label of ['유격수', '중견수', '우익수']) {
+      expect(screen.getByLabelText(label)).toBeTruthy();
+    }
+    // 10에서 6을 썼으니 4가 남는다.
+    expect(screen.getByText('4mm')).toBeTruthy();
+  });
+
+  it('남은 예산까지만 올릴 수 있다 — 눌렀는데 곧장 오류가 되는 자리가 없다', () => {
+    renderBudget([4, 2, 0]);
+    // 자기 몫 2 + 남은 4 = 6이고 그것이 마침 한 자리 상한이다.
+    expect(screen.getByLabelText('중견수').getAttribute('max')).toBe('6');
+    // 아직 받지 않은 자리는 남은 예산만큼만 — 상한 6보다 작다.
+    expect(screen.getByLabelText('우익수').getAttribute('max')).toBe('4');
+  });
+
+  it('한 칸을 고치면 나머지는 그대로인 배열이 돌아온다', () => {
+    const onChange = renderBudget([4, 2, 0]);
+    fireEvent.change(screen.getByLabelText('우익수'), {
+      target: { value: '3' },
+    });
+    expect(onChange).toHaveBeenCalledWith([4, 2, 3]);
+  });
+
+  it('다 쓰면 남은 예산이 0이고 빈 자리는 더 못 받는다', () => {
+    renderBudget([6, 4, 0]);
+    expect(screen.getByText('0mm')).toBeTruthy();
+    expect(screen.getByLabelText('우익수').getAttribute('max')).toBe('0');
+  });
+});

@@ -45,3 +45,6 @@ next-env.d.ts
 /spikes/print-pipeline/assets/*.otf
 /spikes/print-pipeline/assets/*.ttf
 !.env.example
+
+# 야구 판정 영역 스파이크 (IDE-044) — 목업 SVG·PNG 는 언제든 재생성된다
+/spikes/baseball-rule-zones/out/
