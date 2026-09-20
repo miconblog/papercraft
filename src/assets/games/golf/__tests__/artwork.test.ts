@@ -55,11 +55,13 @@ import {
   SCORE_CARD,
   SCORE_TABLE_HEIGHT_MM,
   SCORE_TABLE_WIDTH_MM,
+  SUM_COLUMNS_MM,
   TEE_Y_MM,
   BOARD,
   cupPoint,
   greenCenter,
   holePartId,
+  sumColumnEdges,
   sumPar,
   sumYards,
   type HoleSpec,
@@ -67,6 +69,7 @@ import {
 import { RULES } from '../rules';
 import { PENALTY, termsForPar } from '../scoring';
 import { estimateTextWidthMm } from '../../../shared/svg';
+import { COMPARE_CELLS, pieceCenters, pieceWidth } from '../artwork/score-card';
 
 const game = getGame('golf')!;
 const partOf = (id: string) => findPart(game, id)!;
@@ -614,6 +617,116 @@ describe('기록표', () => {
       SCORE_CARD.sumRowMm * PLAYER_COUNT;
     expect(sumBottom).toBeLessThan(SCORE_CARD.footerYMm);
     expect(SCORE_CARD.footerYMm).toBeLessThan(SCORE_CARD.heightMm);
+  });
+
+  it('합산 칸의 열 경계가 표 폭과 꼭 맞는다 (IDE-042)', () => {
+    // 견주기 칸 둘이 붙으면서 이름 칸을 56→40mm로 줄였다. 합이 어긋나면 두
+    // 표와 세로선이 맞지 않아 한 장으로 안 읽힌다.
+    const sum = SUM_COLUMNS_MM.reduce((a, b) => a + b, 0);
+    expect(sum).toBe(SCORE_TABLE_WIDTH_MM);
+    const edges = sumColumnEdges();
+    expect(edges).toHaveLength(SUM_COLUMNS_MM.length + 1);
+    expect(edges[edges.length - 1]).toBe(
+      SCORE_CARD.tableXMm + SCORE_TABLE_WIDTH_MM,
+    );
+  });
+
+  it('합산 칸 글자와 네모가 제 칸을 넘지 않는다 (IDE-042)', () => {
+    // 이름 칸을 줄여 만든 자리라, 한 조각이라도 넓으면 옆 칸을 침범한다.
+    const edges = sumColumnEdges();
+    const widthOf = (index: number) => edges[index + 1] - edges[index];
+
+    for (const [index, label] of [
+      [1, '전반(OUT)'],
+      [3, '후반(IN)'],
+      [5, '총타수'],
+    ] as const) {
+      expect(estimateTextWidthMm(label, SCORE_CARD.sumFontMm)).toBeLessThan(
+        widthOf(index) - 1,
+      );
+    }
+
+    for (const cell of COMPARE_CELLS) {
+      const left = edges[cell.columnIndex];
+      const right = edges[cell.columnIndex + 1];
+      expect(
+        estimateTextWidthMm(cell.header, SCORE_CARD.sumFontMm),
+      ).toBeLessThan(right - left - 1);
+
+      // 네모와 부호가 칸 안에 들어간다.
+      const centers = pieceCenters(left, right, cell.pieces);
+      cell.pieces.forEach((piece, i) => {
+        const half = pieceWidth(piece) / 2;
+        expect(centers[i] - half).toBeGreaterThanOrEqual(left);
+        expect(centers[i] + half).toBeLessThanOrEqual(right);
+      });
+
+      // 네모 위에 적는 말도 칸 안에 들어간다 — 네모보다 넓어도 된다.
+      cell.labels.forEach((label, i) => {
+        if (label === null) return;
+        const half = estimateTextWidthMm(label, SCORE_CARD.sumSubFontMm) / 2;
+        expect(centers[i] - half).toBeGreaterThan(left);
+        expect(centers[i] + half).toBeLessThan(right);
+      });
+
+      // 이웃한 말끼리 겹치지 않는다.
+      const spans = cell.labels
+        .map((label, i) =>
+          label === null
+            ? null
+            : {
+                from:
+                  centers[i] -
+                  estimateTextWidthMm(label, SCORE_CARD.sumSubFontMm) / 2,
+                to:
+                  centers[i] +
+                  estimateTextWidthMm(label, SCORE_CARD.sumSubFontMm) / 2,
+              },
+        )
+        .filter((span) => span !== null);
+      for (let i = 1; i < spans.length; i += 1) {
+        expect(spans[i].from).toBeGreaterThan(spans[i - 1].to);
+      }
+    }
+  });
+
+  it('견주기 칸 안에서 식이 완결된다 (IDE-042)', () => {
+    // `▢ − 72 = ▢` · `▢ − ▢ = ▢`. 총타수를 옮겨 적는 네모가 칸마다 맨 앞에
+    // 있다(2026-09-20 사용자 요청) — 무엇에서 빼는지가 식 안에 있어야 한다.
+    const svg = ARTWORK['score-card']();
+    expect(COMPARE_CELLS).toHaveLength(2);
+    for (const cell of COMPARE_CELLS) {
+      expect(cell.pieces[0]).toEqual({ kind: 'box' });
+      expect(cell.pieces[cell.pieces.length - 1]).toEqual({ kind: 'box' });
+      expect(cell.labels[0]).toBe('총타수');
+      expect(cell.labels).toHaveLength(cell.pieces.length);
+    }
+    const boxes = COMPARE_CELLS.reduce(
+      (sum, cell) => sum + cell.pieces.filter((p) => p.kind === 'box').length,
+      0,
+    );
+    expect(svg.split('<rect').length - 1).toBe(boxes * PLAYER_COUNT);
+  });
+
+  it('부호 방향이 종이 위에 적혀 있다 (IDE-042)', () => {
+    // 사용자가 `36 − 61 = −25`로 적어 왔다(2026-09-19). 셈을 못 한 것이 아니라
+    // 종이가 방향을 말해 주지 않은 것이라, 그 말이 인쇄되는지를 여기서 잡는다.
+    const svg = ARTWORK['score-card']();
+    expect(svg).toContain('+ 오버파 − 언더파');
+    expect(svg).toContain('−면 잘 쳤다');
+    expect(svg).toContain(`파 ${COURSE_PAR}와 견주기`);
+    expect(svg).toContain('지난번과 견주기');
+    expect(svg).toContain('지난 라운드');
+    // 파와 견주는 식이 사람마다 한 벌씩.
+    expect(svg.split(`− ${COURSE_PAR} =`).length - 1).toBe(PLAYER_COUNT);
+  });
+
+  it('규칙문과 종이가 같은 부호 규칙을 말한다 (IDE-042)', () => {
+    // `IDE-032`가 세운 규칙 — 한쪽만 고치면 종이와 설명이 어긋난다.
+    expect(ruleText).toContain('오버파');
+    expect(ruleText).toContain('언더파');
+    expect(ruleText).toContain('총타수 − 파');
+    expect(ruleText).toContain('지난 라운드의 총타수');
   });
 
   it('전반 표와 후반 표가 겹치지 않는다', () => {
