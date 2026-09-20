@@ -11,6 +11,7 @@
  * 함수를 직접 부른다. 두 길이 같은 함수라 화면과 PDF가 같은 그림이다.
  */
 import type { GameCustomization, GameDefinition, Part } from '@/lib/schema';
+import { renderBaseballArtwork } from '@/assets/games/baseball/artwork/dynamic';
 import { renderDotToDotArtwork } from '@/assets/games/dot-to-dot/artwork/dynamic';
 import { renderGolfArtwork } from '@/assets/games/golf/artwork/dynamic';
 import { renderWorldTourArtwork } from '@/assets/games/world-tour/artwork/dynamic';
@@ -24,6 +25,7 @@ const RENDERERS: Readonly<Record<string, Renderer>> = {
   'world-tour': renderWorldTourArtwork,
   'dot-to-dot': renderDotToDotArtwork,
   golf: renderGolfArtwork,
+  baseball: renderBaseballArtwork,
 };
 
 export function renderDynamicArtwork(

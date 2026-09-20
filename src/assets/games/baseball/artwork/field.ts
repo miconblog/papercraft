@@ -60,6 +60,8 @@ import {
   svgDocument,
   text,
 } from '../../../shared/svg.ts';
+import { defaultFieldSpec, type FieldSpec } from './field-spec.ts';
+import { reachWash, ruleZones } from './rule-zones.ts';
 
 const {
   judgeLineWidthMm,
@@ -319,12 +321,30 @@ const countPanel = (): string[] => {
   });
 };
 
-export const renderField = (): string =>
+/**
+ * 야구장 한 장.
+ *
+ * **값에서 그때 그리는 동적 파트다**(IDE-044). 인자를 주지 않으면 기본 규칙 ·
+ * 배분 없음 · 기본 수비이고, 그때 나오는 바이트는 IDE-014가 그린 판과 같다 —
+ * 카탈로그 썸네일과 소개 페이지가 보는 정적 파일이 그것이다.
+ *
+ * 층은 아래부터 이렇다.
+ *
+ * 1. `pc-reach-wash` — 수비 범위의 옅은 면. **경기장 선 아래**여야 흙 띠와
+ *    판정선을 덮지 않는다(`./rule-zones.ts`).
+ * 2. `pc-art` — 경기장. 기본 규칙이든 실제 규칙이든 한 획도 다르지 않다.
+ * 3. `pc-count` — S·O 카운터.
+ * 4. `pc-zones` — 범위 원·쐐기·번트 칸·판정 차례.
+ * 5. `pc-slot` — 선수 마커가 놓이는 자리. 값은 렌더러가 그린다.
+ */
+export const renderField = (spec: FieldSpec = defaultFieldSpec()): string =>
   svgDocument({
     widthMm: BOARD.widthMm,
     heightMm: BOARD.heightMm,
     title: '야구 게임판 · 야구장',
     children: [
+      ...reachWash(spec),
+
       group(
         {
           id: ART_LAYER_ID,
@@ -350,6 +370,9 @@ export const renderField = (): string =>
 
       // S·O 카운터. 경기장 선과 섞이지 않게 레이어를 따로 둔다.
       group({ id: 'pc-count', fill: 'none', stroke: 'none' }, countPanel()),
+
+      // 실제 야구 규칙의 판정 영역. 기본 규칙이면 아무것도 나오지 않는다.
+      ...ruleZones(spec),
 
       // 선수 마커가 놓이는 자리. 값은 렌더러가 그린다 — 아트워크가 직접 그려
       // 넣으면 커스터마이즈가 먹지 않는다.

@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  budgetRemaining,
   pointsOf,
   toFlatPoints,
   type Slot,
@@ -20,6 +21,11 @@ import {
  * 슬롯 `kind`가 입력 종류를 정한다 — 텍스트·숫자·색상·선택지 네 가지가 한 줄
  * 입력이라 게임을 몰라도 렌더링할 수 있다. 자동 폼 생성기(`CustomizationForm`)
  * 가 슬롯 배열을 순회하며 이 컴포넌트를 늘어놓는다.
+ *
+ * 예산(`budget`)만은 한 줄이 아니라 **작은 격자**다(IDE-044) — 여덟 칸에 나눠
+ * 주는 값이라 입력이 여덟이고, 「남은 4mm」가 그 위에 함께 서야 사용자가
+ * 어디까지 줄 수 있는지 그 자리에서 안다. 폼이 `flex-wrap`이라 넓은 이 블록은
+ * 저절로 제 줄을 차지한다.
  *
  * 나머지 둘은 여기서 그리지 않는다 — 목록(`list`)은 판 아래 패널이, 윤곽
  * (`outline`)은 사진 넣기 패널이 맡는다. 다만 **숫자 슬롯 하나는 그 사진 패널
@@ -294,6 +300,78 @@ function SlotInput({
           >
             − 빼기
           </button>
+        </div>
+      );
+    }
+
+    case 'budget': {
+      const amounts = slot.items.map((item, i) => {
+        const raw = Array.isArray(value) ? value[i] : undefined;
+        return typeof raw === 'number' && Number.isFinite(raw) ? raw : 0;
+      });
+      const remaining = budgetRemaining(slot, amounts);
+      const set = (index: number, next: number) =>
+        onChange(amounts.map((v, i) => (i === index ? next : v)));
+
+      return (
+        <div
+          id={fieldId}
+          role="group"
+          aria-label={slot.label}
+          className="flex flex-col gap-1"
+        >
+          <p
+            className={
+              'text-xs ' +
+              (remaining < 0 ? 'text-destructive' : 'text-muted-foreground')
+            }
+          >
+            남은 능력치{' '}
+            <strong className="tabular-nums text-foreground">
+              {remaining}
+              {slot.unit}
+            </strong>{' '}
+            / {slot.total}
+            {slot.unit}
+          </p>
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1 sm:grid-cols-4">
+            {slot.items.map((item, i) => {
+              const itemId = `${fieldId}-${item.id}`;
+              // 남은 예산까지만 올릴 수 있다 — 단추를 눌렀는데 곧장 오류가
+              // 되는 자리를 만들지 않는다(숫자 슬롯의 값 단추와 같은 기준).
+              const ceiling = Math.min(
+                item.max,
+                amounts[i] + Math.max(remaining, 0),
+              );
+              return (
+                <span key={item.id} className="flex items-center gap-1">
+                  <label
+                    htmlFor={itemId}
+                    className="flex-1 truncate text-xs text-muted-foreground"
+                  >
+                    {item.label}
+                  </label>
+                  <input
+                    id={itemId}
+                    type="number"
+                    value={String(amounts[i])}
+                    min={0}
+                    max={ceiling}
+                    step={1}
+                    aria-invalid={invalid}
+                    aria-describedby={invalid ? errorId : undefined}
+                    className={commonClassName
+                      .replace('w-40 ', 'w-14 ')
+                      .replace('w-full ', 'w-14 ')}
+                    onChange={(e) => {
+                      const parsed = Number.parseInt(e.target.value, 10);
+                      set(i, Number.isNaN(parsed) ? 0 : parsed);
+                    }}
+                  />
+                </span>
+              );
+            })}
+          </div>
         </div>
       );
     }

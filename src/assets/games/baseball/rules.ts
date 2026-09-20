@@ -19,6 +19,18 @@
  */
 
 import type { RuleBlock } from '@/lib/schema';
+import {
+  ABILITY_BUDGET_MM,
+  BUNT_CALLS,
+  DEFENSE_REACH,
+  DOUBLE_PLAY_CALL,
+  JUDGE_ORDER,
+  LINE_DRIVE_SIDES,
+  RULE_SETS,
+  abilityRoomMm,
+  judgeLine,
+  lineDriveCall,
+} from './dimensions';
 
 export const RULES_TITLE = '야구 게임판 · 게임 방법';
 
@@ -74,6 +86,43 @@ export const ROSTER_STEPS: readonly string[] = [
   '타석이 끝날 때마다 그 선수 줄의 기록칸에 기호를 적는다 — 안타 ○ · 2루타 ◎ · 홈런 ☆ · 아웃 ×. 파울은 타석이 끝난 것이 아니니 적지 않는다.',
   '경기가 끝나면 줄마다 적은 기호를 세어 타수에, ○·◎·☆의 수를 세어 안타에 적는다.',
   '타율은 안타 ÷ 타수다. 용지 아래 조견표에서 타수와 안타가 만나는 칸을 찾아 옮겨 적어도 된다.',
+  '실제 야구 규칙으로 놀아도 기호는 이 넷 그대로다 — 번트안타는 안타(○)이고, 병살은 타자에게 아웃(×) 하나다. 타율은 안타 ÷ 타수라 기호를 늘려도 셈이 달라지지 않는다.',
+];
+
+/** 옵션 규칙의 이름. 만들기 화면의 선택지 이름과 같아야 한다. */
+const REAL_RULE_LABEL = RULE_SETS[1].label;
+
+/**
+ * 실제 야구 규칙 (IDE-044) — **옵션이다.**
+ *
+ * 위 판정 넷은 옛 인쇄본 둘에서 온 것이고 여섯 살이 색만 보고 읽을 수 있다는
+ * 것이 그 값어치다. 여기 것은 만들기 화면에서 「실제 야구 규칙」을 골랐을 때
+ * 판에 함께 그려지며, 고르지 않으면 야구장은 한 획도 바뀌지 않는다.
+ *
+ * **문장이 판과 같은 상수에서 나온다**(`./dimensions.ts`). 인쇄물의 범위 원에
+ * 적힌 말과 여기 적힌 말이 어긋나면 종이가 둘로 갈린다.
+ */
+export const REAL_RULE_STEPS: readonly string[] = [
+  `만들기 화면에서 규칙을 「${REAL_RULE_LABEL}」으로 바꿔 인쇄한다. 수비수마다 앞에 점선 원이 그려진 판이 나온다 — 그 안에 공이 멈추면 수비수가 잡은 것이다.`,
+  `내야 다섯(투수·1루수·2루수·3루수·유격수)의 범위는 ${DEFENSE_REACH.infield.baseMm}mm이고, 그 안에 멈추면 ${DEFENSE_REACH.infield.call}이다.`,
+  `유격수와 2루수의 범위만은 다르다 — 주자가 1루에 있으면 ${DOUBLE_PLAY_CALL}이라 아웃이 둘이다. 1루 주자와 타자를 함께 치운다. 주자가 없으면 아웃 하나다.`,
+  `외야 셋의 범위는 ${DEFENSE_REACH.outfield.baseMm}mm이고, 그 안에 멈추면 ${DEFENSE_REACH.outfield.call}이다. 누상의 주자는 나가지 못한다.`,
+  `파울라인 안쪽의 좁은 쐐기 — 1·3루 베이스보다 바깥에서 파울라인에 붙어 멈추면 ${lineDriveCall(LINE_DRIVE_SIDES[0])} · ${lineDriveCall(LINE_DRIVE_SIDES[1])}다. 베이스 안쪽은 쐐기가 아니다. 거기 멈춘 공은 내야에 구른 땅볼이다.`,
+  `번트는 치기 전에 "번트"라고 말하고 튕긴다. 아웃선 안 양옆(3루선·1루선 쪽)에 멈추면 ${BUNT_CALLS.hit}, 가운데면 ${BUNT_CALLS.fail}다. 아웃선을 넘어가면 너무 셌다 — ${BUNT_CALLS.tooHard}. S 칸 둘이 찬 뒤 또 넘기면 그것이 쓰리번트 아웃이다.`,
+];
+
+/**
+ * 팀 수비 능력치 — 인쇄 전에 정하는 일 (2026-09-20 사용자 요청).
+ *
+ * 놀이가 시작되기 전에 **팀을 짜는 일**이 하나 생긴다. 어디를 두껍게 막을지가
+ * 곧 그 판의 성격이 되고, 판에 인쇄된 원이 그 결정을 기억한다.
+ */
+export const ABILITY_STEPS: readonly string[] = [
+  `만들기 화면에서 여덟 자리에 합쳐서 ${ABILITY_BUDGET_MM}mm를 나눠 준다. 한 자리는 ${abilityRoomMm('infield')}mm까지 올릴 수 있다 — 내야는 ${DEFENSE_REACH.infield.baseMm}에서 ${DEFENSE_REACH.infield.maxMm}mm, 외야는 ${DEFENSE_REACH.outfield.baseMm}에서 ${DEFENSE_REACH.outfield.maxMm}mm다.`,
+  `넓이만 보면 늘 외야가 이득이다 — 원이 클수록 1mm가 늘리는 넓이가 크다. 그래도 내야에 주는 값어치가 있다: 유격수·2루수 범위는 아웃을 하나가 아니라 둘로 만든다(${DOUBLE_PLAY_CALL}).`,
+  `내야 둘을 ${DEFENSE_REACH.infield.maxMm}mm까지 올리면 3루수와 유격수 사이로는 공이 못 빠진다. 외야는 끝까지 올려도 갭이 4mm 남는다 — 외야는 아무리 두꺼워도 틈이 있다.`,
+  '판은 한 장이라 양 팀이 같은 수비 범위를 나눠 쓴다. 팀마다 다른 배분으로 놀려면 판을 두 장 뽑아 공수가 바뀔 때 바꿔 깔면 된다.',
+  '수비 자리를 옮기면 범위도 따라간다. 수비 시프트를 바꾸거나 미리보기에서 선수를 끌면 원도 함께 움직인다 — 어디를 비울지가 그대로 보인다.',
 ];
 
 export const RULES: readonly RuleBlock[] = [
@@ -182,6 +231,29 @@ export const RULES: readonly RuleBlock[] = [
     text: '짧게 하고 싶으면 3회나 5회로 정하고 시작한다.',
   },
 
+  { kind: 'heading', text: `${REAL_RULE_LABEL} (옵션)` },
+  {
+    kind: 'bullet',
+    text:
+      '수비수가 그려져 있는데 수비 범위가 없다는 것이 이 판의 빈자리였다 — 유격수 바로 앞에 멈춘 공이 ' +
+      '안타가 됐다. 이 옵션은 수비수마다 원을 그려 그 자리를 메운다. 기본 규칙 판이 좋으면 그대로 두면 된다.',
+  },
+  ...REAL_RULE_STEPS.map((text) => ({ kind: 'step', text }) as const),
+
+  { kind: 'heading', text: '판정 차례 — 겹치면 위엣것이 이긴다' },
+  {
+    kind: 'bullet',
+    text:
+      '수비 범위와 선상 쐐기는 겹친다. 어느 쪽인지 다투지 않도록 차례를 못 박았다 — 공이 멈춘 자리에서 ' +
+      '위에서부터 읽고, 처음 맞는 줄이 그 타석의 결과다. 같은 일곱 줄이 야구장 오른쪽 아래에도 인쇄되어 있다.',
+  },
+  ...JUDGE_ORDER.map(
+    (step) => ({ kind: 'step', text: judgeLine(step) }) as const,
+  ),
+
+  { kind: 'heading', text: '팀 수비 능력치' },
+  ...ABILITY_STEPS.map((text) => ({ kind: 'step', text }) as const),
+
   { kind: 'heading', text: '이 규칙은 기본값입니다' },
   {
     kind: 'bullet',
@@ -189,6 +261,10 @@ export const RULES: readonly RuleBlock[] = [
   },
   {
     kind: 'bullet',
-    text: '시작 전에 정해 두면 좋은 것 — 수비를 타석마다 다시 세울 수 있게 할지, 종이 밖으로 나간 공을 파울이 아니라 아웃으로 볼지(옛 인쇄본은 아웃이었다), 선 위에 걸쳐 멈춘 공을 어느 쪽으로 볼지, 도루나 번트를 넣을지 등. 볼 칸은 두지 않았다 — 투구 규칙을 넣고 싶으면 볼은 종이 한쪽에 따로 센다.',
+    text:
+      '시작 전에 정해 두면 좋은 것 — 수비를 타석마다 다시 세울 수 있게 할지, 종이 밖으로 나간 공을 ' +
+      '파울이 아니라 아웃으로 볼지(옛 인쇄본은 아웃이었다), 선 위에 걸쳐 멈춘 공을 어느 쪽으로 볼지, ' +
+      `도루를 넣을지 등. 번트는 따로 정할 것이 없다 — 「${REAL_RULE_LABEL}」을 고르면 번트 칸이 판에 ` +
+      '그려져 나온다. 볼 칸은 두지 않았다 — 투구 규칙을 넣고 싶으면 볼은 종이 한쪽에 따로 센다.',
   },
 ] as const;

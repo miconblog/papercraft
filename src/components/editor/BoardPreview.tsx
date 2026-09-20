@@ -5,6 +5,7 @@ import {
   dynamicSourceSlots,
   pointsOf,
   resolveVariant,
+  slotMarker,
   slotsOfPart,
   styleSetBounds,
   toFlatPoints,
@@ -175,12 +176,20 @@ export function BoardPreview({
   useEffect(() => {
     customizationRef.current = customization;
   });
+  //
+  // **좌표도 그림을 바꿀 수 있다**(IDE-044). 야구장의 수비 범위 원은 마커를
+  // 중심으로 그려지므로 선수를 끌면 원도 따라와야 한다 — 그래서 이 파트에
+  // 마커를 가진 슬롯의 좌표까지 키에 넣는다. 마커가 없는 동적 파트(세계일주·
+  // 점 잇기·나만의 홀)에서는 빈 배열이라 하는 일이 없다.
   const dynamicKey = part.dynamic
-    ? JSON.stringify(
+    ? JSON.stringify([
         dynamicSourceSlots(game, part.id).map(
           (s) => customization.values[s.id],
         ),
-      )
+        game.slots
+          .filter((s) => slotMarker(s)?.partId === part.id)
+          .map((s) => customization.positions[s.id]),
+      ])
     : null;
 
   useEffect(() => {

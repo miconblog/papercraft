@@ -1191,3 +1191,79 @@ describe('점 슬롯 (IDE-031)', () => {
     ).toMatch(/없는 파트를 가리킨다/);
   });
 });
+
+describe('예산 슬롯 (IDE-044)', () => {
+  const budgetGame = (overrides: Record<string, unknown> = {}) =>
+    makeGame({
+      parts: [{ ...makeGame().parts[0], dynamic: {} }],
+      slots: [
+        {
+          id: 'reach',
+          kind: 'budget' as const,
+          label: '수비 능력치',
+          items: [
+            { id: 'near', label: '내야', max: 6 },
+            { id: 'far', label: '외야', max: 6 },
+          ],
+          total: 10,
+          unit: 'mm',
+          default: [0, 0],
+          placements: [{ partId: 'board', mode: 'control' as const }],
+          ...overrides,
+        },
+      ],
+    });
+
+  it('항목마다 하나씩, 합이 예산 안이면 통과한다', () => {
+    expect(() => parseGame(budgetGame({ default: [6, 4] }))).not.toThrow();
+  });
+
+  it('기본값의 길이가 항목 수와 다르면 걸러진다', () => {
+    expect(issuesOf(budgetGame({ default: [0] }))).toMatch(/2개여야 한다/);
+  });
+
+  it('한 자리 상한을 넘긴 기본값은 걸러진다', () => {
+    expect(issuesOf(budgetGame({ default: [7, 0] }))).toMatch(/내야에 6mm까지/);
+  });
+
+  it('합이 예산을 넘긴 기본값은 걸러진다', () => {
+    expect(issuesOf(budgetGame({ default: [6, 6] }))).toMatch(/10mm까지/);
+  });
+
+  it('항목 상한의 합이 예산 이하면 걸러진다 — 나눌 것이 없다', () => {
+    expect(issuesOf(budgetGame({ total: 12 }))).toMatch(/나눌 것이 없다/);
+  });
+
+  it('항목 id가 중복되면 걸러진다', () => {
+    expect(
+      issuesOf(
+        budgetGame({
+          items: [
+            { id: 'near', label: '내야', max: 6 },
+            { id: 'near', label: '또 내야', max: 6 },
+          ],
+        }),
+      ),
+    ).toMatch(/예산 항목 id가 중복된다/);
+  });
+
+  it('예산은 글자로도 마커로도 그릴 수 없다 — 그리는 것은 파트의 dynamic이다', () => {
+    expect(
+      issuesOf(
+        budgetGame({
+          placements: [
+            { partId: 'board', mode: 'text', xMm: 20, yMm: 20, fontSizeMm: 4 },
+          ],
+        }),
+      ),
+    ).toMatch(/budget 슬롯에는 'text' 배치를 쓸 수 없다/);
+  });
+
+  it('값 검사가 셋을 갈라 말한다 — 모양 · 한 자리 상한 · 예산', () => {
+    const slot = parseGame(budgetGame()).slots.find((s) => s.id === 'reach')!;
+    expect(validateSlotValue(slot, [4, 6])).toBeNull();
+    expect(validateSlotValue(slot, '넷')).toMatch(/수의 목록/);
+    expect(validateSlotValue(slot, [0, 7])).toMatch(/외야에 6mm까지/);
+    expect(validateSlotValue(slot, [6, 5])).toMatch(/10mm까지/);
+  });
+});

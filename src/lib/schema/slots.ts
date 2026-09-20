@@ -317,6 +317,46 @@ export const pointsSlot = z.strictObject({
   default: z.array(z.number()),
 });
 
+/**
+ * 예산 항목 하나 — 이름과 **이 자리가 받을 수 있는 최대**.
+ *
+ * 항목마다 상한이 다를 수 있다. 야구의 여덟 자리는 우연히 모두 6mm지만
+ * (`abilityRoomMm`), 그것이 이 슬롯의 전제는 아니다.
+ */
+export const budgetItem = z.strictObject({
+  id: slug,
+  label: z.string().min(1).max(40),
+  max: z.number().int().min(0),
+});
+export type BudgetItem = z.infer<typeof budgetItem>;
+
+/**
+ * 예산 슬롯 — **여러 칸에 나눠 주는데 합에 상한이 있는 값** (IDE-044).
+ *
+ * 야구의 팀 수비 능력치가 처음 쓴다: 수비 여덟 자리에 0~6mm씩 주되 합이
+ * 10mm를 넘지 못한다.
+ *
+ * `number` 슬롯 여덟 개로는 안 된다 — 숫자 슬롯은 자기 `min`·`max`만 알고
+ * **여러 슬롯의 합에 상한을 두는 장치가 없다.** 합을 도안 밖에서 보면 에디터가
+ * "남은 예산 4mm"를 그리려고 그 규칙을 화면에서 다시 알아야 하는데, 예산은
+ * 화면이 아는 값이 아니라 **도안이 아는 값**이다.
+ *
+ * 값은 `items`와 **같은 길이·같은 차례의 수 배열**이다. 항목마다 객체를 두지
+ * 않는 것은 윤곽·점 슬롯과 같은 이유다(`localStorage`에 실려 다닌다). 배치는
+ * `control`뿐이다 — 값을 글자나 마커로 그릴 수 없고, 이 값에서 판을 그때 그리는
+ * 것은 파트의 `dynamic`이 한다.
+ */
+export const budgetSlot = z.strictObject({
+  ...slotBase,
+  kind: z.literal('budget'),
+  items: z.array(budgetItem).min(2),
+  /** 항목에 나눠 줄 수 있는 총합. */
+  total: z.number().int().min(0),
+  /** 값 뒤에 붙는 단위. 에디터가 "남은 4mm"를 쓸 때 읽는다. */
+  unit: z.string().min(1).max(8),
+  default: z.array(z.number()),
+});
+
 export const slot = z
   .discriminatedUnion('kind', [
     textSlot,
@@ -326,6 +366,7 @@ export const slot = z
     listSlot,
     outlineSlot,
     pointsSlot,
+    budgetSlot,
   ])
   .check((ctx) => {
     const s = ctx.value;
@@ -544,6 +585,41 @@ export const slot = z
       }
     }
 
+    if (s.kind === 'budget') {
+      const seen = new Set<string>();
+      for (const [i, item] of s.items.entries()) {
+        if (seen.has(item.id)) {
+          ctx.issues.push({
+            code: 'custom',
+            input: s,
+            path: ['items', i, 'id'],
+            message: `예산 항목 id가 중복된다: ${item.id}`,
+          });
+        }
+        seen.add(item.id);
+      }
+      // 항목 상한의 합이 총합 이하면 예산이 제약이 아니다 — 늘 다 줄 수 있으니
+      // "나눠 준다"는 뜻이 사라진다. 도안을 짜는 쪽의 실수라 여기서 잡는다.
+      const room = s.items.reduce((sum, item) => sum + item.max, 0);
+      if (room <= s.total) {
+        ctx.issues.push({
+          code: 'custom',
+          input: s,
+          path: ['total'],
+          message: `항목 상한의 합(${room})이 예산(${s.total}) 이하라 나눌 것이 없다`,
+        });
+      }
+      const reason = validateBudgetValue(s, s.default);
+      if (reason) {
+        ctx.issues.push({
+          code: 'custom',
+          input: s,
+          path: ['default'],
+          message: `기본값이 제 제약을 어긴다: ${reason}`,
+        });
+      }
+    }
+
     // kind와 placement 방식의 조합. 색을 글자로 그리거나 선택지를 마커로 놓는 건
     // 렌더러가 처리할 수 없다.
     //
@@ -564,6 +640,8 @@ export const slot = z
       // 점은 판 위에서 끄는 손잡이일 뿐, 그려지는 것은 그 점들에서 나온
       // 그림이다(파트의 `dynamic`이 그린다) — 윤곽·목록과 같은 규약이다.
       points: ['control'],
+      // 예산도 같다 — 값은 수 여덟이고, 그것이 바꾸는 것은 판의 그림이다.
+      budget: ['control'],
     };
     for (const [i, pl] of s.placements.entries()) {
       if (!allowed[s.kind].includes(pl.mode)) {
@@ -604,6 +682,8 @@ export type OutlineRing = number[];
 export type OutlineValue = OutlineRing | OutlineRing[];
 /** 점 슬롯의 값 — 납작한 `[x0, y0, x1, y1, …]`. 윤곽과 같은 생김새다. */
 export type PointsValue = number[];
+/** 예산 슬롯의 값 — 항목 차례대로의 수 배열. 점·윤곽과 같은 생김새다. */
+export type BudgetValue = number[];
 
 export type SlotValue =
   string | number | ListValue | OutlineValue | PointsValue;
@@ -714,8 +794,74 @@ export function validateSlotValue(s: Slot, value: unknown): string | null {
       return validateOutlineValue(s, value);
     case 'points':
       return validatePointsValue(s, value);
+    case 'budget':
+      return validateBudgetValue(s, value);
   }
 }
+
+/**
+ * 예산 슬롯의 값 — 항목과 **같은 길이·같은 차례**의 수 배열이고, 항목마다
+ * 제 상한을 지키며, 합이 예산을 넘지 않는다 (IDE-044).
+ *
+ * 세 가지를 따로 말한다 — "10mm를 넘었다"와 "중견수는 6mm까지다"는 사용자가
+ * 할 일이 서로 다르다.
+ */
+export function validateBudgetValue(
+  s: z.infer<typeof budgetSlot>,
+  value: unknown,
+): string | null {
+  if (!Array.isArray(value)) return '항목마다 하나씩, 수의 목록이어야 한다';
+  if (value.length !== s.items.length)
+    return `항목이 ${s.items.length}개여야 한다 (현재 ${value.length}개)`;
+  let spent = 0;
+  for (const [i, item] of s.items.entries()) {
+    const given: unknown = value[i];
+    if (typeof given !== 'number' || !Number.isFinite(given))
+      return `${item.label}에 숫자가 아닌 값이 있다`;
+    // 조사를 '에'로만 쓴다 — 항목 이름이 무엇으로 끝나든 은/는, 이/가를
+    // 가려 붙일 방법이 없다("내야은"이 그렇게 나왔다).
+    if (!Number.isInteger(given)) return `${item.label}에 정수만 줄 수 있다`;
+    if (given < 0) return `${item.label}에 음수를 줄 수 없다`;
+    if (given > item.max)
+      return `${item.label}에 ${item.max}${s.unit}까지 줄 수 있다`;
+    spent += given;
+  }
+  if (spent > s.total)
+    return `${s.total}${s.unit}까지 나눠 줄 수 있다 (지금 ${spent}${s.unit})`;
+  return null;
+}
+
+/** 지금 쓴 예산. 값이 어긋나 있으면 셀 수 있는 것만 센다. */
+export const budgetSpent = (value: unknown): number =>
+  Array.isArray(value)
+    ? value.reduce<number>(
+        (sum, v) => sum + (typeof v === 'number' && Number.isFinite(v) ? v : 0),
+        0,
+      )
+    : 0;
+
+/** 남은 예산. 에디터가 「남은 능력치 4mm」를 이걸로 쓴다. */
+export const budgetRemaining = (
+  s: z.infer<typeof budgetSlot>,
+  value: unknown,
+): number => s.total - budgetSpent(value);
+
+/**
+ * 항목 하나의 지금 값. 값이 없거나 모양이 틀렸으면 0이다 — 렌더러가 옛
+ * 저장값에도 판 하나는 내야 한다.
+ */
+export const budgetAmount = (
+  s: z.infer<typeof budgetSlot>,
+  value: unknown,
+  itemId: string,
+): number => {
+  const i = s.items.findIndex((item) => item.id === itemId);
+  if (i < 0 || !Array.isArray(value)) return 0;
+  const given: unknown = value[i];
+  return typeof given === 'number' && Number.isFinite(given)
+    ? Math.min(Math.max(Math.round(given), 0), s.items[i].max)
+    : 0;
+};
 
 /** 점 슬롯의 값 — 짝수 길이의 좌표 배열이고, 모든 점이 상자 안이어야 한다. */
 export function validatePointsValue(

@@ -11,7 +11,7 @@
  * 나눠 쓴다.
  */
 import { FIELDER_CIRCLE_ARTWORK_ID, FIELDER_POSES } from '../dimensions.ts';
-import { renderField } from './field.ts';
+import { renderFieldDefault } from './dynamic.ts';
 import {
   figureArtworkId,
   renderFielderMarkerCircle,
@@ -40,7 +40,9 @@ const figureArtwork = (): Record<string, () => string> =>
   );
 
 export const ARTWORK: Readonly<Record<string, () => string>> = {
-  field: renderField,
+  // 동적 파트다 — 여기서 뽑는 것은 **기본 규칙 · 배분 없음**으로 그린 한 벌이고,
+  // 값에 따라 달라지는 판은 서버 렌더러가 그린다(`./dynamic.ts`).
+  field: renderFieldDefault,
   'score-sheet': renderScoreSheet,
   roster: renderRoster,
   stands: renderStands,

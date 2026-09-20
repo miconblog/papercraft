@@ -14,7 +14,7 @@
 | `todo`    | 0    |
 | `doing`   | 0    |
 | `blocked` | 4    |
-| `review`  | 19   |
+| `review` | 20 |
 | `done`    | 20   |
 
 **지금 할 것** — [IDE-007](IDE-007-print-and-pdf-export.md)(인쇄·PDF 내보내기)은
@@ -28,6 +28,43 @@
 (2026-09-08), 이로써 [IDE-011](IDE-011-two-more-games-and-authoring-guide.md)이
 `doing`이 됐다 — **스키마는 한 줄도 안 고치고** 구조가 다른 게임이 들어갔다는
 것이 그 이슈가 확인하려던 것이다. 남은 것은 세 번째 게임과 종이 실측이다.
+
+그 뒤를 잇는 [IDE-044](IDE-044-baseball-real-rule-zones.md)(수비수가 곧 영역이다)도
+`review`다. 사용자가 병살타·번트안타·쓰리번트·좌익선상 2루타 같은 **실제 야구
+용어를 옵션으로** 청했다(2026-09-20). 처음에는 판정선이 전부 홈 중심 원호인 것을
+따라 **거리로** 나눴는데 사용자가 그림을 보고 되돌렸다 — 파울라인 안쪽 쐐기가 1루
+베이스를 품어 **땅볼 구간에 멈춘 공이 선상 2루타**가 됐다. 이어서 진짜 어긋난
+자리를 짚었다: 이 판은 수비수가 **그려져** 있고 거기 닿으면 아웃인데, **수비수
+바로 앞에 멈춘 공이 안타**다. 유격수 앞은 병살이 나오는 자리인데도 그렇다.
+
+숫자가 그것을 말한다 — 지금 아웃이 되는 넓이는 마커 여덟 장(20×22)을 합쳐
+**35cm², 페어 지역의 7.6%**뿐이다(실제 야구는 인플레이 타구의 일곱에 다섯이
+아웃이다). 그래서 영역을 **수비 배치**에서 뽑는다: 수비수마다 범위 원을 그리고,
+유격수·2루수 범위는 주자 1루면 병살, 외야 범위는 뜬공 아웃이다. 선상 쐐기는
+베이스 바깥부터이고 수비 범위와 겹치면 수비가 이긴다.
+
+**범위는 고정값이 아니라 배분이다**(같은 날 이어진 요청). 기본 내야 20 · 외야
+28mm에서 **팀 능력치 10mm**를 나눠 주고 한 자리가 상한(내야 26 · 외야 34)까지만
+커진다 — 중견수를 34로 올리면 남은 4mm가 다른 자리로 간다. 인쇄 전에 팀을 짜는
+일이 생기는 것이고, 예산 10mm는 놀아 보며 맞출 나사다. 배분 없이 아웃 33.1%,
+10mm를 다 쓰면 36~37%가 된다. **면적만 보면 늘 외야가 이득**이라(원이 클수록
+1mm가 늘리는 넓이가 크다) 내야에 줄 이유는 넓이가 아니라 **병살**이어야 한다 —
+그 균형이 이 이슈의 밸런스다.
+
+이 요청이 만드는 방법을 바꿨다. 배분은 조합이 무한이라 파트 변형으로 못 내고,
+**야구장이 동적 파트가 된다**(`dynamic: {}` — 크기는 고정, 그림만 값에서). 골프
+「나만의 홀」·점 잇기가 낸 길이지만 **마커 슬롯을 가진 첫 동적 보드**다. 규칙
+옵션도 같은 렌더러가 읽는다 — 스키마가 변형과 동적을 함께 못 쓰게 한다.
+
+**들어갔다**(2026-09-20). 스키마에 `budget` 슬롯 한 종류를 더해 여러 칸의 합에
+상한을 두는 장치를 만들었고 — 예산은 화면이 아니라 **도안이 아는 값**이다 —
+야구장이 동적 파트가 됐다. 기본 규칙 판은 커밋된 `field.svg`와 **바이트까지
+같다.** 만들며 둘이 드러났다: 인쇄 경로가 마스크도 클립도 받지 않아 **쐐기에서
+범위 원을 오려 낼 수 없고**(겹친 자리는 판에 찍은 판정 차례가 가른다), 미리보기의
+동적 갱신 키가 **값만 보고 좌표를 안 봐서** 마커를 끌어도 원이 따라오지 않았다.
+KBO 기록과 견주니 인플레이 아웃이 실제 68.8% 대 이 판 33.1%라, 예산 10mm로는
+아직 절반이다 — 실물로 놀아 보고 정할 나사다. 목업은
+`spikes/baseball-rule-zones/`에 남아 있다.
 
 [IDE-015](IDE-015-world-tour-dice-board-vector-artwork.md)(세계일주)가 `review`,
 그 뒤를 잇는 [IDE-016](IDE-016-map-city-toggle-and-route-editing.md)(도시 토글·경로
@@ -461,23 +498,24 @@ DB 에 적용했다**.
 
 ## M2 — 게임 확장 (011–020)
 
-| ID                                                         | 제목                                           | 영역     | 우선 | 추정 | 상태      |
-| ---------------------------------------------------------- | ---------------------------------------------- | -------- | ---- | ---- | --------- |
-| [IDE-011](IDE-011-two-more-games-and-authoring-guide.md)   | 게임 2종 추가와 도안 제작 가이드               | content  | P2   | 5d   | `done`    |
-| [IDE-013](IDE-013-self-hosted-web-analytics.md)            | 자체 웹 분석 (Supabase)                        | backend  | P1   | 3d   | `done`    |
-| [IDE-014](IDE-014-baseball-board-vector-artwork.md)        | 야구 게임판 도안 벡터화                        | content  | P1   | 3d   | `review`  |
-| [IDE-015](IDE-015-world-tour-dice-board-vector-artwork.md) | 세계일주 — 실제 세계지도와 도시·경로 데이터    | content  | P1   | 4d   | `review`  |
-| [IDE-016](IDE-016-map-city-toggle-and-route-editing.md)    | 지도 위 도시 토글과 경로 편집                  | frontend | P1   | 4d   | `blocked` |
-| [IDE-017](IDE-017-yut-nori-board-vector-artwork.md)        | 윷놀이 — 말판(윷판)과 말 도안                  | content  | P1   | 3d   | `review`  |
-| [IDE-018](IDE-018-paper-yut-sticks-buildable.md)           | 종이 윷가락 조립 도안                          | content  | P1   | 3d   | `review`  |
-| [IDE-019](IDE-019-dot-to-dot-photo-outline.md)             | 점 잇기 — 사진 윤곽선과 점·번호 도안           | content  | P1   | 4d   | `review`  |
-| [IDE-020](IDE-020-dot-to-dot-editor.md)                    | 점 잇기 에디터 — 사진 넣기와 도안 간직         | frontend | P1   | 3d   | `done`    |
-| [IDE-021](IDE-021-dot-to-dot-interior-detail.md)           | 점 잇기 세부 선 — 눈·코·입이 있는 그림         | content  | P1   | 2d   | `done`    |
-| [IDE-030](IDE-030-golf-18-hole-course.md)                  | 골프 — 홀 하나가 A4 한 장, 열여덟 장           | content  | P1   | 3d   | `review`  |
-| [IDE-031](IDE-031-golf-custom-hole.md)                     | 나만의 홀 — 판 위에서 끌어 짓는 골프 홀        | frontend | P1   | 2d   | `review`  |
-| [IDE-032](IDE-032-golf-penalty-marks-on-ground.md)         | 땅이 제 처분을 말한다 · 없어도 되는 것 빼기    | content  | P1   | 1d   | `review`  |
-| [IDE-042](IDE-042-golf-score-sign-and-personal-best.md)    | 골프 기록표 — 부호 방향 · 지난번의 나와 견주기 | content  | P1   | 1d   | `done`    |
-| [IDE-043](IDE-043-golf-round-chart-sheet.md)               | 오늘의 라운드 — 눈금자 · 꺾은선 · 10의 보수    | content  | P2   | 1d   | `done`    |
+| ID                                                         | 제목                                               | 영역     | 우선 | 추정 | 상태      |
+| ---------------------------------------------------------- | -------------------------------------------------- | -------- | ---- | ---- | --------- |
+| [IDE-011](IDE-011-two-more-games-and-authoring-guide.md)   | 게임 2종 추가와 도안 제작 가이드                   | content  | P2   | 5d   | `done`    |
+| [IDE-013](IDE-013-self-hosted-web-analytics.md)            | 자체 웹 분석 (Supabase)                            | backend  | P1   | 3d   | `done`    |
+| [IDE-014](IDE-014-baseball-board-vector-artwork.md)        | 야구 게임판 도안 벡터화                            | content  | P1   | 3d   | `review`  |
+| [IDE-015](IDE-015-world-tour-dice-board-vector-artwork.md) | 세계일주 — 실제 세계지도와 도시·경로 데이터        | content  | P1   | 4d   | `review`  |
+| [IDE-016](IDE-016-map-city-toggle-and-route-editing.md)    | 지도 위 도시 토글과 경로 편집                      | frontend | P1   | 4d   | `blocked` |
+| [IDE-017](IDE-017-yut-nori-board-vector-artwork.md)        | 윷놀이 — 말판(윷판)과 말 도안                      | content  | P1   | 3d   | `review`  |
+| [IDE-018](IDE-018-paper-yut-sticks-buildable.md)           | 종이 윷가락 조립 도안                              | content  | P1   | 3d   | `review`  |
+| [IDE-019](IDE-019-dot-to-dot-photo-outline.md)             | 점 잇기 — 사진 윤곽선과 점·번호 도안               | content  | P1   | 4d   | `review`  |
+| [IDE-020](IDE-020-dot-to-dot-editor.md)                    | 점 잇기 에디터 — 사진 넣기와 도안 간직             | frontend | P1   | 3d   | `done`    |
+| [IDE-021](IDE-021-dot-to-dot-interior-detail.md)           | 점 잇기 세부 선 — 눈·코·입이 있는 그림             | content  | P1   | 2d   | `done`    |
+| [IDE-030](IDE-030-golf-18-hole-course.md)                  | 골프 — 홀 하나가 A4 한 장, 열여덟 장               | content  | P1   | 3d   | `review`  |
+| [IDE-031](IDE-031-golf-custom-hole.md)                     | 나만의 홀 — 판 위에서 끌어 짓는 골프 홀            | frontend | P1   | 2d   | `review`  |
+| [IDE-032](IDE-032-golf-penalty-marks-on-ground.md)         | 땅이 제 처분을 말한다 · 없어도 되는 것 빼기        | content  | P1   | 1d   | `review`  |
+| [IDE-042](IDE-042-golf-score-sign-and-personal-best.md)    | 골프 기록표 — 부호 방향 · 지난번의 나와 견주기     | content  | P1   | 1d   | `done`    |
+| [IDE-043](IDE-043-golf-round-chart-sheet.md)               | 오늘의 라운드 — 눈금자 · 꺾은선 · 10의 보수        | content  | P2   | 1d   | `done`    |
+| [IDE-044](IDE-044-baseball-real-rule-zones.md)             | 야구 — 수비수가 곧 영역이다 · 범위는 능력치로 배분 | content  | P2   | 3d   | `review`  |
 
 ## M3 — 운영: 예약 공개 · 공방 일지 · 수집 다듬기 (022–030)
 

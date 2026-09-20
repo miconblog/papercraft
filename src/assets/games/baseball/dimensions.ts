@@ -261,16 +261,312 @@ export const FIELDER_POSES = [
  * 땅볼 수비, 좌익수·유격수는 달리기) 이웃끼리는 엇갈리게 두어 판이 반복돼
  * 보이지 않게 했다 — 축구 게임판이 자세를 배정한 것과 같은 기준이다.
  */
+/**
+ * `zone`은 **수비 범위가 얼마나 넓은가**를 가르고(`DEFENSE_REACH`),
+ * `doublePlay`는 그 범위에 멈춘 공이 아웃 하나인지 둘인지를 가른다 —
+ * 실제 야구 규칙(`IDE-044`)에서만 뜻이 있고, 기본 규칙 판은 이 둘을 읽지 않는다.
+ */
 export const DEFENSE_POSITIONS = [
-  { id: 'pitcher', number: 1, label: '투수', poseId: 'pitch' },
-  { id: 'first', number: 3, label: '1루수', poseId: 'field' },
-  { id: 'second', number: 4, label: '2루수', poseId: 'throw' },
-  { id: 'third', number: 5, label: '3루수', poseId: 'field' },
-  { id: 'shortstop', number: 6, label: '유격수', poseId: 'run' },
-  { id: 'left', number: 7, label: '좌익수', poseId: 'run' },
-  { id: 'center', number: 8, label: '중견수', poseId: 'catch' },
-  { id: 'right', number: 9, label: '우익수', poseId: 'throw' },
+  { id: 'pitcher', number: 1, label: '투수', poseId: 'pitch', zone: 'infield' },
+  { id: 'first', number: 3, label: '1루수', poseId: 'field', zone: 'infield' },
+  {
+    id: 'second',
+    number: 4,
+    label: '2루수',
+    poseId: 'throw',
+    zone: 'infield',
+    doublePlay: true,
+  },
+  { id: 'third', number: 5, label: '3루수', poseId: 'field', zone: 'infield' },
+  {
+    id: 'shortstop',
+    number: 6,
+    label: '유격수',
+    poseId: 'run',
+    zone: 'infield',
+    doublePlay: true,
+  },
+  { id: 'left', number: 7, label: '좌익수', poseId: 'run', zone: 'outfield' },
+  {
+    id: 'center',
+    number: 8,
+    label: '중견수',
+    poseId: 'catch',
+    zone: 'outfield',
+  },
+  {
+    id: 'right',
+    number: 9,
+    label: '우익수',
+    poseId: 'throw',
+    zone: 'outfield',
+  },
 ] as const;
+
+export type DefenseZone = 'infield' | 'outfield';
+export type DefensePosition = (typeof DEFENSE_POSITIONS)[number];
+
+/** 이 자리의 범위에 멈춘 공이 아웃 둘이 되는가 — 유격수와 2루수뿐이다. */
+export const isDoublePlayPosition = (position: DefensePosition): boolean =>
+  'doublePlay' in position && position.doublePlay === true;
+
+/**
+ * 수비 시프트 — 판에 서는 여덟 명의 좌표 한 벌.
+ *
+ * 순서가 `DEFENSE_POSITIONS`와 같다. 좌표는 눈으로 맞춘 뒤 마커 상자(20×22mm)가
+ * 서로 닿지 않는지 확인한 값이고, 그 확인은 `parseGame`이 등록 때 다시 한다 —
+ * 겹치는 시프트는 등록되는 순간 예외로 터진다.
+ *
+ * 야구에서 수비 위치는 **타자에 따라 바뀌는 전술**이다. 그래서 프리셋 이름이
+ * 진영이 아니라 상황이다 — 번트를 대비하면 내야가 앞으로 나오고, 장타를
+ * 경계하면 외야가 담장까지 물러선다. 판을 처음 열었을 때는 기본 수비다.
+ *
+ * **여기 있는 것은 도안 정의만의 값이 아니다**(2026-09-20, `IDE-044`). 실제 야구
+ * 규칙에서는 수비 범위 원이 이 자리를 중심으로 그려지므로 아트워크 생성기도
+ * 같은 좌표를 읽어야 한다 — 그래서 `index.ts`가 아니라 치수 파일에 둔다.
+ */
+export const DEFENSE_SHIFTS: ReadonlyArray<{
+  readonly id: string;
+  readonly label: string;
+  /** `DEFENSE_POSITIONS` 순서대로 [x, y]. */
+  readonly positions: ReadonlyArray<readonly [number, number]>;
+}> = [
+  {
+    id: 'standard',
+    label: '기본 수비',
+    positions: [
+      [105, 210], // 투수 — 마운드
+      [158, 194], // 1루수
+      [145, 144], // 2루수 — 1·2루 사이 베이스라인 뒤
+      [52, 194], // 3루수
+      [65, 144], // 유격수 — 2·3루 사이 베이스라인 뒤
+      [35, 82], // 좌익수
+      [105, 62], // 중견수
+      [175, 82], // 우익수
+    ],
+  },
+  {
+    id: 'infield-in',
+    label: '내야 전진',
+    positions: [
+      [105, 210],
+      [150, 214],
+      [135, 174],
+      [60, 214],
+      [75, 174],
+      [35, 82],
+      [105, 62],
+      [175, 82],
+    ],
+  },
+  {
+    id: 'no-doubles',
+    label: '장타 경계',
+    positions: [
+      [105, 210],
+      [165, 184],
+      [140, 149],
+      [45, 184],
+      [70, 149],
+      [28, 55],
+      [105, 38],
+      [182, 55],
+    ],
+  },
+  {
+    id: 'pull-shift',
+    label: '당겨치기 시프트',
+    positions: [
+      [105, 210],
+      [162, 199],
+      [150, 154],
+      [62, 184],
+      [112, 152],
+      [60, 88],
+      [125, 58],
+      [185, 92],
+    ],
+  },
+];
+
+/** 슬롯의 기본 좌표는 기본 수비다 — 첫 화면이 곧 쓸 수 있는 배치여야 한다. */
+export const DEFAULT_SHIFT = DEFENSE_SHIFTS[0];
+
+/**
+ * 수비 범위 — **실제 야구 규칙**에서 수비수 앞에 그리는 원 (IDE-044)
+ *
+ * 기본 규칙 판에서 아웃이 되는 자리는 「수비수 그림에 맞으면」뿐인데, 그 넓이는
+ * 마커 여덟 장을 다 합쳐 35cm²로 페어 지역 465cm²의 7.6%다. 실제 야구는
+ * 인플레이 타구의 셋에 둘쯤이 아웃이다(2025 KBO 팀 투구 BABIP 평균 .312 →
+ * 아웃 68.8%). **수비수는 그려져 있는데 수비 범위가 없다**는 것이 이 판의
+ * 빈자리였고, 유격수 앞 땅볼이 안타가 되는 것이 그 증상이었다(2026-09-20
+ * 사용자 지적).
+ *
+ * 기본값과 상한은 사용자가 정해 준 값이다(같은 날) — 내야 20 → 26, 외야
+ * 28 → 34mm.
+ *
+ * - **내야 상한 26**은 3루수와 유격수 사이(51.7mm)가 딱 맞닿는 값이다. 둘 다
+ *   상한까지 올리면 그 사이로는 공이 못 빠진다.
+ * - **외야 상한 34**는 갭(72.8mm)에서 4mm가 남는다 — 외야는 끝까지 올려도
+ *   갭이 닫히지 않는다.
+ *
+ * `call`은 그 범위에 멈춘 공의 판정이다. **판에 적히는 말과 규칙문이 여기서
+ * 같이 나온다** — 두 곳에 따로 쓰면 한쪽만 고쳐 인쇄물과 설명이 어긋난다.
+ */
+export const DEFENSE_REACH: Readonly<
+  Record<DefenseZone, { baseMm: number; maxMm: number; call: string }>
+> = {
+  infield: { baseMm: 20, maxMm: 26, call: '땅볼 아웃' },
+  outfield: { baseMm: 28, maxMm: 34, call: '뜬공 아웃' },
+};
+
+/**
+ * 유격수·2루수 범위에 멈춘 공 — 주자가 1루에 있으면 아웃이 둘이다.
+ *
+ * 넓이로는 잡히지 않는 값어치다. 면적만 보면 능력치는 늘 외야에 주는 것이
+ * 이득이지만(원이 클수록 1mm가 늘리는 넓이가 크다) 이 두 자리만은 아웃을
+ * 하나가 아니라 둘로 만든다 — 그것이 내야에 능력치를 줄 이유다.
+ */
+export const DOUBLE_PLAY_CALL = '땅볼 · 병살';
+
+/** 그 자리의 범위에 멈춘 공을 뭐라고 읽는가. */
+export const reachCall = (position: DefensePosition): string =>
+  isDoublePlayPosition(position)
+    ? DOUBLE_PLAY_CALL
+    : DEFENSE_REACH[position.zone].call;
+
+/**
+ * 팀 수비 능력치 — 한 팀이 여덟 자리에 나눠 쓰는 mm의 합 (2026-09-20 사용자 요청).
+ *
+ * "중견수를 기본(28)에서 최대 34mm로 설정하면, 남은 능력치는 4mm를 다른 수비에
+ * 줄수있게해줘." 한 자리가 받을 수 있는 최대는 기본에서 상한까지인 6mm이고,
+ * 내야·외야가 나란히 6이라 **어느 자리든 같은 값을 받는다** — 배분이 자리
+ * 성격의 문제이지 산수의 문제가 되지 않게 한 것이다.
+ *
+ * 10mm는 **놀아 보며 맞출 나사**다(사용자 — "구현후에 조절해보면서 발란스를
+ * 맞춰볼께"). 지금 계산으로는 배분 없이 아웃 33.1%, 10mm를 다 쓰면 36~37%다.
+ */
+export const ABILITY_BUDGET_MM = 10;
+
+/** 한 자리가 기본에서 상한까지 받을 수 있는 mm. 내야·외야 모두 6이다. */
+export const abilityRoomMm = (zone: DefenseZone): number =>
+  DEFENSE_REACH[zone].maxMm - DEFENSE_REACH[zone].baseMm;
+
+/** 능력치를 얹은 실제 반경. 범위를 벗어난 능력치는 붙들어 둔다. */
+export const reachMm = (zone: DefenseZone, abilityMm: number): number => {
+  const room = abilityRoomMm(zone);
+  const given = Number.isFinite(abilityMm)
+    ? Math.min(Math.max(abilityMm, 0), room)
+    : 0;
+  return DEFENSE_REACH[zone].baseMm + given;
+};
+
+/**
+ * 실제 야구 규칙이 더 그리는 영역들 (IDE-044)
+ *
+ * 수비 범위 말고 판에 더 생기는 선은 둘뿐이다 — **선상 쐐기**와 **번트 가름선**.
+ *
+ * - `lineDriveDeg` — 파울라인 안쪽 7°다. 이 쐐기에 멈추면 좌익선상 · 우익선상
+ *   2루타다. **베이스 거리(`BASE_PATH_MM`) 바깥부터** 그린다: 홈–1루 변이 곧
+ *   파울라인(45°)이라 홈에서부터 그리면 쐐기가 1루 베이스와 흙 띠를 품어,
+ *   내야에 굴러 멈춘 공이 선상 2루타가 된다(2026-09-20 사용자 지적으로 되돌린
+ *   첫 안이 그랬다).
+ * - `buntDeg` — 아웃선 안을 가르는 각이다. 30°보다 파울라인 쪽이면 번트안타,
+ *   가운데(투수 정면)면 번트 실패다.
+ *
+ * 각은 `fieldPoint`와 같은 규약이다 — 중앙 담장이 0°, 파울라인이 ±45°.
+ */
+export const REAL_RULE_ZONES = {
+  lineDriveDeg: 38,
+  lineDriveFromMm: BASE_PATH_MM,
+  buntDeg: 30,
+} as const;
+
+/** 선상 쐐기 둘 — 3루 쪽이 먼저다(판에서 왼쪽이다). */
+export const LINE_DRIVE_SIDES = ['좌익선상', '우익선상'] as const;
+
+/** 쐐기 안에 적는 판정. */
+export const lineDriveCall = (
+  side: (typeof LINE_DRIVE_SIDES)[number],
+): string => `${side} 2루타`;
+
+/** 판정 차례에 적는 짧은 꼴 — 둘이 같은 결과라 '2루타'를 한 번만 쓴다. */
+export const LINE_DRIVE_CALL_SHORT = `${LINE_DRIVE_SIDES.join(' · ')} 2루타`;
+
+/**
+ * 번트 — **선언하고 튕긴다**. 아웃선 안은 지금 판 그대로 두고 판정만 더한다.
+ *
+ * 스트라이크가 쓰리번트 아웃으로 이어지는 것은 카운터가 이미 S 둘이라
+ * (`COUNT_PANEL`) 그려진 칸과 그대로 맞물린다 — 판에 칸을 더 그리지 않는다.
+ */
+export const BUNT_CALLS = {
+  hit: '번트안타',
+  fail: '번트 실패 — 아웃',
+  tooHard: '아웃선 밖 — 스트라이크',
+} as const;
+
+/**
+ * 판정 차례 — 겹치는 자리에서 무엇이 이기나 (IDE-044)
+ *
+ * 수비 범위·선상 쐐기·2루타선은 서로 겹친다. 차례를 못 박지 않으면 옛 인쇄본이
+ * 그랬듯 아이들 합의에 맡겨지고, 그 합의가 매번 달라지면 형제끼리 싸운다.
+ *
+ * **판과 규칙문이 같은 목록을 읽는다** — 인쇄물 한쪽에 이 일곱 줄이 찍히고
+ * (`./artwork/rule-zones.ts`), 소개 페이지의 게임 방법에도 같은 문장이 간다
+ * (`./rules.ts`). 종이만 보고 판정할 수 있어야 하므로 판 쪽이 원본이다.
+ */
+export const JUDGE_ORDER: ReadonlyArray<{
+  /** 공이 멈춘 자리. */
+  readonly where: string;
+  /** 그 자리의 판정. */
+  readonly call: string;
+}> = [
+  { where: '수비수에 닿았다', call: '아웃' },
+  {
+    where: '아웃선 안',
+    call: `번트 판정 · 약한 ${DEFENSE_REACH.infield.call}`,
+  },
+  // 내야·외야를 갈라 적되 짧게 — 원 안에 「땅볼 아웃」·「땅볼 · 병살」·「뜬공
+  // 아웃」이 이미 적혀 있어, 여기서는 어느 쪽 원인지만 가리키면 된다.
+  { where: '수비 범위 안', call: '내야 땅볼 · 병살 · 외야 뜬공' },
+  { where: '홈런선 밖', call: '홈런' },
+  { where: '선상 쐐기', call: LINE_DRIVE_CALL_SHORT },
+  { where: '2루타선 밖', call: '2루타' },
+  { where: '나머지', call: '안타' },
+];
+
+/** 판정 차례 한 줄을 글로 — 규칙문이 쓴다. */
+export const judgeLine = (step: (typeof JUDGE_ORDER)[number]): string =>
+  `${step.where} → ${step.call}`;
+
+/**
+ * 규칙 한 벌의 id와 이름 — `rule-set` 선택 슬롯이 이 목록을 쓴다.
+ *
+ * **기본이 `basic`이다.** 지금 판정 넷은 옛 인쇄본 둘에서 온 것이고 여섯 살이
+ * 색만 보고 읽을 수 있다는 것이 그 값어치다(2026-09-20 결정). 실제 야구 용어는
+ * 옵션으로만 들어가고, 기본 판은 한 획도 바뀌지 않는다.
+ */
+export const RULE_SETS = [
+  { id: 'basic', label: '기본 규칙' },
+  { id: 'real', label: '실제 야구 규칙' },
+] as const;
+
+export type RuleSetId = (typeof RULE_SETS)[number]['id'];
+export const DEFAULT_RULE_SET: RuleSetId = 'basic';
+
+/**
+ * 실제 야구 규칙이 읽는 슬롯 둘의 id.
+ *
+ * 도안 정의(`./index.ts`)가 슬롯을 선언하고 아트워크 생성기(`./artwork/`)가
+ * 그 값을 읽는다. 문자열을 두 곳에 적으면 한쪽 오타가 **조용히 기본값으로
+ * 떨어져** 판이 안 바뀐다 — 동적 파트에서는 그것이 오류로 드러나지 않는다.
+ */
+export const RULE_SET_SLOT_ID = 'rule-set';
+export const ABILITY_SLOT_ID = 'defense-ability';
+
+/** 수비 자리 하나의 등번호 슬롯 id. 좌표도 이 id로 찾는다. */
+export const defenseSlotId = (positionId: string): string =>
+  `defense-${positionId}`;
 
 /**
  * 타격 자세 열 — **스탠드 카드 뒷면**이 하나씩 나눠 쓴다(2026-09-08 사용자 요청).
