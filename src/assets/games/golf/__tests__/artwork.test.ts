@@ -52,14 +52,24 @@ import {
   OUT_HOLES,
   PANEL,
   PLAYER_COUNT,
+  PAR_RULER,
+  LAST_ROUND_RULER,
+  ROUND_CHART,
+  ROUND_RULERS,
+  ROUND_SHEET,
+  TEN_PAIRS,
   SCORE_CARD,
   SCORE_TABLE_HEIGHT_MM,
   SCORE_TABLE_WIDTH_MM,
   SUM_COLUMNS_MM,
   TEE_Y_MM,
   BOARD,
+  chartHoleX,
+  chartValueY,
   cupPoint,
   greenCenter,
+  rulerValueX,
+  tenPairCenterX,
   holePartId,
   sumColumnEdges,
   sumPar,
@@ -67,7 +77,7 @@ import {
   type HoleSpec,
 } from '../dimensions';
 import { RULES } from '../rules';
-import { PENALTY, termsForPar } from '../scoring';
+import { PENALTY, SCORE_TERMS, termsForPar } from '../scoring';
 import { estimateTextWidthMm } from '../../../shared/svg';
 import { COMPARE_CELLS, pieceCenters, pieceWidth } from '../artwork/score-card';
 
@@ -87,9 +97,9 @@ describe('도안 구조', () => {
     expect(game.parts.filter((p) => p.kind === 'board')).toHaveLength(1);
     // 보드는 1번 홀이다 — 썸네일과 소개 페이지가 가리킬 대표 판이다.
     expect(game.parts[0].id).toBe(holePartId(1));
-    // 홀 2~18 · 나만의 홀 · 기록표.
+    // 홀 2~18 · 나만의 홀 · 기록표 · 오늘의 라운드(IDE-043).
     expect(game.parts.filter((p) => p.kind === 'sheet')).toHaveLength(
-      HOLES.length - 1 + 2,
+      HOLES.length - 1 + 3,
     );
     // 깃대에 이어 공까지 뺐다(IDE-032) — 부속이 하나도 없는 첫 게임이다.
     expect(game.parts.filter((p) => p.kind === 'cutout')).toHaveLength(0);
@@ -105,11 +115,11 @@ describe('도안 구조', () => {
     expect(grouped).toHaveLength(HOLES.length + 1);
     expect(grouped[grouped.length - 1].id).toBe(CUSTOM_HOLE.partId);
     expect(new Set(grouped.map((p) => p.series)).size).toBe(1);
-    // 기록표와 부속은 묶이지 않는다 — 단추 하나씩으로 남는다.
+    // 기록표와 오늘의 라운드는 묶이지 않는다 — 단추 하나씩으로 남는다.
     expect(partOf('score-card').series).toBeUndefined();
-    expect(partOf('score-card').series).toBeUndefined();
+    expect(partOf(ROUND_SHEET.partId).series).toBeUndefined();
     // 접히는 것은 화면뿐이다. 인쇄는 파트마다 한 줄이라 한 번에 다 뽑는다.
-    expect(game.parts).toHaveLength(HOLES.length + 2);
+    expect(game.parts).toHaveLength(HOLES.length + 3);
   });
 
   it('홀 판은 낱장이라 오림선도 접는선도 없다', () => {
@@ -759,6 +769,114 @@ describe('기록표', () => {
     expect(game.slots.some((s) => s.id === 'course-name')).toBe(false);
     expect(slotsOfPart(game, 'score-card').length).toBeGreaterThan(0);
     expect(slotsOfPart(game, CUSTOM_HOLE.partId).length).toBeGreaterThan(0);
+  });
+});
+
+describe('오늘의 라운드 (IDE-043)', () => {
+  const svg = () => ARTWORK[ROUND_SHEET.partId]();
+
+  it('A4 세로 낱장이고 홀 판 묶음에 들어가지 않는다', () => {
+    const part = partOf(ROUND_SHEET.partId);
+    expect(part.kind).toBe('sheet');
+    expect(part.orientation).toBe('portrait');
+    expect(part.widthMm).toBe(BOARD.widthMm);
+    expect(part.heightMm).toBe(BOARD.heightMm);
+    // 기록표와 나란히 서는 낱장이다 — 셀렉트로 접히면 안 된다.
+    expect(part.series).toBeUndefined();
+  });
+
+  it('네 덩이가 세로로 겹치지 않고 종이 안에 든다', () => {
+    const chartBottom = ROUND_CHART.yMm + ROUND_CHART.heightMm + 5;
+    expect(chartBottom).toBeLessThan(PAR_RULER.titleYMm);
+    expect(PAR_RULER.axisYMm + ROUND_RULERS.zeroNoteDyMm).toBeLessThan(
+      LAST_ROUND_RULER.titleYMm,
+    );
+    expect(LAST_ROUND_RULER.axisYMm + ROUND_RULERS.zeroNoteDyMm).toBeLessThan(
+      TEN_PAIRS.titleYMm,
+    );
+    expect(TEN_PAIRS.circleCyMm + TEN_PAIRS.circleRMm).toBeLessThan(
+      TEN_PAIRS.exampleYMm,
+    );
+    expect(TEN_PAIRS.exampleYMm).toBeLessThan(ROUND_SHEET.heightMm);
+    expect(ROUND_RULERS.xMm + ROUND_RULERS.widthMm).toBeLessThanOrEqual(
+      ROUND_SHEET.widthMm - ROUND_SHEET.marginMm,
+    );
+  });
+
+  it('0선 아래가 남아 있다 — 그것이 이 종이의 목적이다', () => {
+    // 0 아래를 지우면 그래프는 "위로 올라가는 선"일 뿐이다.
+    expect(ROUND_CHART.bottomValue).toBeLessThan(0);
+    const zeroY = chartValueY(0);
+    expect(zeroY).toBeGreaterThan(ROUND_CHART.yMm);
+    expect(zeroY).toBeLessThan(ROUND_CHART.yMm + ROUND_CHART.heightMm);
+    // 어제 기록(아이 +27 · 아빠 +34)이 그래프 안에 들어간다.
+    expect(ROUND_CHART.topValue).toBeGreaterThanOrEqual(34);
+    expect(svg()).toContain('이 아래로 내려가면 언더파');
+  });
+
+  it('홀 열여덟 개의 점 자리가 모두 그래프 안에 있다', () => {
+    for (const hole of HOLES) {
+      const x = chartHoleX(hole.number);
+      expect(x).toBeGreaterThanOrEqual(ROUND_CHART.xMm);
+      expect(x).toBeLessThanOrEqual(ROUND_CHART.xMm + ROUND_CHART.widthMm);
+    }
+    expect(chartHoleX(1)).toBeLessThan(chartHoleX(HOLES.length));
+  });
+
+  it('눈금자 둘의 0이 서로 다른 자리에 있다', () => {
+    // 이 종이가 가르치려는 것이 "0은 고르는 자리"다. 파와 견주면 0이 왼쪽에
+    // 치우치고(언더파는 한참 뒤에나 나온다), 지난번과 견주면 한가운데다.
+    const center = ROUND_RULERS.xMm + ROUND_RULERS.widthMm / 2;
+    expect(rulerValueX(0, PAR_RULER)).toBeLessThan(center - 20);
+    expect(rulerValueX(0, LAST_ROUND_RULER)).toBeCloseTo(center, 5);
+    // 두 눈금자 모두 0을 품는다.
+    for (const ruler of [PAR_RULER, LAST_ROUND_RULER]) {
+      expect(ruler.min).toBeLessThan(0);
+      expect(ruler.max).toBeGreaterThan(0);
+    }
+  });
+
+  it('양쪽 끝의 뜻이 말로 적혀 있다', () => {
+    // 화살표만으로는 어느 쪽이 좋은 것인지 알 수 없다.
+    const drawn = svg();
+    for (const word of [
+      '언더파 · 파보다 적게 쳤다',
+      '오버파 · 파보다 많이 쳤다',
+      '줄었다 · 지난번보다 잘 쳤다',
+      '늘었다 · 지난번보다 많이 쳤다',
+      '이븐파',
+      '지난번과 똑같다',
+    ])
+      expect(drawn).toContain(word);
+  });
+
+  it('10이 되는 짝이 아홉이고, 쓰는 법이 함께 있다', () => {
+    expect(TEN_PAIRS.count).toBe(9);
+    for (let i = 0; i < TEN_PAIRS.count; i += 1) {
+      // 위 줄 i+1, 아래 줄 count-i — 세로로 더하면 10이다.
+      expect(i + 1 + (TEN_PAIRS.count - i)).toBe(10);
+      const x = tenPairCenterX(i);
+      expect(x - TEN_PAIRS.circleRMm).toBeGreaterThanOrEqual(0);
+      expect(x + TEN_PAIRS.circleRMm).toBeLessThanOrEqual(ROUND_SHEET.widthMm);
+    }
+    // 표만 있으면 장식이다 — 쓰는 법 한 줄이 붙어야 도구가 된다.
+    expect(svg()).toContain('10이 되는 짝부터 동그라미로 묶어라');
+  });
+
+  it('점수의 이름을 눈금에 얹지 않는다', () => {
+    // −1이 버디인 것은 **홀 하나의 파차**에서만 참이다. 이 종이의 그래프는
+    // 누적이고 눈금자는 라운드 합계라, 얹으면 틀린 말이 된다. 이름은 홀 판의
+    // 카드에 있고 거기가 맞는 자리다.
+    const drawn = svg();
+    // '파' 한 글자는 뺀다 — "이븐파" · "누적 파차" 같은 보통 말에도 들어간다.
+    for (const term of SCORE_TERMS.filter((t) => t.label.length > 1))
+      expect(drawn).not.toContain(term.label);
+  });
+
+  it('인쇄 파이프라인이 읽을 수 있는 요소만 쓴다', () => {
+    // `parseArtwork`는 rect · line · circle · path · text 만 읽는다. ellipse 를
+    // 쓰면 화면에만 보이고 PDF 에서 사라진다(IDE-043에서 겪었다).
+    expect(svg()).not.toContain('<ellipse');
   });
 });
 
