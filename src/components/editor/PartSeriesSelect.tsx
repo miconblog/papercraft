@@ -55,7 +55,18 @@ export function PartSeriesSelect({
         className={
           'rounded-full text-xs ' +
           (active
-            ? 'border-primary bg-primary text-primary-foreground'
+            ? // 다크에서 배경을 **다시 한 번** 눌러 준다. 셀렉트 트리거의 기본
+              // 차림에 `dark:bg-input/30`이 들어 있어, `bg-primary`만으로는
+              // 다크에서 배경이 어두운 채로 남는다. 글자는 그대로
+              // `--primary-foreground`(다크에서 거의 검정)로 찍히므로 어두운
+              // 바탕에 어두운 글자가 되어 읽히지 않았다(2026-09-20 사용자 제보).
+              // 단추와 달리 이 한 군데만 이런 처치가 필요한 것은, 단추에는
+              // 눌러야 할 기본 배경이 없기 때문이다.
+              //
+              // 화살표도 같이 넘긴다 — 트리거가 아이콘에
+              // `text-muted-foreground`를 박아 두는데, 그 회색은 주황 바탕에서
+              // 묻힌다(밝은 모드에서도 마찬가지였다).
+              'border-primary bg-primary text-primary-foreground dark:bg-primary dark:hover:bg-primary [&_svg]:text-primary-foreground'
             : 'hover:border-primary')
         }
       >
