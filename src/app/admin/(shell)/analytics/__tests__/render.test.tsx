@@ -64,12 +64,12 @@ beforeEach(() => {
 });
 
 describe('AnalyticsPage — 기간과 나라', () => {
-  it('기본은 최근 30일이고, 그 기간으로 조회한다', async () => {
+  it('기본은 최근 7일이고, 그 기간으로 조회한다', async () => {
     await draw({});
     expect(loadReport).toHaveBeenCalledWith(
-      expect.objectContaining({ from: '2026-08-21', to: '2026-09-19' }),
+      expect.objectContaining({ from: '2026-09-13', to: '2026-09-19' }),
     );
-    expect(screen.getByRole('link', { name: '30일' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: '7일' })).toHaveAttribute(
       'aria-current',
       'page',
     );
