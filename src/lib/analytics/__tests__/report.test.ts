@@ -40,7 +40,7 @@ function fakeClient() {
 
 vi.mock('../client', () => ({ reportClient: () => fakeClient() }));
 
-const { loadFunnel, loadReport } = await import('../report');
+const { loadFunnel, loadGameTotals, loadReport } = await import('../report');
 const RANGE = { from: '2025-09-20', to: '2026-09-19' };
 
 beforeEach(() => {
@@ -131,5 +131,30 @@ describe('loadReport', () => {
   it('방문 통계는 퍼널 표를 읽지 않는다 — 화면이 갈라졌다', async () => {
     await loadReport(RANGE);
     expect(requested.map((r) => r.table)).not.toContain('daily_funnel');
+  });
+
+  it('게임 공개 화면용 누적 — 날짜를 가로질러 게임별로 합친다', async () => {
+    tables.daily_game = [
+      { day: '2025-01-01', game_id: 'maze', views: 3, downloads: 1 },
+      { day: '2026-09-19', game_id: 'maze', views: 2, downloads: 0 },
+      { day: '2026-09-19', game_id: 'golf', views: 7, downloads: 4 },
+    ];
+
+    const totals = await loadGameTotals();
+    expect(totals?.get('maze')).toEqual({
+      game_id: 'maze',
+      views: 5,
+      downloads: 1,
+    });
+    expect(totals?.get('golf')).toEqual({
+      game_id: 'golf',
+      views: 7,
+      downloads: 4,
+    });
+  });
+
+  it('게임별 누적을 못 읽으면 null — 0 으로 꾸미지 않는다', async () => {
+    tables.daily_game = new Error('boom');
+    expect(await loadGameTotals()).toBeNull();
   });
 });

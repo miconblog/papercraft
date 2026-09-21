@@ -136,6 +136,17 @@ async function readAll(
   }
 }
 
+/** 게임별 줄을 합으로 접는다. 많이 본 게임이 위로 온다. */
+const foldGames = (rows: readonly Row[]): GameTotal[] =>
+  fold(
+    rows,
+    (row) => String(row.game_id),
+    (into, row) => [into[0] + n(row.views), into[1] + n(row.downloads)],
+    2,
+  )
+    .map(([game_id, [views, downloads]]) => ({ game_id, views, downloads }))
+    .sort((a, b) => b.views - a.views);
+
 /** 일자별 집계 표 하나를 기간으로 잘라 전부 읽는다. */
 const readDaily = (
   supabase: AnalyticsSupabase,
@@ -276,14 +287,7 @@ export async function loadReport(range: {
           };
         })
         .sort((a, b) => b.sessions - a.sessions || b.pageviews - a.pageviews),
-      games: fold(
-        games.data ?? [],
-        (row) => String(row.game_id),
-        (into, row) => [into[0] + n(row.views), into[1] + n(row.downloads)],
-        2,
-      )
-        .map(([game_id, [views, downloads]]) => ({ game_id, views, downloads }))
-        .sort((a, b) => b.views - a.views),
+      games: foldGames(games.data ?? []),
       countries: countries.error
         ? null
         : fold(
@@ -372,6 +376,41 @@ export async function loadCrawls(range: {
     return foldCrawls((rows.data ?? []) as unknown as CrawlRow[]);
   } catch (cause) {
     console.warn('[analytics] 크롤러 집계 조회 실패:', cause);
+    return null;
+  }
+}
+
+/**
+ * 게임별 누적 조회·다운로드 — 게임 공개 화면(`/admin/games`)이 읽는다.
+ *
+ * 기간을 자르지 않는다. 오픈일을 정하는 화면이라 "이 게임이 지금까지 얼마나
+ * 읽혔나"가 필요하지, 기간 필터까지 들일 이유가 없다 — 기간별로 보려면 방문
+ * 통계로 간다. 게임 수 × 날짜 수라 줄이 많지 않다.
+ *
+ * `null` 이면 저장소에 닿지 못한 것이다 — 화면이 숫자 칸을 비워 둔다.
+ */
+export async function loadGameTotals(): Promise<Map<string, GameTotal> | null> {
+  const supabase = reportClient();
+  if (!supabase) return null;
+
+  try {
+    await refreshRecent(supabase);
+    const rows = await readAll(
+      (start, end) =>
+        supabase
+          .from('daily_game')
+          .select('day, game_id, views, downloads')
+          .order('day')
+          .order('game_id')
+          .range(start, end) as unknown as PromiseLike<Page>,
+    );
+    if (rows.error) {
+      console.warn('[analytics] 게임별 집계 조회 실패:', rows.error.message);
+      return null;
+    }
+    return new Map(foldGames(rows.data ?? []).map((row) => [row.game_id, row]));
+  } catch (cause) {
+    console.warn('[analytics] 게임별 집계 조회 실패:', cause);
     return null;
   }
 }
