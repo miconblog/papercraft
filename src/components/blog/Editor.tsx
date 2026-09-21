@@ -10,7 +10,7 @@
  *
  * **폼과는 숨은 칸 하나로 이어진다.** 편집기 상태를 서버 액션에 넘기는 다른
  * 길(`onSubmit` 가로채기 따위)을 쓰지 않는 것은, 편집 화면의 버튼이 넷이고
- * (`저장`·`지금 내기`·`사진 넣기`·`대표 사진으로`) 그 넷이 전부 같은 폼을
+ * (`저장`·`발행하기`·`사진 넣기`·`대표 사진으로`) 그 넷이 전부 같은 폼을
  * 통째로 보내기 때문이다. 숨은 칸이면 어느 버튼을 눌러도 지금 글이 함께 간다.
  *
  * `'use client'` 는 여기까지다 — 편집기 코드는 관리자 화면에만 실리고 글을
@@ -326,7 +326,7 @@ export function Editor({
     editorProps: {
       attributes: {
         class:
-          'min-h-72 max-w-none px-3 py-3 leading-8 outline-none [&_h1]:mt-6 [&_h1]:text-xl [&_h1]:font-bold [&_h2]:mt-5 [&_h2]:text-lg [&_h2]:font-semibold [&_h3]:mt-4 [&_h3]:font-semibold [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mt-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_blockquote]:mt-3 [&_blockquote]:border-l-4 [&_blockquote]:border-retro-teal/50 [&_blockquote]:pl-3 [&_blockquote]:italic [&_pre]:mt-3 [&_pre]:rounded-md [&_pre]:bg-secondary/60 [&_pre]:p-3 [&_pre]:font-mono [&_pre]:text-sm [&_img]:my-4 [&_img]:rounded-md [&_img]:border [&_img]:border-border [&_hr]:my-5 [&_hr]:border-border [&_p]:mt-3',
+          'min-h-72 flex-1 max-w-none px-3 py-3 leading-8 outline-none [&_h1]:mt-6 [&_h1]:text-xl [&_h1]:font-bold [&_h2]:mt-5 [&_h2]:text-lg [&_h2]:font-semibold [&_h3]:mt-4 [&_h3]:font-semibold [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mt-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_blockquote]:mt-3 [&_blockquote]:border-l-4 [&_blockquote]:border-retro-teal/50 [&_blockquote]:pl-3 [&_blockquote]:italic [&_pre]:mt-3 [&_pre]:rounded-md [&_pre]:bg-secondary/60 [&_pre]:p-3 [&_pre]:font-mono [&_pre]:text-sm [&_img]:my-4 [&_img]:rounded-md [&_img]:border [&_img]:border-border [&_hr]:my-5 [&_hr]:border-border [&_p]:mt-3',
       },
 
       /**
@@ -420,7 +420,10 @@ export function Editor({
   );
 
   return (
-    <div className="mt-1 overflow-hidden rounded-md border border-border-strong bg-popover">
+    // 부모가 세로 flex 면 남는 높이를 채운다 — 글 쓰기 화면에서 옆칸이 길 때
+    // 본문 칸이 짧게 끝나 아래가 비지 않게(2026-09-22 사용자 요청). 쓰는 자리는
+    // 가운데 `EditorContent` 라, 늘어난 만큼 눌러서 쓸 수 있는 칸이 된다.
+    <div className="mt-1 flex flex-1 flex-col overflow-hidden rounded-md border border-border-strong bg-popover">
       {editor && (
         <Toolbar
           editor={editor}
@@ -429,7 +432,7 @@ export function Editor({
         />
       )}
       <CoverContext.Provider value={cover}>
-        <EditorContent editor={editor} />
+        <EditorContent editor={editor} className="flex flex-1 flex-col" />
       </CoverContext.Provider>
 
       {/* 도구 막대의 사진 버튼이 여는 자리. 폼에 실리면 안 되므로 이름이 없다

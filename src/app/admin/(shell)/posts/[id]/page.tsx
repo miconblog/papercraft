@@ -93,7 +93,8 @@ export default async function AdminPostEditorPage({
   if (!post) notFound();
 
   return (
-    <div className="w-full max-w-2xl">
+    // 옆칸이 서는 넓은 화면에서는 폭 제한을 푼다.
+    <div className="w-full max-w-2xl xl:max-w-none">
       <Link
         href="/admin/posts"
         className="text-sm text-muted-foreground hover:underline"
@@ -124,154 +125,183 @@ export default async function AdminPostEditorPage({
         // `formAction` 이 붙지 않은 곳(모바일 키보드의 「이동」 등)에서 눌러도
         // 저장으로 떨어지게 폼 자신의 기본 동작을 저장으로 둔다.
         action={savePost}
-        className="mt-6 space-y-5"
+        // 넓은 화면에서는 두 칸이다 — 왼쪽은 제목·본문만, 나머지 설정은 오른쪽
+        // 옆칸으로 뺀다(2026-09-22 사용자 요청: 본문 쓰기에 집중). 폼은 여전히
+        // 하나다. 옆칸의 단추를 눌러도 쓰던 본문이 함께 저장돼야 한다.
+        // 좁은 화면에서는 옆칸이 본문 아래로 내려간다.
+        className="mt-6 grid gap-6 xl:grid-cols-[auto_minmax(0,1fr)]"
       >
         <input type="hidden" name="id" value={post.id} />
         <input type="hidden" name="hidden" value={post.hidden ? '1' : '0'} />
         <input type="hidden" name="coverUrl" value={post.coverUrl ?? ''} />
 
-        <label className="block text-sm">
-          <span className="font-medium">제목</span>
-          <input
-            name="title"
-            defaultValue={post.title}
-            required
-            className={FIELD}
-          />
-        </label>
+        {/* 본문 칸의 폭은 **미리보기의 줄바꿈**에 맞춘다(2026-09-22 사용자
+            요청). 미리보기 본문은 16px 글씨로 42rem(= 42em) 폭이고, 편집기는
+            `text-sm`(14px)이라 같은 42em 이면 한 줄에 같은 글자 수가 든다:
+            42 × 0.875rem + 좌우 여백 1.5rem + 테두리 2px. 글자 크기를 바꾸면
+            이 식도 같이 고친다.
+            넓은 화면에서는 옆칸과 높이를 맞춰 편집기가 남는 높이를 채운다. */}
+        <div className="flex w-full max-w-[calc(38.25rem+2px)] min-w-0 flex-col gap-5 xl:w-[calc(38.25rem+2px)]">
+          <label className="block text-sm">
+            <span className="font-medium">제목</span>
+            <input
+              name="title"
+              defaultValue={post.title}
+              required
+              className={FIELD}
+            />
+          </label>
 
-        <label className="block text-sm">
-          <span className="font-medium">주소</span>
-          <span className="ml-2 text-xs text-muted-foreground">
-            /blog/… · 비우면 제목에서 만듭니다
-          </span>
-          <input
-            name="slug"
-            defaultValue={post.slug}
-            inputMode="url"
-            autoCapitalize="none"
-            autoCorrect="off"
-            placeholder="yut-stick-balance"
-            className={`${FIELD} font-mono`}
-          />
-          <span className="mt-1 block text-xs text-muted-foreground">
-            영문 소문자·숫자·붙임표만 쓴다. 제목이 한글뿐이면 날짜로 만들어
-            두니, 내기 전에 고치면 된다.
-          </span>
-        </label>
-
-        <label className="block text-sm">
-          <span className="font-medium">요약</span>
-          <span className="ml-2 text-xs text-muted-foreground">
-            목록과 검색 결과에 뜬다 · 비우면 본문 앞머리를 쓴다
-          </span>
-          <input name="summary" defaultValue={post.summary} className={FIELD} />
-        </label>
-
-        {/* 본문만 클라이언트 컴포넌트다(IDE-028). 나머지 칸은 그대로 평범한
-            폼이라, 편집기가 안 떠도 제목·주소·게시 시각은 고칠 수 있다. */}
-        <div className="text-sm">
-          <span className="font-medium">본문</span>
-          <span className="ml-2 text-xs text-muted-foreground">
-            보이는 대로 씁니다 · 엔터를 누른 자리에서 줄이 바뀝니다
-          </span>
-          <Editor
-            name="doc"
-            initial={post.doc}
-            upload={uploadPhoto}
-            coverUrl={post.coverUrl}
-            pickCover={setCoverFromBody}
-          />
-        </div>
-
-        {/* 본문 사진은 편집기가 맡는다(끌어다 놓기·붙여넣기). 여기 남은 것은
-            **대표 사진**뿐이다 — 목록 카드와 공유 카드에 서는 한 장이라 본문의
-            사진들과 하는 일이 다르다. */}
-        <fieldset className="rounded-lg border border-border p-4">
-          <legend className="px-1 text-sm font-medium">대표 사진</legend>
-          <p className="text-xs text-muted-foreground">
-            목록 카드와 공유 카드(카톡·트위터)에 서는 한 장입니다. 없으면 사이트
-            기본 이미지가 나갑니다. 본문 사진 위의 ☆ 단추로도 고를 수 있습니다.
-          </p>
-
-          {post.coverUrl && (
-            <div className="mt-3 flex items-start gap-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={post.coverUrl}
-                alt="대표 사진"
-                className="h-20 w-28 rounded-md border border-border object-cover"
-              />
-              <button
-                type="submit"
-                formAction={clearCoverImage}
-                className={SECONDARY}
-              >
-                떼기
-              </button>
+          {/* 본문만 클라이언트 컴포넌트다(IDE-028). 나머지 칸은 그대로 평범한
+              폼이라, 편집기가 안 떠도 제목·주소·게시 시각은 고칠 수 있다. */}
+          <div className="flex flex-1 flex-col text-sm">
+            <div>
+              <span className="font-medium">본문</span>
+              <span className="ml-2 text-xs text-muted-foreground">
+                보이는 대로 씁니다 · 엔터를 누른 자리에서 줄이 바뀝니다
+              </span>
             </div>
-          )}
-
-          <div className="mt-3">
-            {/* 폰에서는 `accept` 한 줄로 카메라도 함께 뜬다. 고른 사진은 올리기
-                전에 브라우저에서 줄인다(IDE-028). */}
-            <PhotoField
-              name="image"
-              accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+            <Editor
+              name="doc"
+              initial={post.doc}
+              upload={uploadPhoto}
+              coverUrl={post.coverUrl}
+              pickCover={setCoverFromBody}
             />
           </div>
 
-          <button
-            type="submit"
-            formAction={setCoverImage}
-            className={`mt-3 ${SECONDARY}`}
-          >
-            대표 사진으로 세우기
-          </button>
-          <p className="mt-2 text-xs text-muted-foreground">
-            누르면 <strong>쓰던 글이 먼저 저장</strong>됩니다. 사진 주소에는
-            추측할 수 없는 이름이 붙습니다.
-          </p>
-        </fieldset>
-
-        <label className="block text-sm">
-          <span className="font-medium">게시 시각 (KST)</span>
-          <span className="ml-2 text-xs text-muted-foreground">
-            비우면 초안 — 아무에게도 안 보인다
-          </span>
-          <input
-            type="datetime-local"
-            name="publishAt"
-            defaultValue={
-              post.publishAt === null ? '' : instantToKstLocal(post.publishAt)
-            }
-            className={FIELD}
-          />
-        </label>
-
-        <div className="flex flex-wrap items-center gap-2 pt-1">
-          <button type="submit" className={PRIMARY}>
-            저장
-          </button>
-          <button type="submit" formAction={publishNow} className={SECONDARY}>
-            지금 내기
-          </button>
-          {!isNew && (
-            // **새 창으로 연다**(2026-09-10 사용자 신고). 같은 창에서 열면
-            // 저장하지 않은 글이 날아간다 — 편집기는 쓰던 글을 브라우저에만
-            // 들고 있다. 새 창에는 마지막으로 저장한 글이 보인다.
-            <Link
-              href={`/admin/posts/${post.id}/preview`}
-              target="_blank"
-              rel="noopener noreferrer"
-              title="새 창에서 마지막으로 저장한 글을 봅니다"
-              className={`inline-flex items-center gap-1.5 ${SECONDARY}`}
-            >
-              <EyeIcon className="size-4" aria-hidden />
-              미리보기
-            </Link>
-          )}
+          {/* 본문을 다 쓴 자리에 미리보기는 왼쪽 끝, 저장은 오른쪽 끝(2026-09-22
+              사용자 요청). 새 글에는 미리보기가 없어 저장만 남는다. 옆칸의
+              다른 단추도 누르면 먼저 저장한다. */}
+          <div className="flex items-center justify-end gap-2">
+            {!isNew && (
+              // **새 창으로 연다**(2026-09-10 사용자 신고). 같은 창에서 열면
+              // 저장하지 않은 글이 날아간다 — 편집기는 쓰던 글을 브라우저에만
+              // 들고 있다. 새 창에는 마지막으로 저장한 글이 보인다.
+              <Link
+                href={`/admin/posts/${post.id}/preview`}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="새 창에서 마지막으로 저장한 글을 봅니다"
+                className={`mr-auto inline-flex items-center gap-1.5 ${SECONDARY}`}
+              >
+                <EyeIcon className="size-4" aria-hidden />
+                미리보기
+              </Link>
+            )}
+            <button type="submit" className={PRIMARY}>
+              저장
+            </button>
+          </div>
         </div>
+
+        <aside aria-label="글 설정" className="space-y-5">
+          {/* 내는 일은 여기서 — 게시 시각과 발행하기. */}
+          <div className="space-y-3 rounded-lg border border-border p-4">
+            <label className="block text-sm">
+              <span className="font-medium">게시 시각 (KST)</span>
+              <span className="mt-0.5 block text-xs text-muted-foreground">
+                비우면 초안 — 아무에게도 안 보인다
+              </span>
+              <input
+                type="datetime-local"
+                name="publishAt"
+                defaultValue={
+                  post.publishAt === null
+                    ? ''
+                    : instantToKstLocal(post.publishAt)
+                }
+                className={FIELD}
+              />
+            </label>
+            <button type="submit" formAction={publishNow} className={SECONDARY}>
+              발행하기
+            </button>
+          </div>
+
+          <label className="block text-sm">
+            <span className="font-medium">주소</span>
+            <span className="mt-0.5 block text-xs text-muted-foreground">
+              /blog/… · 비우면 제목에서 만듭니다
+            </span>
+            <input
+              name="slug"
+              defaultValue={post.slug}
+              inputMode="url"
+              autoCapitalize="none"
+              autoCorrect="off"
+              placeholder="yut-stick-balance"
+              className={`${FIELD} font-mono`}
+            />
+            <span className="mt-1 block text-xs text-muted-foreground">
+              영문 소문자·숫자·붙임표만 쓴다. 제목이 한글뿐이면 날짜로 만들어
+              두니, 내기 전에 고치면 된다.
+            </span>
+          </label>
+
+          <label className="block text-sm">
+            <span className="font-medium">요약</span>
+            <span className="mt-0.5 block text-xs text-muted-foreground">
+              목록과 검색 결과에 뜬다 · 비우면 본문 앞머리를 쓴다
+            </span>
+            <input
+              name="summary"
+              defaultValue={post.summary}
+              className={FIELD}
+            />
+          </label>
+
+          {/* 본문 사진은 편집기가 맡는다(끌어다 놓기·붙여넣기). 여기 남은 것은
+              **대표 사진**뿐이다 — 목록 카드와 공유 카드에 서는 한 장이라 본문의
+              사진들과 하는 일이 다르다. */}
+          <fieldset className="rounded-lg border border-border p-4">
+            <legend className="px-1 text-sm font-medium">대표 사진</legend>
+            <p className="text-xs text-muted-foreground">
+              목록 카드와 공유 카드(카톡·트위터)에 서는 한 장입니다. 없으면
+              사이트 기본 이미지가 나갑니다. 본문 사진 위의 ☆ 단추로도 고를 수
+              있습니다.
+            </p>
+
+            {post.coverUrl && (
+              <div className="mt-3 flex items-start gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={post.coverUrl}
+                  alt="대표 사진"
+                  className="h-20 w-28 rounded-md border border-border object-cover"
+                />
+                <button
+                  type="submit"
+                  formAction={clearCoverImage}
+                  className={SECONDARY}
+                >
+                  떼기
+                </button>
+              </div>
+            )}
+
+            <div className="mt-3">
+              {/* 폰에서는 `accept` 한 줄로 카메라도 함께 뜬다. 고른 사진은 올리기
+                  전에 브라우저에서 줄인다(IDE-028). */}
+              <PhotoField
+                name="image"
+                accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+              />
+            </div>
+
+            <button
+              type="submit"
+              formAction={setCoverImage}
+              className={`mt-3 ${SECONDARY}`}
+            >
+              대표 사진으로 세우기
+            </button>
+            <p className="mt-2 text-xs text-muted-foreground">
+              누르면 <strong>쓰던 글이 먼저 저장</strong>됩니다. 사진 주소에는
+              추측할 수 없는 이름이 붙습니다.
+            </p>
+          </fieldset>
+        </aside>
       </form>
 
       {/* 저장 안 한 글을 두고 떠나기 전에 묻는다(IDE-036). **저장에 성공했을

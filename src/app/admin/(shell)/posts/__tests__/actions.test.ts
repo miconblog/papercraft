@@ -21,8 +21,15 @@ vi.mock('next/headers', () => ({ cookies: async () => ({ get }) }));
 vi.mock('next/navigation', () => ({ redirect, notFound }));
 vi.mock('next/cache', () => ({ updateTag, revalidatePath }));
 
-const { publishNow, savePost, setCoverFromBody, setCoverImage, uploadPhoto } =
-  await import('../actions');
+const {
+  publishNow,
+  removePost,
+  savePost,
+  setCoverFromBody,
+  setCoverImage,
+  togglePostHidden,
+  uploadPhoto,
+} = await import('../actions');
 const { issueSession } = await import('@/lib/analytics/session');
 const { POSTS_TAG, forgetPosts } = await import('@/lib/blog/posts');
 
@@ -144,7 +151,7 @@ describe('게시 시각', () => {
     expect(writeCall().body.publish_at).toBe('2026-09-09T15:00:00.000Z');
   });
 
-  it('「지금 내기」는 날짜 칸을 안 만지고 낸다', async () => {
+  it('「발행하기」는 날짜 칸을 안 만지고 낸다', async () => {
     asAdmin();
     const before = Date.now();
     await expect(
@@ -553,5 +560,41 @@ describe('저장할 때 안 쓰는 사진 파일을 치운다', () => {
     ).rejects.toThrow(/saved=/);
 
     expect(deleted()).toBeNull();
+  });
+});
+
+/**
+ * 목록에서 누른 액션은 보던 쪽으로 돌아간다 (2026-09-22 사용자 요청)
+ *
+ * 발행 3쪽에서 글을 내렸는데 1쪽으로 튕기면 방금 만진 글을 다시 찾아야 한다.
+ */
+describe('목록의 쪽을 지킨다', () => {
+  it('내리기·지우기가 보던 쪽을 싣고 돌아간다', async () => {
+    asAdmin();
+    for (const action of [togglePostHidden, removePost]) {
+      const to = await redirectedTo(
+        action(form({ id: '없는-id', pubPage: '3', draftSize: '20' })),
+      );
+      expect(to).toMatch(/^REDIRECT:\/admin\/posts\?/);
+      expect(to).toContain('pubPage=3');
+      expect(to).toContain('draftSize=20');
+    }
+  });
+
+  it('모르는 값은 싣지 않는다 — 기본값과 같은 것도 뺀다', async () => {
+    asAdmin();
+    const to = await redirectedTo(
+      removePost(
+        form({
+          id: '없는-id',
+          pubPage: '-1',
+          pubSize: '9999',
+          draftSize: '10',
+        }),
+      ),
+    );
+    expect(to).not.toContain('pubPage');
+    expect(to).not.toContain('pubSize');
+    expect(to).not.toContain('draftSize');
   });
 });
