@@ -27,6 +27,7 @@ import {
 } from '@/lib/supabase/rest';
 import { toDoc, type Doc } from './doc';
 import { markdownToDoc } from './fromMarkdown';
+import { toTags } from './tags';
 
 export type { WriteResult };
 
@@ -52,6 +53,8 @@ export type Post = {
    */
   body: string;
   coverUrl: string | null;
+  /** 태그(016). 다듬어진 채로 온다 — `lib/blog/tags.ts`. 없으면 빈 배열. */
+  tags: string[];
   /** 이 순간부터 열린다(epoch ms). `null` 이면 아직 안 낸 글이다. */
   publishAt: number | null;
   /** 켜져 있으면 **게시 시각과 무관하게** 안 보인다. */
@@ -104,6 +107,7 @@ export function toPost(row: unknown): Post | null {
     doc: r.doc == null ? markdownToDoc(body) : toDoc(r.doc),
     body,
     coverUrl: text(r.cover_url) || null,
+    tags: toTags(r.tags),
     publishAt: instant(r.publish_at),
     hidden: r.hidden === true,
     createdAt: instant(r.created_at) ?? 0,
@@ -294,6 +298,7 @@ export type PostDraft = {
   summary: string;
   doc: Doc;
   coverUrl: string | null;
+  tags: string[];
   publishAt: number | null;
   hidden: boolean;
 };
@@ -308,6 +313,7 @@ const columns = (draft: PostDraft) => ({
   // `body` 는 건드리지 않는다 — 마크다운 원문은 옮기기 전의 모습으로 남는다.
   doc: draft.doc,
   cover_url: draft.coverUrl,
+  tags: draft.tags,
   publish_at: iso(draft.publishAt),
   hidden: draft.hidden,
   updated_at: new Date().toISOString(),

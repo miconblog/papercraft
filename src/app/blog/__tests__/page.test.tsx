@@ -24,6 +24,9 @@ const withPosts = (rows: unknown[]) => {
 
 const params = (slug: string) => ({ params: Promise.resolve({ slug }) });
 
+const list = (query: { tag?: string } = {}) =>
+  BlogIndexPage({ searchParams: Promise.resolve(query) });
+
 /**
  * 서버 컴포넌트가 돌려준 트리를 실제로 그린다.
  *
@@ -47,9 +50,33 @@ afterEach(() => {
 });
 
 describe('/blog', () => {
+  it('대표 사진이 있는 글만 목록에 사진이 선다 (2026-09-22 사용자 요청)', async () => {
+    withPosts([
+      {
+        id: '1',
+        slug: 'with-cover',
+        title: '사진 있는 글',
+        publish_at: AT,
+        cover_url: 'https://example.com/cover.webp',
+      },
+      { id: '2', slug: 'no-cover', title: '사진 없는 글', publish_at: AT },
+    ]);
+
+    await draw(list());
+    const images = [...document.querySelectorAll('img')];
+    expect(images.map((img) => img.getAttribute('src'))).toEqual([
+      'https://example.com/cover.webp',
+    ]);
+    // 사진도 글로 가는 길이지만, 읽어 주는 쪽에는 링크를 늘리지 않는다.
+    const link = images[0].closest('a');
+    expect(link).toHaveAttribute('href', '/blog/with-cover');
+    expect(link).toHaveAttribute('aria-hidden', 'true');
+    expect(link).toHaveAttribute('tabindex', '-1');
+  });
+
   it('Supabase 를 꺼도 화면이 뜬다 — 글 자리만 빈다', async () => {
     vi.stubEnv('SUPABASE_URL', '');
-    expect(await draw(BlogIndexPage())).toContain('아직 쓴 글이 없다');
+    expect(await draw(list())).toContain('아직 쓴 글이 없다');
   });
 
   it('낸 글만 목록에 있다', async () => {
@@ -64,7 +91,7 @@ describe('/blog', () => {
       },
     ]);
 
-    const text = await draw(BlogIndexPage());
+    const text = await draw(list());
     expect(text).toContain('낸 글');
     expect(text).not.toContain('안 낸 글');
     expect(text).not.toContain('예정된 글');
@@ -81,7 +108,100 @@ describe('/blog', () => {
   });
 });
 
+describe('/blog 태그 (2026-09-22 사용자 요청)', () => {
+  const TAGGED = [
+    {
+      id: '1',
+      slug: 'yut',
+      title: '윷 만들기',
+      publish_at: AT,
+      tags: ['윷놀이', '나무'],
+    },
+    {
+      id: '2',
+      slug: 'board',
+      title: '보드판 그리기',
+      publish_at: AT,
+      tags: ['보드게임'],
+    },
+    { id: '3', slug: 'plain', title: '태그 없는 글', publish_at: AT },
+  ];
+  const titles = () =>
+    [...document.querySelectorAll('h2')].map((h) => h.textContent);
+
+  it('제목 아래에 태그가 서고, 누르면 그 태그로 모아 본다', async () => {
+    withPosts(TAGGED);
+    await draw(list());
+    expect(titles()).toEqual(['윷 만들기', '보드판 그리기', '태그 없는 글']);
+    expect(screen.getByRole('link', { name: '#윷놀이' })).toHaveAttribute(
+      'href',
+      `/blog?tag=${encodeURIComponent('윷놀이')}`,
+    );
+    // 태그 없는 글에는 태그 줄이 없다.
+    expect(screen.getAllByRole('list', { name: '태그' })).toHaveLength(2);
+  });
+
+  it('?tag= 로 들어오면 그 태그를 단 글만 보이고, 무엇으로 걸렀는지 적는다', async () => {
+    withPosts(TAGGED);
+    await draw(list({ tag: '윷놀이' }));
+    expect(titles()).toEqual(['윷 만들기']);
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(
+      '#윷놀이 글 1편',
+    );
+    expect(screen.getByRole('link', { name: '전체 글 보기' })).toHaveAttribute(
+      'href',
+      '/blog',
+    );
+    // 걸러 놓은 태그는 눌린 모양이다.
+    expect(screen.getByRole('link', { name: '#윷놀이' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+  });
+
+  it('# 을 붙여 쳐도, 영문 대소문자가 달라도 같은 태그다', async () => {
+    withPosts([
+      { id: '1', slug: 'diy', title: 'DIY 글', publish_at: AT, tags: ['DIY'] },
+    ]);
+    await draw(list({ tag: '#diy' }));
+    expect(titles()).toEqual(['DIY 글']);
+  });
+
+  it('단 글이 없는 태그면 그렇다고 말한다', async () => {
+    withPosts(TAGGED);
+    const text = await draw(list({ tag: '없는태그' }));
+    expect(text).toContain('이 태그를 단 글이 없다');
+    expect(titles()).toEqual([]);
+  });
+});
+
 describe('/blog/[slug]', () => {
+  it('태그가 있으면 제목 아래에 # 을 붙여 적는다 (2026-09-22 사용자 요청)', async () => {
+    withPosts([
+      {
+        id: '1',
+        slug: 'tagged',
+        title: '태그 단 글',
+        publish_at: AT,
+        tags: ['윷놀이', '나무'],
+      },
+    ]);
+    await draw(PostPage(params('tagged')));
+    const tags = screen.getByRole('list', { name: '태그' });
+    expect(tags.textContent).toBe('#윷놀이#나무');
+    // 누르면 그 태그를 단 글만 모아 본다.
+    expect(screen.getByRole('link', { name: '#나무' })).toHaveAttribute(
+      'href',
+      `/blog?tag=${encodeURIComponent('나무')}`,
+    );
+  });
+
+  it('태그가 없으면 태그 줄도 없다', async () => {
+    withPosts([{ id: '1', slug: 'plain', title: '그냥 글', publish_at: AT }]);
+    await draw(PostPage(params('plain')));
+    expect(screen.queryByRole('list', { name: '태그' })).toBeNull();
+  });
+
   it('없는 글은 404 다', async () => {
     withPosts([]);
     await expect(PostPage(params('없는-글'))).rejects.toThrow(

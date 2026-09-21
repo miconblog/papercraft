@@ -44,6 +44,7 @@ const post = (over: Partial<Post> = {}): Post => ({
   doc: EMPTY_DOC,
   body: '본문',
   coverUrl: null,
+  tags: [],
   publishAt: AT,
   hidden: false,
   createdAt: AT,
@@ -57,6 +58,7 @@ const DRAFT: PostDraft = {
   summary: '',
   doc: EMPTY_DOC,
   coverUrl: null,
+  tags: [],
   publishAt: AT,
   hidden: false,
 };

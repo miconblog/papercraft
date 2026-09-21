@@ -26,12 +26,14 @@ export function SiteHeader() {
         </Link>
         <div className="flex items-center gap-1 sm:gap-2">
           {/* 글은 게임 다음이다 — 처음 온 사람이 먼저 볼 것은 게임판이고,
-              공방 일지는 그것을 만든 이야기다(IDE-023). */}
+              공방 일지는 그것을 만든 이야기다(IDE-023). 메뉴 이름은 누구나
+              바로 아는 "블로그"로 적는다(2026-09-22 사용자 요청) — 글 목록의
+              제목·탭 제목(`BLOG_TITLE`)은 그대로 "공방 일지"다. */}
           <Link
             href="/blog"
             className="rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors outline-none hover:bg-background hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
           >
-            공방 일지
+            블로그
           </Link>
           {/* 로그인한 브라우저에만 나온다. 서버는 이 판단을 하지 않는다 —
               헤더에서 쿠키를 읽으면 사이트 전체가 정적 렌더링에서 빠진다. */}

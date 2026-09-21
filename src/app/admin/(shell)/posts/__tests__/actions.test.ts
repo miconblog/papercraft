@@ -107,6 +107,24 @@ describe('문지기', () => {
   });
 });
 
+describe('태그 (2026-09-22 사용자 요청)', () => {
+  it('쉼표로 친 한 줄을 다듬어 배열로 저장한다', async () => {
+    asAdmin();
+    await expect(
+      savePost(form({ title: '글', tags: '#윷놀이, 나무 ,, 윷놀이' })),
+    ).rejects.toThrow(/REDIRECT/);
+    expect(writeCall().body.tags).toEqual(['윷놀이', '나무']);
+  });
+
+  it('비우면 태그를 지운다 — 빈 배열을 보낸다', async () => {
+    asAdmin();
+    await expect(savePost(form({ title: '글', tags: '' }))).rejects.toThrow(
+      /REDIRECT/,
+    );
+    expect(writeCall().body.tags).toEqual([]);
+  });
+});
+
 describe('주소 정하기', () => {
   it('비워 두면 제목에서 만든다', async () => {
     asAdmin();

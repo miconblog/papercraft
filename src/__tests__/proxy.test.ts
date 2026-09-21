@@ -72,8 +72,46 @@ describe('proxy', () => {
 
     // **세션을 지우지 않는다.** `NextResponse.cookies` 는 이름만 보고 덮어써서,
     // 옛 경로 지우기를 나란히 두면 그것만 나가고 로그인이 통째로 날아간다.
-    expect(res.headers.getSetCookie()).toHaveLength(1);
-    expect(res.headers.getSetCookie()[0]).not.toContain('Max-Age=0');
+    const session = res.headers
+      .getSetCookie()
+      .filter((line) => line.startsWith('dc_admin='));
+    expect(session).toHaveLength(1);
+    expect(session[0]).not.toContain('Max-Age=0');
+  });
+
+  /**
+   * 관리자 화면은 열리는데 헤더에 관리자 메뉴가 없었다 (2026-09-22 사용자 신고).
+   * 표시 쿠키는 로그인할 때만 심겨서, 로그인만 살아 있는 브라우저가 있었다.
+   */
+  it('로그인은 살아 있는데 주인 표시가 없으면 다시 심는다', async () => {
+    vi.stubEnv('ANALYTICS_ADMIN_PASSWORD', PASSWORD);
+    const res = await proxy(
+      request('/admin/analytics', `dc_admin=${issueSession(PASSWORD)}`),
+    );
+    const owner = res.cookies.get('dc_owner');
+    expect(owner?.value).toBe('1');
+    expect(owner?.path).toBe('/');
+    // 헤더가 브라우저에서 읽어야 한다.
+    expect(owner?.httpOnly).toBe(false);
+  });
+
+  it('주인 표시가 이미 있으면 건드리지 않는다', async () => {
+    vi.stubEnv('ANALYTICS_ADMIN_PASSWORD', PASSWORD);
+    const res = await proxy(
+      request(
+        '/admin/analytics',
+        `dc_admin=${issueSession(PASSWORD)}; dc_owner=1`,
+      ),
+    );
+    expect(res.cookies.getAll('dc_owner')).toHaveLength(0);
+  });
+
+  it('로그인하지 않았으면 주인 표시를 심지 않는다', async () => {
+    vi.stubEnv('ANALYTICS_ADMIN_PASSWORD', PASSWORD);
+    const res = await proxy(
+      request('/admin/analytics', 'dc_admin=99999999999.deadbeef'),
+    );
+    expect(res.cookies.getAll('dc_owner')).toHaveLength(0);
   });
 
   it('로그인 화면에서는 쿠키를 건드리지 않는다', async () => {

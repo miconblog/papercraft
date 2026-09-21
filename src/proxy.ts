@@ -27,6 +27,8 @@ import {
   ADMIN_COOKIE,
   hasAdminSession,
   isValidSession,
+  OWNER_COOKIE,
+  ownerCookie,
   sessionCookie,
 } from '@/lib/analytics/session';
 import { recordCrawl } from '@/lib/analytics/crawlLog';
@@ -102,6 +104,27 @@ function widenSessionPath(response: NextResponse, token: string): NextResponse {
   return response;
 }
 
+/**
+ * 주인 표시 쿠키를 되살린다 (2026-09-22 사용자 신고)
+ *
+ * "관리자 화면은 열리는데 헤더에 관리자 메뉴가 없다." 표시 쿠키(`dc_owner`)는
+ * **로그인할 때만** 심겨서, 로그인은 살아 있는데 표시만 없는 브라우저가 생긴다
+ * — 표시 쿠키가 생기기 전(IDE-026)에 로그인했거나, 브라우저가 이것만 지웠거나.
+ * 그러면 헤더의 관리자 메뉴가 안 보이고, **이 브라우저의 방문이 통계에 다시
+ * 잡힌다.**
+ *
+ * 로그아웃 말고는 이 쿠키를 지우지 않기로 했으니(2026-09-09 사용자 결정),
+ * 로그인이 살아 있는 동안에는 늘 있어야 맞다. 위 `widenSessionPath` 처럼
+ * 관리자 화면을 한 번 열면 저절로 낫게 한다. 이미 있으면 건드리지 않는다.
+ */
+function restoreOwnerMark(
+  request: NextRequest,
+  response: NextResponse,
+): NextResponse {
+  if (!request.cookies.has(OWNER_COOKIE)) response.cookies.set(ownerCookie());
+  return response;
+}
+
 function adminGate(request: NextRequest, pathname: string): NextResponse {
   const password = adminPassword();
 
@@ -113,7 +136,10 @@ function adminGate(request: NextRequest, pathname: string): NextResponse {
 
   const token = request.cookies.get(ADMIN_COOKIE)?.value;
   if (token && isValidSession(token, password)) {
-    return widenSessionPath(NextResponse.next(), token);
+    return restoreOwnerMark(
+      request,
+      widenSessionPath(NextResponse.next(), token),
+    );
   }
 
   const login = new URL('/admin/login', request.url);

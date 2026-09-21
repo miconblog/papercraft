@@ -1,6 +1,7 @@
 import type { Post } from '@/lib/blog/posts';
 import { renderDoc } from '@/lib/blog/DocView';
 import { formatKstDate } from '@/lib/kst';
+import { TagList } from './TagList';
 
 /**
  * 글 한 편의 생김새 (IDE-023)
@@ -27,6 +28,8 @@ export function PostArticle({ post }: { post: Post }) {
             {formatKstDate(post.publishAt)}
           </time>
         )}
+        {/* 누르면 그 태그를 단 글만 모아 본다(2026-09-22 사용자 요청). */}
+        <TagList tags={post.tags} className="mt-3" />
       </header>
 
       {post.coverUrl && (

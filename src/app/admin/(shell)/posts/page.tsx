@@ -26,7 +26,7 @@ import { formatKst } from '@/lib/kst';
 import { removePost, togglePostHidden } from './actions';
 
 export const metadata: Metadata = {
-  title: '공방 일지',
+  title: '블로그',
   robots: { index: false, follow: false },
 };
 
@@ -327,7 +327,7 @@ export default async function AdminPostsPage({ searchParams }: Props) {
   return (
     <div className="w-full max-w-3xl">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-3xl font-bold tracking-tight">공방 일지</h1>
+        <h1 className="text-3xl font-bold tracking-tight">블로그</h1>
         <Link
           href="/admin/posts/new"
           className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors outline-none hover:bg-primary/85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"

@@ -12,6 +12,7 @@ import { UnsavedGuard } from '@/components/blog/UnsavedGuard';
 import { EMPTY_DOC } from '@/lib/blog/doc';
 import { isPublished, postById, type Post } from '@/lib/blog/posts';
 import { postSummary } from '@/lib/blog/summary';
+import { formatTags, MAX_TAGS } from '@/lib/blog/tags';
 import { formatKstDate, instantToKstLocal } from '@/lib/kst';
 import { siteUrl } from '@/lib/site';
 import { linkedinPostsOf, linkedinStatus } from '@/lib/share/linkedinServer';
@@ -56,6 +57,7 @@ const BLANK: Post = {
   doc: EMPTY_DOC,
   body: '',
   coverUrl: null,
+  tags: [],
   publishAt: null,
   hidden: false,
   createdAt: 0,
@@ -99,7 +101,7 @@ export default async function AdminPostEditorPage({
         href="/admin/posts"
         className="text-sm text-muted-foreground hover:underline"
       >
-        ← 공방 일지 목록으로
+        ← 블로그 목록으로
       </Link>
 
       <h1 className="mt-3 text-3xl font-bold tracking-tight">
@@ -247,6 +249,20 @@ export default async function AdminPostEditorPage({
             <input
               name="summary"
               defaultValue={post.summary}
+              className={FIELD}
+            />
+          </label>
+
+          <label className="block text-sm">
+            <span className="font-medium">태그</span>
+            <span className="mt-0.5 block text-xs text-muted-foreground">
+              쉼표로 나눈다 · {MAX_TAGS}개까지 · 글 제목 아래에 선다
+            </span>
+            <input
+              name="tags"
+              defaultValue={formatTags(post.tags)}
+              placeholder="윷놀이, 나무, 만들기"
+              autoCapitalize="none"
               className={FIELD}
             />
           </label>
