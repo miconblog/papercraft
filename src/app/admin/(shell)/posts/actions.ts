@@ -9,7 +9,7 @@
  *
  * ## 버튼이 여럿이고 폼은 하나다
  *
- * 편집 화면의 「저장」·「지금 내기」·「사진 넣기」·「대표 사진으로」가 모두
+ * 편집 화면의 「저장」·「발행하기」·「사진 넣기」·「대표 사진으로」가 모두
  * **같은 폼을 통째로** 받는다. HTML 은 폼을 겹칠 수 없는데, 사진만 따로 올리는
  * 작은 폼을 옆에 두면 **누르는 순간 쓰던 본문이 날아간다.** 폰에서 사진을
  * 넣다가 글을 잃는 것이 이 화면에서 가장 아픈 실수라, 어느 버튼을 눌러도 먼저
@@ -20,6 +20,7 @@ import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import { ADMIN_COOKIE, hasAdminSession } from '@/lib/analytics/session';
 import { removeUnusedImages } from '@/lib/blog/cleanup';
+import { listViewParams, readListView } from '@/lib/blog/adminListView';
 import { docImageUrls, parseDoc } from '@/lib/blog/doc';
 import { uploadImage } from '@/lib/blog/images';
 import {
@@ -97,7 +98,14 @@ function readDraft(form: FormData, publishNow: boolean): PostDraft {
   };
 }
 
-/** 결과를 화면에 남기려고 쿼리로 돌아간다 — 새로고침해도 폼이 다시 안 날아간다. */
+/** 목록에서 온 폼이 싣고 온 보던 쪽. 모르는 값은 버린다. */
+const viewOf = (form: FormData): Record<string, string> =>
+  listViewParams(readListView((key) => str(form, key)));
+
+/**
+ * 결과를 화면에 남기려고 쿼리로 돌아간다 — 새로고침해도 폼이 다시 안 날아간다.
+ * 목록에서 누른 액션은 보던 쪽(`adminListView`)도 함께 싣고 돌아간다.
+ */
 const back = (path: string, params: Record<string, string>): never =>
   redirect(`${path}?${new URLSearchParams(params)}`);
 
@@ -176,7 +184,7 @@ export async function savePost(form: FormData): Promise<void> {
 /** 게시 시각을 지금으로 잡고 저장한다. 날짜 칸을 만지지 않고 바로 내는 길이다. */
 export async function publishNow(form: FormData): Promise<void> {
   await requireAdmin();
-  return saveAndReturn(form, true, '지금 냈습니다');
+  return saveAndReturn(form, true, '발행했습니다');
 }
 
 /**
@@ -275,8 +283,9 @@ export async function togglePostHidden(form: FormData): Promise<void> {
   await requireAdmin();
 
   const id = str(form, 'id');
+  const view = viewOf(form);
   const post = await postById(id);
-  if (!post) return back(LIST, { error: '없는 글입니다.' });
+  if (!post) return back(LIST, { ...view, error: '없는 글입니다.' });
 
   const result = await setPostHidden(id, form.get('hide') === '1');
   refreshLists();
@@ -284,9 +293,10 @@ export async function togglePostHidden(form: FormData): Promise<void> {
 
   return result.ok
     ? back(LIST, {
+        ...view,
         saved: form.get('hide') === '1' ? '내렸습니다' : '올렸습니다',
       })
-    : back(LIST, { error: result.message });
+    : back(LIST, { ...view, error: result.message });
 }
 
 /**
@@ -299,14 +309,18 @@ export async function removePost(form: FormData): Promise<void> {
   await requireAdmin();
 
   const id = str(form, 'id');
+  const view = viewOf(form);
   const post = await postById(id);
-  if (!post) return back(LIST, { error: '없는 글입니다.' });
+  if (!post) return back(LIST, { ...view, error: '없는 글입니다.' });
 
   const result = await deletePost(id);
   refreshLists();
   revalidatePath(`/blog/${post.slug}`);
 
   return result.ok
-    ? back(LIST, { saved: `지웠습니다 — ${post.title}` })
-    : back(LIST, { error: result.message });
+    ? back(LIST, {
+        ...view,
+        saved: `지웠습니다 — ${post.title}`,
+      })
+    : back(LIST, { ...view, error: result.message });
 }

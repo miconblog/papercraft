@@ -18,6 +18,13 @@ vi.mock('next/headers', () => ({
   }),
 }));
 
+// 쪽 크기 선택 상자(`PageSizeSelect`)가 `useRouter` 를 쓴다. 테스트에는 앱
+// 라우터가 떠 있지 않으니 그것만 갈아 끼운다 — `notFound` 는 진짜여야 한다.
+vi.mock('next/navigation', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/navigation')>()),
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
 const { default: PostsPage } = await import('../page');
 const { default: EditorPage } = await import('../[id]/page');
 const { default: PreviewPage } = await import('../[id]/preview/page');
@@ -122,8 +129,160 @@ describe('AdminPostsPage', () => {
     );
 
     const text = (await draw(list())).textContent ?? '';
-    expect(text).toContain('초안 — 안 냄');
+    // 초안은 섹션 제목이 이미 말한다 — 줄마다 되풀이하지 않는다.
+    expect(text).not.toContain('안 냄');
     expect(text).toContain('게시 예정');
+  });
+  it('초안을 위에, 발행을 아래에 — 각각 최신이 위다 (2026-09-22 사용자 요청)', async () => {
+    loggedIn();
+    vi.stubEnv('SUPABASE_URL', 'https://example.supabase.co');
+    vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'service-role-key');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify([
+              {
+                id: '1',
+                slug: 'old-draft',
+                title: '옛 초안',
+                publish_at: null,
+                created_at: '2026-01-01T00:00:00+09:00',
+              },
+              {
+                id: '2',
+                slug: 'old-post',
+                title: '옛 글',
+                publish_at: '2026-02-01T00:00:00+09:00',
+                created_at: '2026-01-01T00:00:00+09:00',
+              },
+              {
+                id: '3',
+                slug: 'new-draft',
+                title: '새 초안',
+                publish_at: null,
+                created_at: '2026-03-01T00:00:00+09:00',
+              },
+              {
+                id: '4',
+                slug: 'new-post',
+                title: '새 글',
+                publish_at: '2026-04-01T00:00:00+09:00',
+                created_at: '2025-12-01T00:00:00+09:00',
+              },
+            ]),
+            { status: 200 },
+          ),
+      ),
+    );
+
+    const body = await draw(list());
+    const sections = [...body.querySelectorAll('section')].map((section) => ({
+      title: section.querySelector('h2')?.textContent,
+      posts: [...section.querySelectorAll('h3')].map((h) => h.textContent),
+    }));
+    // 초안은 만든 시각, 발행은 게시 시각을 적는다.
+    expect(body.textContent).toContain('2026-03-01 00:00');
+    expect(body.textContent).toContain('2026-04-01 00:00');
+    // 제목이 곧 고치기 링크다.
+    expect(body.querySelector('h3 a[href="/admin/posts/3"]')?.textContent).toBe(
+      '새 초안',
+    );
+    expect(sections).toEqual([
+      { title: '초안 2', posts: ['새 초안', '옛 초안'] },
+      { title: '발행 2', posts: ['새 글', '옛 글'] },
+    ]);
+  });
+
+  describe('쪽 나눔 — 기본 10개씩, 초안·발행이 따로 넘긴다 (2026-09-22 사용자 요청)', () => {
+    /** 초안 12개, 발행 3개. 번호가 클수록 최신이다. */
+    const manyPosts = () => {
+      const rows = [
+        ...Array.from({ length: 12 }, (_, i) => ({
+          id: `d${i + 1}`,
+          slug: `draft-${i + 1}`,
+          title: `초안${i + 1}`,
+          publish_at: null,
+          created_at: new Date(Date.UTC(2026, 0, i + 1)).toISOString(),
+        })),
+        ...Array.from({ length: 3 }, (_, i) => ({
+          id: `p${i + 1}`,
+          slug: `post-${i + 1}`,
+          title: `발행${i + 1}`,
+          publish_at: new Date(Date.UTC(2026, 1, i + 1)).toISOString(),
+        })),
+      ];
+      vi.stubEnv('SUPABASE_URL', 'https://example.supabase.co');
+      vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'service-role-key');
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async () => new Response(JSON.stringify(rows), { status: 200 })),
+      );
+    };
+    const titles = (body: HTMLElement, section: number) =>
+      [...body.querySelectorAll('section')[section].querySelectorAll('h3')].map(
+        (h) => h.textContent,
+      );
+    const listAt = (query: Record<string, string>) =>
+      PostsPage({ searchParams: Promise.resolve(query) });
+
+    it('처음에는 10개만 보이고 다음 쪽으로 가는 길이 있다', async () => {
+      loggedIn();
+      manyPosts();
+      const body = await draw(list());
+
+      expect(titles(body, 0)).toHaveLength(10);
+      expect(titles(body, 0)[0]).toBe('초안12');
+      expect(body.textContent).toContain('1 / 2');
+      expect(
+        body.querySelector('a[href="/admin/posts?draftPage=2"]'),
+      ).not.toBeNull();
+      // 발행은 한 쪽이라 넘길 것이 없다.
+      expect(body.querySelectorAll('nav')).toHaveLength(1);
+    });
+
+    it('초안을 넘겨도 발행의 쪽·크기는 그대로다', async () => {
+      loggedIn();
+      manyPosts();
+      const body = await draw(listAt({ draftPage: '2', pubSize: '20' }));
+
+      expect(titles(body, 0)).toEqual(['초안2', '초안1']);
+      expect(titles(body, 1)).toEqual(['발행3', '발행2', '발행1']);
+      // 이전 쪽 링크가 발행 쪽 설정을 잃지 않는다.
+      expect(
+        body.querySelector('a[href="/admin/posts?pubSize=20"]'),
+      ).not.toBeNull();
+    });
+
+    it('크기를 20으로 하면 한 쪽에 다 들어간다', async () => {
+      loggedIn();
+      manyPosts();
+      const body = await draw(listAt({ draftSize: '20' }));
+      expect(titles(body, 0)).toHaveLength(12);
+      expect(body.querySelector('nav')).toBeNull();
+    });
+
+    it('끝을 넘는 쪽이나 모르는 크기는 조용히 고쳐 읽는다', async () => {
+      loggedIn();
+      manyPosts();
+      const body = await draw(listAt({ draftPage: '99', draftSize: '7' }));
+      // 크기 7 은 고를 수 없는 값이라 10, 99쪽은 마지막 쪽인 2쪽이다.
+      expect(titles(body, 0)).toEqual(['초안2', '초안1']);
+    });
+
+    it('지우기 확인이 보던 쪽에 머문다', async () => {
+      loggedIn();
+      manyPosts();
+      const body = await draw(listAt({ draftPage: '2', confirm: 'd1' }));
+      const cancel = [...body.querySelectorAll('a')].find(
+        (a) => a.textContent === '그만두기',
+      );
+      expect(cancel?.getAttribute('href')).toBe('/admin/posts?draftPage=2');
+      expect(
+        body.querySelector('form input[name="draftPage"][value="2"]'),
+      ).not.toBeNull();
+    });
   });
 });
 
