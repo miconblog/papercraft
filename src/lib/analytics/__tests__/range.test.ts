@@ -10,12 +10,21 @@ import { bucketsOf, describeRange, parseRange } from '../range';
 const TODAY = '2026-09-19';
 
 describe('parseRange', () => {
-  it('아무것도 없으면 최근 30일이다', () => {
+  it('아무것도 없으면 최근 7일이다 (2026-09-22 사용자 요청)', () => {
     expect(parseRange({}, TODAY)).toEqual({
-      from: '2026-08-21',
+      from: '2026-09-13',
       to: TODAY,
-      preset: '30d',
-      days: 30,
+      preset: '7d',
+      days: 7,
+    });
+  });
+
+  it('오늘은 오늘 하루다', () => {
+    expect(parseRange({ range: 'today' }, TODAY)).toEqual({
+      from: TODAY,
+      to: TODAY,
+      preset: 'today',
+      days: 1,
     });
   });
 
@@ -29,7 +38,7 @@ describe('parseRange', () => {
   });
 
   it('모르는 프리셋은 기본 기간이다', () => {
-    expect(parseRange({ range: 'forever' }, TODAY).preset).toBe('30d');
+    expect(parseRange({ range: 'forever' }, TODAY).preset).toBe('7d');
   });
 
   it('날짜를 직접 고르면 그것이 이긴다', () => {
@@ -49,10 +58,10 @@ describe('parseRange', () => {
 
   it('달력에 없는 날·틀린 형식은 버린다', () => {
     expect(parseRange({ from: '2026-02-30', to: TODAY }, TODAY).preset).toBe(
-      '30d',
+      '7d',
     );
-    expect(parseRange({ from: '어제', to: TODAY }, TODAY).preset).toBe('30d');
-    expect(parseRange({ from: '2026-09-01' }, TODAY).preset).toBe('30d');
+    expect(parseRange({ from: '어제', to: TODAY }, TODAY).preset).toBe('7d');
+    expect(parseRange({ from: '2026-09-01' }, TODAY).preset).toBe('7d');
   });
 
   it('같은 인자가 두 번 오면 첫 값을 쓴다', () => {
@@ -66,6 +75,10 @@ describe('describeRange', () => {
   it('프리셋이면 이름과 날짜를, 직접 고른 기간이면 날 수를 적는다', () => {
     expect(describeRange(parseRange({ range: '7d' }, TODAY))).toBe(
       '최근 7일 · 2026-09-13 ~ 2026-09-19',
+    );
+    // "최근 오늘"이 아니라 그냥 오늘.
+    expect(describeRange(parseRange({ range: 'today' }, TODAY))).toBe(
+      '오늘 · 2026-09-19',
     );
     expect(
       describeRange(

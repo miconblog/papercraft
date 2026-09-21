@@ -12,20 +12,22 @@
  */
 import { daysAgo } from './days';
 
-export type RangePreset = '7d' | '30d' | '90d' | '1y';
+export type RangePreset = 'today' | '7d' | '30d' | '90d' | '1y';
 
 export const RANGE_PRESETS: readonly {
   id: RangePreset;
   label: string;
   days: number;
 }[] = [
+  { id: 'today', label: '오늘', days: 1 },
   { id: '7d', label: '7일', days: 7 },
   { id: '30d', label: '30일', days: 30 },
   { id: '90d', label: '90일', days: 90 },
   { id: '1y', label: '1년', days: 365 },
 ];
 
-export const DEFAULT_PRESET: RangePreset = '30d';
+/** 처음 열면 최근 7일 (2026-09-22 사용자 요청 — 전에는 30일). */
+export const DEFAULT_PRESET: RangePreset = '7d';
 
 export type DayRange = {
   /** 첫날(포함). */
@@ -93,6 +95,7 @@ export function parseRange(
 export function describeRange(range: DayRange): string {
   const preset = RANGE_PRESETS.find((p) => p.id === range.preset);
   const span = `${range.from} ~ ${range.to}`;
+  if (preset?.id === 'today') return `오늘 · ${range.to}`;
   return preset
     ? `최근 ${preset.label} · ${span}`
     : `${span} · ${range.days}일`;

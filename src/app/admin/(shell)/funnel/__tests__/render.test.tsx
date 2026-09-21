@@ -87,10 +87,10 @@ beforeEach(() => {
 });
 
 describe('FunnelPage', () => {
-  it('기본은 최근 30일이고, 그 기간으로 조회한다', async () => {
+  it('기본은 최근 7일이고, 그 기간으로 조회한다', async () => {
     await draw({});
     expect(loadFunnel).toHaveBeenCalledWith(
-      expect.objectContaining({ from: '2026-08-21', to: '2026-09-19' }),
+      expect.objectContaining({ from: '2026-09-13', to: '2026-09-19' }),
     );
   });
 
