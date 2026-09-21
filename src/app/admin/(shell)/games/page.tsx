@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { CalendarClockIcon, EyeIcon, EyeOffIcon } from 'lucide-react';
 import { adminPassword } from '@/lib/analytics/config';
+import { loadGameTotals } from '@/lib/analytics/report';
 import { ADMIN_COOKIE, isValidSession } from '@/lib/analytics/session';
 import { GAMES } from '@/lib/games';
 import {
@@ -49,7 +50,10 @@ export default async function AdminGamesPage({ searchParams }: Props) {
   }
 
   const { saved, error, game: erroredGame } = await searchParams;
-  const releases = await releasesForRequest();
+  const [releases, totals] = await Promise.all([
+    releasesForRequest(),
+    loadGameTotals(),
+  ]);
   // 빈 칸의 기본값은 오늘 0시(KST) 다 — 아무것도 안 고치고 저장하면 "지금 열기"에
   // 가깝게 동작해 놀랄 일이 없다.
   const todayKst = todayKstMidnight();
@@ -91,7 +95,25 @@ export default async function AdminGamesPage({ searchParams }: Props) {
           return (
             <li key={game.id} className="p-4">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="font-medium">{game.title}</h2>
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <h2 className="font-medium">{game.title}</h2>
+                  {/* 누적이다. 기간별로 보려면 방문 통계로 간다. 저장소에
+                      닿지 못하면 0 이 아니라 빈 칸 — 0 은 "아무도 안 봤다"는
+                      말이라 거짓이 된다. */}
+                  {totals && (
+                    <span className="text-xs text-muted-foreground tabular-nums">
+                      조회{' '}
+                      {(totals.get(game.id)?.views ?? 0).toLocaleString(
+                        'ko-KR',
+                      )}
+                      {' · '}
+                      PDF{' '}
+                      {(totals.get(game.id)?.downloads ?? 0).toLocaleString(
+                        'ko-KR',
+                      )}
+                    </span>
+                  )}
+                </div>
                 {release?.hidden ? (
                   <span className="inline-flex items-center gap-1 text-xs font-medium text-retro-brick">
                     <EyeOffIcon className="size-3.5" aria-hidden />
@@ -196,6 +218,13 @@ export default async function AdminGamesPage({ searchParams }: Props) {
       <p className="mt-4 text-xs text-muted-foreground">
         저장소에 닿지 못하면 <strong>모든 게임이 공개</strong>로 읽힙니다.
         예약이 사라지는 편이 게임이 사라지는 편보다 낫기 때문입니다.
+      </p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        조회·PDF 는 수집을 시작한 뒤의 <strong>누적</strong>입니다. 기간별로는{' '}
+        <Link href="/admin/analytics" className="underline underline-offset-2">
+          방문 통계
+        </Link>
+        에서 봅니다.
       </p>
     </div>
   );
