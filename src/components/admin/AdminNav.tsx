@@ -28,7 +28,7 @@ const ITEMS = [
   { href: '/admin/analytics', label: '방문 통계', icon: GaugeIcon },
   { href: '/admin/funnel', label: '퍼널 분석', icon: FilterIcon },
   { href: '/admin/games', label: '게임 공개', icon: CalendarClockIcon },
-  { href: '/admin/posts', label: '공방 일지', icon: PenLineIcon },
+  { href: '/admin/posts', label: '블로그', icon: PenLineIcon },
   { href: '/admin/comments', label: '댓글', icon: MessageSquareIcon },
   { href: '/admin/share', label: '공유 링크', icon: Link2Icon },
 ] as const;

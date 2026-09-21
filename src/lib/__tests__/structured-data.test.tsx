@@ -63,6 +63,14 @@ describe('구조화 데이터', () => {
     const ld = blogPostingLd(post({ publish_at: null }));
     expect(ld.image).toBe(`${SITE}/opengraph-image`);
     expect(ld).not.toHaveProperty('datePublished');
+    // 태그가 없으면 keywords 칸도 없다.
+    expect(ld).not.toHaveProperty('keywords');
+  });
+
+  it('태그는 keywords 로 싣는다', () => {
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', SITE);
+    const ld = blogPostingLd(post({ tags: ['윷놀이', '나무'] }));
+    expect(ld.keywords).toBe('윷놀이, 나무');
   });
 
   it('게임은 인원을 범위로 싣는다', () => {

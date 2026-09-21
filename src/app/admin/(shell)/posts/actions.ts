@@ -22,6 +22,7 @@ import { ADMIN_COOKIE, hasAdminSession } from '@/lib/analytics/session';
 import { removeUnusedImages } from '@/lib/blog/cleanup';
 import { listViewParams, readListView } from '@/lib/blog/adminListView';
 import { docImageUrls, parseDoc } from '@/lib/blog/doc';
+import { parseTags } from '@/lib/blog/tags';
 import { uploadImage } from '@/lib/blog/images';
 import {
   POSTS_TAG,
@@ -93,6 +94,7 @@ function readDraft(form: FormData, publishNow: boolean): PostDraft {
     summary: str(form, 'summary'),
     doc: parseDoc(String(form.get('doc') ?? '')),
     coverUrl: str(form, 'coverUrl') || null,
+    tags: parseTags(str(form, 'tags')),
     publishAt: publishNow ? Date.now() : kstLocalToInstant(typed),
     hidden: form.get('hidden') === '1',
   };

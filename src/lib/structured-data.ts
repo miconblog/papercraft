@@ -69,6 +69,8 @@ export function blogPostingLd(post: Post): JsonLdObject {
       datePublished: new Date(post.publishAt).toISOString(),
     }),
     dateModified: new Date(post.updatedAt).toISOString(),
+    // 글 화면 머리의 태그와 같은 낱말이다. 없으면 칸을 싣지 않는다.
+    ...(post.tags.length > 0 && { keywords: post.tags.join(', ') }),
     // 대표 사진이 없으면 사이트 공유 이미지다 — `generateMetadata` 의 OG 와
     // 같은 순서다.
     image: absolute(post.coverUrl ?? '/opengraph-image'),
