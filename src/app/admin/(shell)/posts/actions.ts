@@ -18,6 +18,7 @@
 import { revalidatePath, updateTag } from 'next/cache';
 import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
+import { afterResponse } from '@/lib/analytics/after';
 import { ADMIN_COOKIE, hasAdminSession } from '@/lib/analytics/session';
 import { removeUnusedImages } from '@/lib/blog/cleanup';
 import { listViewParams, readListView } from '@/lib/blog/adminListView';
@@ -28,6 +29,7 @@ import {
   POSTS_TAG,
   createPost,
   deletePost,
+  isPublished,
   postById,
   setPostHidden,
   updatePost,
@@ -36,6 +38,7 @@ import {
 } from '@/lib/blog/posts';
 import { toSlug } from '@/lib/blog/slug';
 import { kstDay, kstLocalToInstant } from '@/lib/kst';
+import { dispatchMentions } from '@/lib/mentions/send';
 
 const LIST = '/admin/posts';
 
@@ -174,6 +177,16 @@ async function saveAndReturn(
     ...(before?.coverUrl ? [before.coverUrl] : []),
     ...uploadedImages(form),
   ]);
+
+  // 본문에 건 바깥 링크에 웹멘션 · 핑백을 보낸다 (IDE-046, 사용자 요청
+  // 2026-10-01). **응답 뒤에** 돈다 — 남의 서버가 느리다고 저장이 느려지면 안
+  // 된다. 열려 있지 않은 글이면 아무것도 나가지 않고, 결과는 관리자 화면의
+  // 「멘션」에 남는다. 방금 열린 글인지는 저장 전 모습을 아는 여기서 알려 준다.
+  afterResponse(() =>
+    dispatchMentions({ ...draft, id: targetId }, 'save', {
+      justOpened: !(before && isPublished(before)),
+    }),
+  );
 
   return back(`${LIST}/${targetId}`, { saved: note });
 }

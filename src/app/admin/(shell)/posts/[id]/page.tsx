@@ -34,6 +34,15 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * 저장 뒤에 멘션을 보내는 뒤처리가 돌 시간 (IDE-046).
+ *
+ * 서버 액션의 한도는 그것을 부른 **화면**에서 정한다. 방금 낸 글은 문지기의
+ * 메모가 비워질 때까지 30초쯤 기다렸다 보내므로(`lib/mentions/send.ts`), 기본
+ * 한도가 짧은 환경에서도 잘리지 않게 넉넉히 준다.
+ */
+export const maxDuration = 60;
+
 type Props = {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ saved?: string; error?: string }>;

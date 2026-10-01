@@ -55,7 +55,9 @@ const INVISIBLE = new RegExp(
   'g',
 );
 
-const stripInvisible = (value: string): string => value.replace(INVISIBLE, '');
+/** 멘션(`lib/mentions/html.ts`)도 쓴다 — 남의 서버가 준 제목 · 발췌를 같은 잣대로 씻는다. */
+export const stripInvisible = (value: string): string =>
+  value.replace(INVISIBLE, '');
 
 /** 이름을 한 줄로 눕힌다. 줄바꿈이 들어오면 목록의 한 줄 배치가 깨진다. */
 const oneLine = (value: string): string =>

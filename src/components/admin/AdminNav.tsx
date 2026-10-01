@@ -15,6 +15,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
+  AtSignIcon,
   CalendarClockIcon,
   FilterIcon,
   GaugeIcon,
@@ -30,6 +31,7 @@ const ITEMS = [
   { href: '/admin/games', label: '게임 공개', icon: CalendarClockIcon },
   { href: '/admin/posts', label: '블로그', icon: PenLineIcon },
   { href: '/admin/comments', label: '댓글', icon: MessageSquareIcon },
+  { href: '/admin/mentions', label: '멘션', icon: AtSignIcon },
   { href: '/admin/share', label: '공유 링크', icon: Link2Icon },
 ] as const;
 

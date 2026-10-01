@@ -8,6 +8,8 @@ import { CommentSection } from '@/components/comments/CommentSection';
 import { CommentSectionFallback } from '@/components/comments/CommentSectionFallback';
 import { EditorClient } from '@/components/editor/EditorClient';
 import { JsonLd } from '@/components/JsonLd';
+import { MentionEndpoints } from '@/components/mentions/MentionEndpoints';
+import { MentionSection } from '@/components/mentions/MentionSection';
 import { ShareSection } from '@/components/share/ShareSection';
 import { OPEN_GRAPH_BASE } from '@/lib/site';
 import { breadcrumbLd, gameLd } from '@/lib/structured-data';
@@ -63,6 +65,8 @@ export default async function EditGamePage({ params }: Props) {
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6">
+      {/* 남의 블로그가 이 게임을 가리킬 때 어디로 알리는지 (IDE-046). */}
+      <MentionEndpoints />
       <JsonLd
         data={[
           gameLd(game, `/games/${game.id}`),
@@ -118,6 +122,10 @@ export default async function EditGamePage({ params }: Props) {
         {/* 댓글만 경계 뒤에 둔다 — 미리보기와 폼은 저장소를 기다리지 않는다. */}
         <Suspense fallback={<CommentSectionFallback />}>
           <CommentSection kind="game" targetId={game.id} />
+        </Suspense>
+        {/* 이 게임을 이야기한 남의 글 (IDE-046). 승인된 것이 없으면 칸도 없다. */}
+        <Suspense fallback={null}>
+          <MentionSection kind="game" targetId={game.id} />
         </Suspense>
       </div>
     </div>
