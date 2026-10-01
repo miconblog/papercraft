@@ -7,6 +7,7 @@ import {
   PENDING_COUNT_CAP,
   pendingCommentCount,
 } from '@/lib/comments/comments';
+import { pendingMentionCount } from '@/lib/mentions/mentions';
 
 /**
  * 관리자 화면 껍데기 (IDE-022)
@@ -23,6 +24,9 @@ import {
  * 다닐 때 다시 그려지지 않으므로(Partial Rendering), 숫자를 바꾸는 댓글 액션이
  * 이 레이아웃을 직접 무효화한다(`comments/actions.ts`). 관리자 화면을 보는 사이
  * 새로 들어온 댓글은 다음 새로고침에 반영된다.
+ *
+ * 멘션 메뉴의 숫자도 같은 자리에서 같은 방식으로 센다(IDE-046). 승인을 기다리는
+ * 것이 댓글과 똑같이 "사람이 눌러야 세상에 나가는 것"이다.
  */
 export default async function AdminShellLayout({
   children,
@@ -32,13 +36,18 @@ export default async function AdminShellLayout({
   // 레이아웃은 문지기가 아니다 — 막는 것은 proxy 와 각 페이지다. 그래도 세션이
   // 없으면 묻지도 않는다. 로그인 전 요청마다 DB 를 두드릴 이유가 없다.
   const signedIn = hasAdminSession((await cookies()).get(ADMIN_COOKIE)?.value);
-  const pendingComments = signedIn ? await pendingCommentCount() : 0;
+  const [pendingComments, pendingMentions] = signedIn
+    ? await Promise.all([pendingCommentCount(), pendingMentionCount()])
+    : [0, 0];
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6 md:flex-row md:gap-10 md:py-10">
       <aside className="flex flex-wrap items-start gap-2 md:w-44 md:shrink-0 md:flex-col md:gap-6">
         <AdminNav
-          counts={{ '/admin/comments': pendingComments }}
+          counts={{
+            '/admin/comments': pendingComments,
+            '/admin/mentions': pendingMentions,
+          }}
           countCap={PENDING_COUNT_CAP}
         />
 

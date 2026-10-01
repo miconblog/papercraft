@@ -1,5 +1,11 @@
 import type { NextConfig } from 'next';
 import { ACTION_BODY_LIMIT } from './src/lib/blog/uploadLimit';
+import {
+  MENTIONABLE_SOURCES,
+  pingbackUrl,
+  webmentionLinkHeader,
+} from './src/lib/mentions/endpoints';
+import { siteUrl } from './src/lib/site';
 
 const nextConfig: NextConfig = {
   /**
@@ -30,6 +36,27 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
     ];
+  },
+
+  /**
+   * 멘션을 받는 주소를 응답 헤더로 알린다 (IDE-046).
+   *
+   * 남의 블로그가 우리 글 · 게임을 가리키면 그쪽 소프트웨어가 그 화면에 와서
+   * 어디로 알릴지를 찾는다 — 웹멘션은 `Link`, 핑백은 `X-Pingback` 을 본다.
+   * 화면의 `<link>` 도 같은 주소를 적는다(`MentionEndpoints`). 헤더만 보는
+   * 구현과 문서만 보는 구현이 다 있어서 둘 다 둔다.
+   *
+   * 받는 화면에만 붙인다. 주소의 주인은 `src/lib/mentions/endpoints.ts` 다.
+   */
+  async headers() {
+    const site = siteUrl();
+    return MENTIONABLE_SOURCES.map((source) => ({
+      source,
+      headers: [
+        { key: 'Link', value: webmentionLinkHeader(site) },
+        { key: 'X-Pingback', value: pingbackUrl(site) },
+      ],
+    }));
   },
 
   /**

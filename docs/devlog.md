@@ -178,6 +178,13 @@ React 엘리먼트로 그린다(`lib/blog/DocView.tsx`). 그래서:
 > `Body exceeded 1 MB limit` 로 **저장이 통째로 터진다** — 사진만이 아니라 쓰던
 > 글까지 못 넘어간다. 그래서 값은 `lib/blog/uploadLimit.ts` 한 곳에서 정한다.
 
+## 바깥 블로그와 주고받기
+
+본문에 다른 블로그 링크를 걸고 저장하면, 글이 공개 중일 때 그 블로그에 **웹멘션**
+(없으면 핑백)을 보낸다. 반대로 남이 이 글을 가리켜 보내 온 멘션은 승인한 것만 글
+아래 「이 글을 이야기한 곳」에 선다. 보낸 결과와 받은 것의 승인은 `/admin/mentions`
+에 있다 — 자세한 것은 `docs/webmention.md`.
+
 ## 검색과 통계
 
 - 글마다 `og:title`·`og:description`·`article:published_time` 이 붙는다. 대표

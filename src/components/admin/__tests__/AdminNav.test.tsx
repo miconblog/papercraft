@@ -41,6 +41,17 @@ describe('AdminNav', () => {
     expect(commentsLink()).toHaveTextContent('99+');
   });
 
+  it('대기 멘션도 같은 방식으로 붙는다 (IDE-046)', () => {
+    render(
+      <AdminNav counts={{ '/admin/comments': 0, '/admin/mentions': 2 }} />,
+    );
+
+    expect(screen.getByRole('link', { name: /멘션/ })).toHaveAccessibleName(
+      /검토 대기 2개/,
+    );
+    expect(commentsLink()).toHaveAccessibleName('댓글');
+  });
+
   it('다른 메뉴에는 숫자가 새지 않는다', () => {
     render(<AdminNav counts={{ '/admin/comments': 5 }} />);
 

@@ -6,9 +6,13 @@ import { PostArticle } from '@/components/blog/PostArticle';
 import { CommentSection } from '@/components/comments/CommentSection';
 import { CommentSectionFallback } from '@/components/comments/CommentSectionFallback';
 import { JsonLd } from '@/components/JsonLd';
+import { MentionEndpoints } from '@/components/mentions/MentionEndpoints';
+import { MentionSection } from '@/components/mentions/MentionSection';
 import { ShareSection } from '@/components/share/ShareSection';
+import { afterResponse } from '@/lib/analytics/after';
 import { isPublished, postBySlug, type Post } from '@/lib/blog/posts';
 import { postSummary } from '@/lib/blog/summary';
+import { dispatchMentions } from '@/lib/mentions/send';
 import { OPEN_GRAPH_BASE } from '@/lib/site';
 import { blogPostingLd, breadcrumbLd } from '@/lib/structured-data';
 
@@ -39,6 +43,14 @@ type Props = { params: Promise<{ slug: string }> };
  * 해서 상수를 못 쓴다. 홈이 같은 이유로 숫자를 적어 두고 있다).
  */
 export const revalidate = 60;
+
+/**
+ * 멘션을 보내는 뒤처리가 돌 시간 (IDE-046).
+ *
+ * 막 열린 글은 문지기의 메모가 비워질 때까지 30초쯤 기다렸다 보낸다
+ * (`lib/mentions/send.ts`). 그 기다림이 기본 한도에 잘리지 않게 한다.
+ */
+export const maxDuration = 60;
 
 /** 낸 글만. 아니면 `null` — 부르는 쪽이 없는 글로 다룬다. */
 async function openPost(slug: string): Promise<Post | null> {
@@ -86,8 +98,14 @@ export default async function PostPage({ params }: Props) {
   const post = await openPost(slug);
   if (!post) notFound();
 
+  // 예약해 둔 글은 사람 손 없이 열린다 — 그 순간에는 저장이 없어서 멘션을 보낼
+  // 계기가 없다. 그래서 화면이 그려질 때 **아직 안 보낸 링크**를 챙긴다
+  // (IDE-046). 응답 뒤에 돌고, 한 번 확인한 글은 저장소를 다시 묻지 않는다.
+  afterResponse(() => dispatchMentions(post, 'catch-up'));
+
   return (
     <article className="mx-auto w-full max-w-2xl px-4 py-10 sm:px-6 sm:py-14">
+      <MentionEndpoints />
       <JsonLd
         data={[
           blogPostingLd(post),
@@ -123,6 +141,11 @@ export default async function PostPage({ params }: Props) {
         {/* 댓글만 경계 뒤에 둔다 — 글은 저장소를 한 번 더 기다리지 않는다. */}
         <Suspense fallback={<CommentSectionFallback />}>
           <CommentSection kind="post" targetId={post.id} />
+        </Suspense>
+        {/* 남의 블로그가 이 글을 가리켜 보내 온 것 (IDE-046). 승인된 것이
+            없으면 칸도 없어서, 기다리는 동안 세워 둘 자리도 두지 않는다. */}
+        <Suspense fallback={null}>
+          <MentionSection kind="post" targetId={post.id} />
         </Suspense>
       </div>
     </article>
